@@ -4,7 +4,8 @@
   "description": "tiny sns",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "",
+    "dev": "kill-port --port 5000 && nodemon ./backend/app"
   },
   "author": "",
   "license": "MIT",
@@ -14,6 +15,7 @@
     "mongoose": "^5.9.25"
   },
   "devDependencies": {
+    "kill-port": "^1.6.1",
     "nodemon": "^2.0.4"
   }
 }

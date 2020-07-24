@@ -1,0 +1,8 @@
+{
+    "event":{
+        "crash":"kill-port --port 5000",
+        "exit":"kill-port --port 5000",
+        "restart":"kill-port --port 5000",
+        "start":"kill-port --port 5000"
+    }
+}
