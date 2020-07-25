@@ -1,9 +1,12 @@
-const authController = require('./authController')
+const authController = require('./auth');
+// const  = require('./')
+// const  = require('./')
+// const  = require('./')
+// const  = require('./')
 
 module.exports = {
-    authController
-}
-
+  authController,
+};
 
 // // const { blogService } = require('../services')
 

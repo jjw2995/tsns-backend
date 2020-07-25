@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema(
     },
     salt: { type: String, required: true },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 // userSchema.plugin(uniqueValidator);
