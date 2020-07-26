@@ -1,23 +1,23 @@
 {
-  "name": "tsns",
-  "version": "1.0.0",
-  "description": "tiny sns",
-  "main": "app.js",
-  "scripts": {
-    "test": "",
-    "dev": "kill-port --port 5000 && nodemon ./backend/app"
-  },
-  "author": "",
-  "license": "MIT",
-  "dependencies": {
-    "bcryptjs": "^2.4.3",
-    "express": "^4.17.1",
-    "express-validator": "^6.6.0",
-    "jsonwebtoken": "^8.5.1",
-    "mongoose": "^5.9.25"
-  },
-  "devDependencies": {
-    "kill-port": "^1.6.1",
-    "nodemon": "^2.0.4"
-  }
+	"name": "tsns",
+	"version": "1.0.0",
+	"description": "tiny sns",
+	"main": "app.js",
+	"scripts": {
+		"test": "",
+		"dev": "kill-port --port 5000 && nodemon -L ./backend/app"
+	},
+	"author": "",
+	"license": "MIT",
+	"dependencies": {
+		"bcryptjs": "^2.4.3",
+		"express": "^4.17.1",
+		"express-validator": "^6.6.0",
+		"jsonwebtoken": "^8.5.1",
+		"mongoose": "^5.9.25"
+	},
+	"devDependencies": {
+		"kill-port": "^1.6.1",
+		"nodemon": "^2.0.4"
+	}
 }

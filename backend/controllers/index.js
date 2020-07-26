@@ -5,7 +5,7 @@ const authController = require('./auth');
 // const  = require('./')
 
 module.exports = {
-  authController,
+	authController,
 };
 
 // // const { blogService } = require('../services')

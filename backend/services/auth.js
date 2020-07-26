@@ -13,38 +13,38 @@ const { isValidEmail, isValidNick, isValidPassword } = require('./helper');
 //   password:String
 // }
 
-function registerUser(user, done) {
-  console.log('\n', user);
-  let errArr = [];
-  isValidEmail(user.email, errArr);
-  isValidNick(user.nickname, errArr);
-  isValidPassword(user.password, errArr);
+//  output
+// {
+//   nickname:String,
+//   id:String
+//   ACCESS_TOKEN:
+//   REFRESH_TOKEN:
+// }
 
-  if (errArr.length > 0) {
-    return new Error(JSON.stringify({ errors: errArr }));
-  }
+function registerUser(user) {
+	console.log('\n', user);
 
-  user.salt = = bcrypt.genSaltSync(10);
-  user.password = bcrypt.hashSync(user.password, user.salt)
-  console.log('\n', user);
-  console.log('\n', "should see {nick, password, email, hash}");
-
-  User.create(user).then((dbUserDoc) => {
-    console.log('\n', dbUserDoc, '\n');
-    return done(null, {_id: dbUserDoc._id, ACCESS_TOKEN: , REFRESH_TOKEN: , });
-    // return done(null, {_id: dbUserDoc._id, ACCESS_TOKEN: , REFRESH_TOKEN: , });
-  }).catch((e)=>{
-    return done(null, x);
-  })
+	user.salt = bcrypt.genSaltSync(10);
+	user.password = bcrypt.hashSync(user.password, user.salt);
+	console.log('\n', user);
+	console.log('\n', 'should see {nick, password, email, hash}');
+	return new Promise((resolve, reject) => {
+		User.create(user)
+			.then((dbUserDoc) => {
+				console.log('\n', dbUserDoc, '\n');
+				// return done(null, {_id: dbUserDoc._id, ACCESS_TOKEN: , REFRESH_TOKEN: , });
+				// return done(null, {_id: dbUserDoc._id, ACCESS_TOKEN: , REFRESH_TOKEN: , });
+				resolve(dbUserDoc);
+			})
+			.catch((e) => {
+				reject({ errors: [{ email: 'already taken' }] });
+			});
+	});
 }
 
-
-
-
 module.exports = {
-  registerUser,
+	registerUser,
 };
-
 
 // d(0, (err, res) => {
 //   console.log(err.message);
@@ -66,8 +66,6 @@ module.exports = {
 // },
 // { timestamps: true },
 // )
-
-
 
 // function d(x, done) {
 //   if (x == 0) {

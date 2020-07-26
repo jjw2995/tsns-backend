@@ -5,5 +5,5 @@ const authService = require('./auth');
 // const  = require('./')
 
 module.exports = {
-  authService,
+	authService,
 };
