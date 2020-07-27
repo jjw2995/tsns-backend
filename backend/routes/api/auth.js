@@ -5,8 +5,8 @@ const {
 	validateEmail,
 	validateNick,
 	validatePass,
-	bodyNotEmpty,
-} = require('../../validations');
+	validate,
+} = require('../../utils/validations');
 
 router.get('/', authController.getRegister);
 
@@ -17,22 +17,12 @@ router.get('/', authController.getRegister);
 //   password:String
 // }
 
-// router.post(
-// 	'/register',
-// 	bodyNotEmpty,
-// 	[validateEmail, validateNick, validatePass],
-// 	authController.postRegister
-// );
-
-router.post('/register', (req, res) => {
-	try {
-		// console.log('\n \n', res);
-		console.log('\n \n', req);
-		// console.log('\n \n', req.body);
-	} catch (e) {
-		console.log('err');
-	}
-});
+router.post(
+	'/register',
+	[validateEmail, validateNick, validatePass],
+	validate,
+	authController.postRegister
+);
 
 // call service layer
 

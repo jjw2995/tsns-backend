@@ -1,26 +1,52 @@
 const mongoose = require('mongoose');
+const filterObjPropsBy = require('../utils/sanatizor');
 // const uniqueValidator = require('mongoose-unique-validator');
 
-const userSchema = new mongoose.Schema(
-  {
-    nickname: { type: String, required: [true, 'cannot be blank'], trim: true },
-    birthday: Date,
-    email: {
-      type: String,
-      required: [true, 'email cannot be blank'],
-      unique: [true, 'email must be unique'],
-      trim: true,
-    },
-    password: {
-      type: String,
-    },
-    salt: { type: String, required: true },
-  },
-  { timestamps: true }
+const UserSchema = new mongoose.Schema(
+	{
+		nickname: { type: String, required: [true, 'cannot be blank'], trim: true },
+		birthday: Date,
+		email: {
+			type: String,
+			required: [true, 'email cannot be blank'],
+			unique: [true, 'email must be unique'],
+			trim: true,
+		},
+		password: {
+			type: String,
+		},
+		salt: { type: String, required: true, get: (e) => {} },
+		REFRESH_TOKEN: { type: String },
+	},
+	{ timestamps: true }
 );
 
+UserSchema.set('toJSON', {
+	transform: function (doc, ret, options) {
+		delete ret.password;
+		delete ret.salt;
+		delete ret.REFRESH_TOKEN;
+		return ret;
+	},
+});
+
+UserSchema.methods.toFilteredJSON = function (filters = []) {
+	var json = {};
+	filters.map((filter) => {
+		json[filter] = this[filter];
+	});
+	return json;
+};
+
+// {
+//   nickname:String,
+//   id:String
+//   ACCESS_TOKEN:
+//   REFRESH_TOKEN:
+// }
+
 // userSchema.plugin(uniqueValidator);
-module.exports = mongoose.model('User', userSchema);
+module.exports = mongoose.model('User', UserSchema);
 
 // //////////////////////////////////////////////////////////////////
 // // make sure every value is equal to "something"

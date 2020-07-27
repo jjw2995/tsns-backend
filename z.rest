@@ -1,13 +1,30 @@
+
+post http://localhost:5000/api/auth/register
+###
+
 post http://localhost:5000/api/auth/register
 content-type: application/json
 
 {
-    "name": "sample",
-    "time": "Wed, 21 Oct 2015 18:27:50 GMT"
+    "nickname": "asfqw",
+    "email":"example@qwerty.com",
+    "password":"dD1@dasdf",
+    "_id": "1"
 }
 ###
 
 post http://localhost:5000/api/auth/register
+content-type: application/json
+
+{
+    "nickname": "asfqw",
+    "email":"example@qwerty.com",
+    "password":"dD1@dasdf"
+}
+###
+
+# reset users db
+get http://localhost:5000/api/auth/
 
 ###
 

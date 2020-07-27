@@ -1,4 +1,4 @@
-const { body } = require('express-validator');
+const { body, validationResult } = require('express-validator');
 
 let emailMsg = { email: 'must be valid email addr' };
 let passMsg = {
@@ -14,31 +14,38 @@ let emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@
 let passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/;
 
 const validateNick = body('nickname', nickMsg).matches(nickRegex);
-const validateEmail = body('email', emailMsg).matches(emailRegex);
+const validateEmail = body('email', emailMsg)
+	.matches(emailRegex)
+	.normalizeEmail();
 const validatePass = body('password', passMsg).matches(passRegex);
 
-const bodyNotEmpty = function (req, res, next) {
-	console.log('in bodyNotEmpty');
-	if (!req || !req.body) {
-		// console.log('Object missing');
-		let err = new Error(
-			JSON.toString({
-				error: 'got no input',
-				// errors: [emailMsg, passMsg, nickMsg],
-			})
-		);
-		return;
-		next(err);
-	} else {
-		next();
+const validate = (req, res, next) => {
+	const errors = validationResult(req);
+	if (errors.isEmpty()) {
+		return next();
 	}
+	const extractedErrors = [];
+
+	// why does map work while forLoop shows undefined for err.msg?
+	errors.array().map((err) => {
+		console.log(err.msg);
+		extractedErrors.push({ [err.param]: err.msg });
+	});
+
+	return res.status(422).json({
+		errors: extractedErrors,
+	});
 };
+
+// const filterObjKeyValPair = (obj, keys) => {
+// 	return keys.reduce((acc,key)=>{})
+// }
 
 module.exports = {
 	validateNick,
 	validateEmail,
 	validatePass,
-	bodyNotEmpty,
+	validate,
 };
 // [
 //   body('userName', 'userName doesn\'t exists').exists(),

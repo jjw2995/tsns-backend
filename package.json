@@ -5,7 +5,7 @@
 	"main": "app.js",
 	"scripts": {
 		"test": "",
-		"dev": "kill-port --port 5000 && nodemon -L ./backend/app"
+		"dev": "kill-port --port 5000 && nodemon ./backend/app"
 	},
 	"author": "",
 	"license": "MIT",
