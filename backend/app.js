@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const app = express();
@@ -17,9 +18,10 @@ app.use('/api', require('./routes/api'));
 // 	return;
 // });
 
-const server = app.listen(PORT, () =>
-	console.log(`\n BACKEND ON PORT - http://localhost:${PORT}`)
-);
+const server = app.listen(PORT, () => {
+	console.log(`\n BACKEND ON PORT - http://localhost:${PORT}`);
+	// console.log(process.env.ACCESS_TOKEN_SECRET);
+});
 
 let dbp = 'mongodb://localhost:27017';
 mongoose.connect(

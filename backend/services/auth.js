@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const User = require('mongoose').model('User');
 const { filterObjPropsBy } = require('../utils/sanatizor');
+const jwt = require('jsonwebtoken');
 
 {
 	/*
@@ -22,24 +23,37 @@ const { filterObjPropsBy } = require('../utils/sanatizor');
 	// }
 }
 
-function genSaltHasPassword(user) {
+function registerUser(user) {
 	user.salt = bcrypt.genSaltSync(10);
 	user.password = bcrypt.hashSync(user.password, user.salt);
-}
 
-function registerUser(user) {
-	const keys = ['nickname', 'password', 'email', 'salt'];
-	genSaltHasPassword(user);
-	let a = new User();
+	// create and attach REFRESH_TOKEN to user
+	user.refreshToken = jwt.sign(user.nickname, process.env.REFRESH_TOKEN_SECRET);
+	console.log(user.refreshToken);
+
+	const filterKeys = ['nickname', 'password', 'email', 'salt', 'refreshToken'];
 
 	return new Promise((resolve, reject) => {
-		User.create(filterObjPropsBy(user, keys))
+		User.create(filterObjPropsBy(user, filterKeys))
 			.then((dbUserDoc) => {
-				// console.log('\n', dbUserDoc, '\n');
-				// return done(null, {_id: dbUserDoc._id, ACCESS_TOKEN: , REFRESH_TOKEN: , });
+				// attach accessToken here
+
 				// return done(null, {_id: dbUserDoc._id, ACCESS_TOKEN: , REFRESH_TOKEN: , });
 				console.log(dbUserDoc);
-				resolve(dbUserDoc.toFilteredJSON(['nickname', 'email']));
+				console.log(user.refreshToken);
+				let nUser = dbUserDoc.toFilteredJSON([
+					'_id',
+					'nickname',
+					'email',
+					'refreshToken',
+				]);
+
+				nUser.accessToken = jwt.sign(
+					user.nickname,
+					process.env.ACCESS_TOKEN_SECRET
+				);
+
+				resolve(nUser);
 			})
 			.catch((e) => {
 				// e.

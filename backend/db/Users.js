@@ -16,7 +16,7 @@ const UserSchema = new mongoose.Schema(
 			type: String,
 		},
 		salt: { type: String, required: true, get: (e) => {} },
-		REFRESH_TOKEN: { type: String },
+		refreshToken: { type: String },
 	},
 	{ timestamps: true }
 );
