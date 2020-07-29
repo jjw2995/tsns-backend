@@ -1,4 +1,4 @@
-const authService = require('./auth');
+const authService = require('./auth-service');
 // const  = require('./')
 // const  = require('./')
 // const  = require('./')

@@ -1,6 +1,13 @@
-
 post http://localhost:5000/api/auth/register
+content-type: application/json
+
+{
+    "nickname": "asfqw",
+    "email":"example@qwerty.com",
+    "password":"dD1@dasdf"
+}
 ###
+
 
 post http://localhost:5000/api/auth/register
 content-type: application/json
@@ -13,27 +20,12 @@ content-type: application/json
 }
 ###
 
-post http://localhost:5000/api/auth/register
-content-type: application/json
-
-{
-    "nickname": "asfqw",
-    "email":"example@qwerty.com",
-    "password":"dD1@dasdf"
-}
-###
-
 # reset users db
-get http://localhost:5000/api/auth/
-
+get http://localhost:5000/api/auth/reset
 ###
 
-
-get http://localhost:5000/
-###
-
-get http://localhost:5000/api/auth/
-###
-
-get http://localhost:5000/api/auth/
+# check middleware
+get http://localhost:5000/api/auth
+content-type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.YXNmcXc.EXRL8FFr7w3S6MZBVHBDWWZFF3QxjnU1wMsGjZF3Lao
 ###

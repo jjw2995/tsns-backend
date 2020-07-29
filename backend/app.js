@@ -17,15 +17,31 @@ app.use('/api', require('./routes/api'));
 // 	res.status(400).json(error);
 // 	return;
 // });
-
-const server = app.listen(PORT, () => {
-	console.log(`\n BACKEND ON PORT - http://localhost:${PORT}`);
-	// console.log(process.env.ACCESS_TOKEN_SECRET);
-});
+app.listen();
 
 let dbp = 'mongodb://localhost:27017';
-mongoose.connect(
-	dbp,
-	{ useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true },
-	() => console.log(` mongoDB connected on - ${dbp}`)
-);
+let p1 = new Promise((resolve, reject) => {
+	mongoose.connect(
+		dbp,
+		{ useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true },
+		(e) => {
+			if (e) reject();
+			console.log(` mongoDB connected on - ${dbp}`);
+			resolve();
+		}
+	);
+});
+
+let p2 = new Promise((resolve, reject) => {
+	app.listen(PORT, () => {
+		console.log(`\n BACKEND ON PORT - http://localhost:${PORT}`);
+		resolve();
+		// console.log(process.env.ACCESS_TOKEN_SECRET);
+	});
+});
+
+Promise.all([p1, p2])
+	.then(console.log('\n app and db running...'))
+	.catch((e) => console.log(e));
+
+module.exports = app;

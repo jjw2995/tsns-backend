@@ -4,6 +4,8 @@
 // // //   else return done(null, x / y);
 // // // }
 
+const { Promise } = require('mongoose');
+
 // // // div(6, 3, function (err, result) {
 // // //   // *always* check for err
 // // //   if (err) console.log('error', err.message, err.stack);
@@ -57,6 +59,36 @@
 
 // // console.log('\n', 'asd', '\n');
 
-if (typeof ea.sd === undefined) {
-	console.log('in undef');
-}
+// if (typeof ea.sd === undefined) {
+// 	console.log('in undef');
+// }
+
+// class authService {
+// 	// constructor() {}
+// 	register(u) {
+// 		console.log(u);
+// 	}
+// }
+
+// let authServ = new authService();
+
+// authServ.register('test');
+process.env.NODE_ENV = 'test';
+// console.log(process.env.NODE_ENV);
+
+// asd.authService.info;
+// console.log(new Promise());
+const a = () => {
+	return new Promise((resolve, reject) => {
+		if (0) resolve(console.log('resolve'));
+		else reject(console.log('reject'));
+	});
+};
+a()
+	.catch(() => {
+		console.log('catched');
+		return;
+	})
+	.then(() => {
+		console.log('then');
+	});

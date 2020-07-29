@@ -23,10 +23,12 @@ const UserSchema = new mongoose.Schema(
 
 UserSchema.set('toJSON', {
 	transform: function (doc, ret, options) {
-		delete ret.password;
-		delete ret.salt;
-		delete ret.REFRESH_TOKEN;
-		return ret;
+		// delete ret.password;
+		// delete ret.salt;
+		// delete ret.refreshToken;
+		// delete ret.email;
+
+		return ret.nickname, ret._id;
 	},
 });
 

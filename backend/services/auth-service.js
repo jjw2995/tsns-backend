@@ -23,43 +23,44 @@ const jwt = require('jsonwebtoken');
 	// }
 }
 
+const submitFilter = ['nickname', 'password', 'email', 'salt', 'refreshToken'];
+
+const returnFilter = ['_id', 'nickname'];
+
 function registerUser(user) {
 	user.salt = bcrypt.genSaltSync(10);
 	user.password = bcrypt.hashSync(user.password, user.salt);
 
 	// create and attach REFRESH_TOKEN to user
-	user.refreshToken = jwt.sign(user.nickname, process.env.REFRESH_TOKEN_SECRET);
-	console.log(user.refreshToken);
 
-	const filterKeys = ['nickname', 'password', 'email', 'salt', 'refreshToken'];
+	user.refreshToken = genRefreshToken(user);
+	console.log(jwt.decode(user.refreshToken));
 
 	return new Promise((resolve, reject) => {
-		User.create(filterObjPropsBy(user, filterKeys))
+		User.create(filterObjPropsBy(user, submitFilter))
 			.then((dbUserDoc) => {
-				// attach accessToken here
-
-				// return done(null, {_id: dbUserDoc._id, ACCESS_TOKEN: , REFRESH_TOKEN: , });
 				console.log(dbUserDoc);
-				console.log(user.refreshToken);
-				let nUser = dbUserDoc.toFilteredJSON([
-					'_id',
-					'nickname',
-					'email',
-					'refreshToken',
-				]);
-
-				nUser.accessToken = jwt.sign(
-					user.nickname,
-					process.env.ACCESS_TOKEN_SECRET
-				);
+				let nUser = dbUserDoc.toFilteredJSON(returnFilter);
+				// console.log(nUser);
+				nUser.accessToken = genAccessToken(nUser);
+				console.log(jwt.decode(nUser.accessToken));
 
 				resolve(nUser);
 			})
 			.catch((e) => {
-				// e.
 				reject(e);
 			});
 	});
+}
+
+function logIn() {}
+
+function genAccessToken(user) {
+	return jwt.sign(toString(user._id), process.env.ACCESS_TOKEN_SECRET);
+}
+
+function genRefreshToken(user) {
+	return jwt.sign(user.email, process.env.REFRESH_TOKEN_SECRET);
 }
 
 module.exports = {

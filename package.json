@@ -2,9 +2,9 @@
 	"name": "tsns",
 	"version": "1.0.0",
 	"description": "tiny sns",
-	"main": "app.js",
+	"main": "app.ts",
 	"scripts": {
-		"test": "",
+		"test": "kill-port --port 5000 && mocha ./backend/test --recursive --exit",
 		"dev": "kill-port --port 5000 && nodemon ./backend/app"
 	},
 	"author": "",
@@ -18,7 +18,10 @@
 		"mongoose": "^5.9.25"
 	},
 	"devDependencies": {
+		"chai": "^4.2.0",
+		"chai-http": "^4.3.0",
 		"kill-port": "^1.6.1",
+		"mocha": "^8.0.1",
 		"nodemon": "^2.0.4"
 	}
 }

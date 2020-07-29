@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { authController } = require('../../controllers/index');
+const { verifyAccessToken } = require('../../middlewares');
 const {
 	validateEmail,
 	validateNick,
@@ -8,7 +9,8 @@ const {
 	validate,
 } = require('../../utils/validations');
 
-router.get('/', authController.getRegister);
+// TESTING ONLY
+router.get('/reset', authController.getRegister);
 
 //  input
 // {
@@ -27,9 +29,16 @@ router.post(
 // call service layer
 
 // ###############################
+// router.get('/', verifyAccessToken, (req, res) => {
+// 	console.log('authed user inside');
+// 	res.status(400).json();
+// });
+
 router.get('/', (req, res) => {
-	res.status(400).json();
+	console.log('inside GET api/auth');
+	res.status(200).send('in GET api/auth');
 });
+
 // ###############################
 
 module.exports = router;
