@@ -8,8 +8,21 @@ const postRegister = (req, res) => {
 		.registerUser(req.body)
 		.then((newUser) => res.status(200).json(newUser))
 		.catch((e) => {
-			console.log(e);
+			// console.log(e);
 			res.status(400).json(e.message);
+		});
+};
+
+const postLogin = (req, res) => {
+	authService
+		.loginUser(req.body)
+		.then((user) => {
+			console.log('.then res');
+			res.status(200).json(user);
+		})
+		.catch((e) => {
+			console.log('.catch res');
+			res.status(400).json(e);
 		});
 };
 
@@ -27,5 +40,6 @@ const getRegister = (req, res) => {
 
 module.exports = {
 	postRegister,
+	postLogin,
 	getRegister,
 };

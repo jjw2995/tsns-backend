@@ -78,17 +78,29 @@ process.env.NODE_ENV = 'test';
 
 // asd.authService.info;
 // console.log(new Promise());
-const a = () => {
-	return new Promise((resolve, reject) => {
-		if (0) resolve(console.log('resolve'));
-		else reject(console.log('reject'));
-	});
-};
-a()
-	.catch(() => {
-		console.log('catched');
-		return;
-	})
-	.then(() => {
-		console.log('then');
-	});
+
+// const a = () => {
+// 	return new Promise((resolve, reject) => {
+// 		if (0) resolve(console.log('resolve'));
+// 		else reject(console.log('reject'));
+// 	});
+// };
+// a()
+// 	.catch(() => {
+// 		console.log('catched');
+// 		return;
+// 	})
+// 	.then(() => {
+// 		console.log('then');
+// 	});
+
+let a = ['as', 'fw'];
+
+function fu(params) {
+	return params + '+';
+}
+
+let b = a.map((val) => {
+	return fu(val);
+});
+console.log(b);

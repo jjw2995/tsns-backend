@@ -4,7 +4,7 @@ content-type: application/json
 {
     "nickname": "asfqw",
     "email":"example@qwerty.com",
-    "password":"dD1@dasdf"
+    "password":"df"
 }
 ###
 
@@ -22,6 +22,37 @@ content-type: application/json
 
 # reset users db
 get http://localhost:5000/api/auth/reset
+###
+
+
+post http://localhost:5000/api/auth/login
+content-type: application/json
+
+{
+    "email":"example@qwerty.com",
+    "password":"dD1@dasdf",
+    "asf":1
+}
+###
+
+post http://localhost:5000/api/auth/login
+content-type: application/json
+
+{
+    "emil":"example@qwerty.com",
+    "pasword":"dD1@dasdf",
+    "asf":1
+}
+###
+
+
+
+post http://localhost:5000/api/auth/register
+content-type: application/json
+
+{
+    "nickname": "asfqw"
+}
 ###
 
 # check middleware

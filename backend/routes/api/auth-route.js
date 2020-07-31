@@ -7,6 +7,7 @@ const {
 	validateNick,
 	validatePass,
 	validate,
+	fieldsExist,
 } = require('../../utils/validations');
 
 // TESTING ONLY
@@ -24,6 +25,13 @@ router.post(
 	[validateEmail, validateNick, validatePass],
 	validate,
 	authController.postRegister
+);
+
+router.post(
+	'/login',
+	fieldsExist(['email', 'password']),
+	validate,
+	authController.postLogin
 );
 
 // call service layer

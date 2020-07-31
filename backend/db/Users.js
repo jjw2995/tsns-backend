@@ -1,8 +1,9 @@
 const mongoose = require('mongoose');
-const filterObjPropsBy = require('../utils/sanatizor');
-// const uniqueValidator = require('mongoose-unique-validator');
+// const filterObjPropsBy = require('../utils/sanatizor');
+const uniqueValidator = require('mongoose-unique-validator');
+// const bcrypt = require('bcryptjs');
 
-const UserSchema = new mongoose.Schema(
+let userSchema = new mongoose.Schema(
 	{
 		nickname: { type: String, required: [true, 'cannot be blank'], trim: true },
 		birthday: Date,
@@ -11,28 +12,52 @@ const UserSchema = new mongoose.Schema(
 			required: [true, 'email cannot be blank'],
 			unique: [true, 'email must be unique'],
 			trim: true,
+			index: true,
 		},
 		password: {
 			type: String,
+			required: true,
 		},
-		salt: { type: String, required: true, get: (e) => {} },
+		salt: { type: String, required: true },
 		refreshToken: { type: String },
 	},
 	{ timestamps: true }
 );
 
-UserSchema.set('toJSON', {
-	transform: function (doc, ret, options) {
-		// delete ret.password;
-		// delete ret.salt;
-		// delete ret.refreshToken;
-		// delete ret.email;
+userSchema.plugin(uniqueValidator, { type: 'mongoose-unique-validator' });
+// userSchema.plugin(uniqueValidator);
 
-		return ret.nickname, ret._id;
+// userSchema.pre('save', function (next) {
+// 	this.salt = new String(bcrypt.genSaltSync(10));
+// 	this.password = bcrypt.hashSync(this.password, this.salt);
+// 	next();
+// });
+
+userSchema.set('toJSON', {
+	transform: function (doc, ret, options) {
+		delete ret.password;
+		delete ret.salt;
+		delete ret.email;
+		delete ret.createdAt;
+		delete ret.updatedAt;
+		delete ret.__v;
+		// return filterObjPropsBy(ret, ['_id', 'nickname', 'refreshToken']);
+		// console.log(ret.keyValue('_id'));
+		// ret.keyValue('')
+		return ret;
 	},
 });
 
-UserSchema.methods.toFilteredJSON = function (filters = []) {
+// userSchema.methods.verifyPassword = (pass) => {
+// 	// return function (pass) {
+// 	console.log(this);
+// 	console.log(this.password);
+// 	console.log(pass);
+// 	// return bcrypt.compareSync(pass, this.password);
+// 	// };
+// };
+
+userSchema.methods.toFilteredJSON = function (filters = []) {
 	var json = {};
 	filters.map((filter) => {
 		json[filter] = this[filter];
@@ -40,15 +65,18 @@ UserSchema.methods.toFilteredJSON = function (filters = []) {
 	return json;
 };
 
-// {
-//   nickname:String,
-//   id:String
-//   ACCESS_TOKEN:
-//   REFRESH_TOKEN:
-// }
+userSchema.post('save', function (error, doc, next) {
+	// console.log(error);
+	if (error.name === 'MongoError' && error.code === 11000) {
+		// console.log(Object.keys(error.keyValue));
+		next(new Error('There was a duplicate key error'));
+	} else {
+		// console.log('\n in post save \n');
+		next();
+	}
+});
 
-// userSchema.plugin(uniqueValidator);
-module.exports = mongoose.model('User', UserSchema);
+module.exports = mongoose.model('User', userSchema);
 
 // //////////////////////////////////////////////////////////////////
 // // make sure every value is equal to "something"
