@@ -1,17 +1,11 @@
 const chai = require('chai');
-// const chaiHttp = require('chai-http');
 const app = require('../app');
-const { assert, should } = require('chai');
-const { json } = require('express');
+const { assert } = require('chai');
 const User = require('mongoose').model('User');
 
 chai.use(require('chai-http'));
 
-// assertion style
 const expect = chai.expect;
-chai.should();
-
-// let server = chai.request(app);
 
 let userProps = ['_id', 'nickname', 'accessToken', 'refreshToken'];
 
@@ -66,16 +60,11 @@ let loginInvalMissingPass = {
 	email: 'example@qwerty.com',
 };
 
-// function resetDB(done) {
-// 	User.deleteMany({}, () => {
-// 		done();
-// 	});
-// }
-
 let server;
 
 before(async () => {
 	server = await chai.request(app).keepOpen();
+	// await new Promise((r) => setTimeout(r, 200));
 });
 
 after(() => {
@@ -89,7 +78,7 @@ describe('/api/auth', () => {
 				done();
 			});
 		});
-		it('should register user - has all required input, no miscellaneous fields', (done) => {
+		it('register user - has all required input, no miscellaneous fields', (done) => {
 			server
 				.post('/api/auth/register')
 				.send(validUser)
@@ -102,7 +91,7 @@ describe('/api/auth', () => {
 				});
 		});
 
-		it('should register user - has all required input, YES miscellaneous fields', (done) => {
+		it('register user - has all required input, YES miscellaneous fields', (done) => {
 			server
 				.post('/api/auth/register')
 				.send(validUser1)
@@ -114,7 +103,7 @@ describe('/api/auth', () => {
 				});
 		});
 
-		it('should NOT register user - missing required input', (done) => {
+		it('NOT register user - missing required input', (done) => {
 			server
 				.post('/api/auth/register')
 				.send(invalidUser)
@@ -130,7 +119,7 @@ describe('/api/auth', () => {
 				});
 		});
 
-		it('should NOT register user - repeated/email already taken', (done) => {
+		it('NOT register user - repeated/email already taken', (done) => {
 			server
 				.post('/api/auth/register')
 				.send(validUser)
@@ -162,7 +151,7 @@ describe('/api/auth', () => {
 	});
 
 	describe('POST /login', () => {
-		it('should login user - has email & password, matching password', (done) => {
+		it('login user - has email & password, matching password', (done) => {
 			server
 				.post('/api/auth/login')
 				.send(loginVal)
@@ -174,7 +163,7 @@ describe('/api/auth', () => {
 				});
 		});
 
-		it('should NOT login user - has email & password, WRONG password', (done) => {
+		it('NOT login user - has email & password, WRONG password', (done) => {
 			server
 				.post('/api/auth/login')
 				.send(loginInvalWrongPass)
@@ -185,7 +174,7 @@ describe('/api/auth', () => {
 				});
 		});
 
-		it('should NOT login user - WRONG FIELD eail & password', (done) => {
+		it('NOT login user - WRONG FIELD eail & password', (done) => {
 			server
 				.post('/api/auth/login')
 				.send(loginInvalWrongFieldName1)
@@ -202,7 +191,7 @@ describe('/api/auth', () => {
 					done();
 				});
 		});
-		it('should NOT login user - MISSING FIELD email & password', (done) => {
+		it('NOT login user - MISSING FIELD email & password', (done) => {
 			server
 				.post('/api/auth/login')
 				.send(loginInvalMissingEmail)
@@ -222,10 +211,9 @@ describe('/api/auth', () => {
 	});
 
 	describe('POST /logout', () => {
-		let refreshTokenPayload;
+		let refreshTokenPayload = {};
 
 		beforeEach((done) => {
-			refreshTokenPayload = {};
 			User.deleteMany({}, () => {
 				server
 					.post('/api/auth/register')
@@ -237,7 +225,7 @@ describe('/api/auth', () => {
 			});
 		});
 
-		it('should logout user - has valid refresh token', (done) => {
+		it('logout user - has valid refresh token', (done) => {
 			server
 				.post('/api/auth/logout')
 				.send(refreshTokenPayload)
@@ -247,7 +235,7 @@ describe('/api/auth', () => {
 					done();
 				});
 		});
-		it('should logout user - has valid refresh token + miscellaneous fields', (done) => {
+		it('logout user - has valid refresh token + miscellaneous fields', (done) => {
 			refreshTokenPayload.some = 'some stuff';
 			server
 				.post('/api/auth/logout')
@@ -258,7 +246,7 @@ describe('/api/auth', () => {
 					done();
 				});
 		});
-		it('should NOT logout user - has invalid refresh token', (done) => {
+		it('NOT logout user - has invalid refresh token', (done) => {
 			refreshTokenPayload.refreshToken = 'wrongvalue';
 			server
 				.post('/api/auth/logout')
@@ -269,7 +257,7 @@ describe('/api/auth', () => {
 					done();
 				});
 		});
-		it('should NOT logout user - has invalid token field name', (done) => {
+		it('NOT logout user - has invalid token field name', (done) => {
 			delete refreshTokenPayload.refreshToken;
 			refreshTokenPayload.refeshToken = 'wrongvalue';
 			server
@@ -283,29 +271,100 @@ describe('/api/auth', () => {
 		});
 	});
 
-	describe('POST', () => {
-		it('', () => {});
-	});
+	describe('POST /token', () => {
+		let refreshTokenPayload = {};
+		beforeEach((done) => {
+			// refreshTokenPayload = {};
+			User.deleteMany({}, () => {
+				server
+					.post('/api/auth/register')
+					.send(validUser)
+					.end((err, res) => {
+						refreshTokenPayload.refreshToken = res.body.refreshToken;
+						done();
+					});
+			});
+		});
 
-	// it('should login user - has email & password, matching password', (done) => {
-	// 	server
-	// 		.post('/api/auth/login')
-	// 		.send(loginVal)
-	// 		.end((err, res) => {
-	// 			expect(err).to.be.null;
-	// 			expect(res).to.have.status(200);
-	// 			expect(res.body).to.have.keys(userProps);
-	// 			done();
-	// 		});
-	// });
-	// it('should NOT login user - has email & password, WRONG password', (done) => {
-	// 	server
-	// 		.post('/api/auth/login')
-	// 		.send(loginInvalWrongPass)
-	// 		.end((err, res) => {
-	// 			expect(err).to.be.null;
-	// 			expect(res).to.have.status(400);
-	// 			done();
-	// 		});
-	// });
+		it('get new access token - valid refreshToken', (done) => {
+			server
+				.post('/api/auth/token')
+				.send(refreshTokenPayload)
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res).to.have.status(200);
+					expect(res.body).to.have.key('accessToken');
+					done();
+				});
+		});
+
+		it('get new access token - valid refreshToken + extra field', (done) => {
+			refreshTokenPayload.some = 'somethig else';
+			server
+				.post('/api/auth/token')
+				.send(refreshTokenPayload)
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res).to.have.status(200);
+					expect(res.body).to.have.key('accessToken');
+					done();
+				});
+		});
+
+		it('NOT get new access token - invalid refreshToken', (done) => {
+			refreshTokenPayload.refreshToken = 'somethigelse';
+			server
+				.post('/api/auth/token')
+				.send(refreshTokenPayload)
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res).to.have.status(403);
+					done();
+				});
+		});
+
+		it('NOT get new access token - missing refreshToken', (done) => {
+			refreshTokenPayload = {};
+			server
+				.post('/api/auth/token')
+				.send(refreshTokenPayload)
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res).to.have.status(400);
+					done();
+				});
+		});
+
+		it("NOT get new access token - Wrong Field name 'refshToken'", (done) => {
+			let wrongField = {};
+			wrongField.refshToken = refreshTokenPayload.refreshToken;
+			server
+				.post('/api/auth/token')
+				.send(wrongField)
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res).to.have.status(400);
+					done();
+				});
+		});
+
+		it('NOT get new access token - already logged out user', (done) => {
+			server
+				.post('/api/auth/logout')
+				.send(refreshTokenPayload)
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res).to.have.status(200);
+
+					server
+						.post('/api/auth/token')
+						.send(refreshTokenPayload)
+						.end((err, res) => {
+							expect(err).to.be.null;
+							expect(res).to.have.status(400);
+							done();
+						});
+				});
+		});
+	});
 });

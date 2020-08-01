@@ -1,4 +1,5 @@
-const authController = require('./auth-controller');
+const authController = require('./controller-auth');
+const relationsController = require('./controller-relations');
 // const  = require('./')
 // const  = require('./')
 // const  = require('./')
@@ -6,4 +7,5 @@ const authController = require('./auth-controller');
 
 module.exports = {
 	authController,
+	relationsController,
 };

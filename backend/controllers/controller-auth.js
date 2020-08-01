@@ -32,9 +32,13 @@ const postLogout = (req, res) => {
 };
 
 const postToken = (req, res) => {
+	// console.log(req.user);
 	authService
 		.newAccTokenUser(req.user)
-		.then((token) => res.status(200).json(token))
+		.then((token) => {
+			// console.log('\n', token, '\n');
+			res.status(200).json(token);
+		})
 		.catch((e) => res.status(400).json(e));
 };
 

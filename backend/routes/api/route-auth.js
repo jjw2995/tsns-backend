@@ -10,16 +10,12 @@ const {
 	fieldsExist,
 } = require('../../utils/validations');
 
-// TESTING ONLY
-router.get('/reset', authController.getRegister);
-
 //  input
 // {
 //   nickname:String,
 //   email:String,
 //   password:String
 // }
-
 router.post(
 	'/register',
 	[validateEmail, validateNick, validatePass],
@@ -46,11 +42,16 @@ router.post('/token', verifyRefreshToken, authController.postToken);
 // 	res.status(400).json();
 // });
 
+// TESTING ONLY
+// ###############################
+// ###############################
 router.get('/', (req, res) => {
 	console.log('inside GET api/auth');
 	res.status(200).send('in GET api/auth');
 });
 
+router.get('/reset', authController.getRegister);
+// ###############################
 // ###############################
 
 module.exports = router;

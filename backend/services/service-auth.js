@@ -69,40 +69,18 @@ function logoutUser(user) {
 function newAccTokenUser(user) {
 	return new Promise((resolve, reject) => {
 		User.findById(user._id).then((doc) => {
-			console.log(doc.toJSON());
 			let doctok = doc.refreshToken;
+			// console.log(!doctok);
+			// console.log(doctok != user.refreshToken);
 			if (!doctok || doctok != user.refreshToken) {
 				reject(
-					'not a valid refreshToken OR a logged out user, try login again'
+					'not a valid refreshToken OR a logged out user, try logging in again'
 				);
 			} else {
 				resolve({ accessToken: genAccessToken(doc.toJSON()) });
 			}
 		});
 	});
-	// User.findById(user._id).then((doc) => {
-	// 	return new Promise((resolve, reject) => {
-	// 		console.log(doc);
-	// 		let doctok = doc.refreshToken;
-	// 		if (!doctok || doctok != user.refreshToken) {
-	// 			reject(
-	// 				'not a valid refreshToken OR a logged out user, try login again'
-	// 			);
-	// 		} else {
-	// 			genAccessToken();
-	// 			resolve();
-	// 		}
-	// 	});
-
-	// return new Promise((resolve, reject) => {
-	// 	User.findByIdAndUpdate(user._id, { refreshToken: undefined }, { new: true })
-	// 		.then((res) => {
-	// 			resolve('logged out');
-	// 		})
-	// 		.catch((e) => {
-	// 			reject(e);
-	// 		});
-	// });
 }
 
 function attachAccRefTokenGivenUser(userJson) {

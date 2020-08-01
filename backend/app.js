@@ -31,7 +31,7 @@ let p1 = new Promise((resolve, reject) => {
 		},
 		(e) => {
 			if (e) reject();
-			console.log(` mongoDB connected on - ${dbp}`);
+			// console.log(` mongoDB connected on - ${dbp}`);
 			resolve();
 		}
 	);
@@ -39,7 +39,7 @@ let p1 = new Promise((resolve, reject) => {
 
 let p2 = new Promise((resolve, reject) => {
 	app.listen(PORT, () => {
-		console.log(`\n BACKEND ON PORT - http://localhost:${PORT}`);
+		// console.log(`\n BACKEND ON PORT - http://localhost:${PORT}`);
 		resolve();
 		// console.log(process.env.ACCESS_TOKEN_SECRET);
 	});
