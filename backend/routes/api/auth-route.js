@@ -36,6 +36,8 @@ router.post(
 
 router.post('/logout', verifyRefreshToken, authController.postLogout);
 
+router.post('/token', verifyRefreshToken, authController.postToken);
+
 // call service layer
 
 // ###############################

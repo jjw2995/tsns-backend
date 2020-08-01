@@ -41,6 +41,7 @@ userSchema.set('toJSON', {
 		delete ret.createdAt;
 		delete ret.updatedAt;
 		delete ret.__v;
+		delete ret.refreshToken;
 		// return filterObjPropsBy(ret, ['_id', 'nickname', 'refreshToken']);
 		// console.log(ret.keyValue('_id'));
 		// ret.keyValue('')

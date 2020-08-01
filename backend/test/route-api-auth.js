@@ -283,6 +283,10 @@ describe('/api/auth', () => {
 		});
 	});
 
+	describe('POST', () => {
+		it('', () => {});
+	});
+
 	// it('should login user - has email & password, matching password', (done) => {
 	// 	server
 	// 		.post('/api/auth/login')

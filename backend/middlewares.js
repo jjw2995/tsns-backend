@@ -23,7 +23,10 @@ const verifyRefreshToken = function (req, res, next) {
 		// console.log('\n', 'in verifyRefreshToken');
 		// console.log('\n', user);
 		if (err) return res.sendStatus(403);
+		user.refreshToken = token;
 		req.user = user;
+		// req.user.refreshToken = token;
+		// console.log(req.user);
 		next();
 	});
 };

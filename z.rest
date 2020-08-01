@@ -54,6 +54,14 @@ content-type: application/json
 }
 
 
+###
+post http://localhost:5000/api/auth/token
+content-type: application/json
+
+{"refreshToken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZjI0ZjU5M2VjOTk3MTA2YmE1N2M1OGYiLCJuaWNrbmFtZSI6ImFzZnF3IiwiaWF0IjoxNTk2MjU3NjgzLCJleHAiOjE1OTY4NjI0ODN9.WBu_btOe_-_WJIfRrE6D8QCN8i-slDIqfulA6CuFok4"
+}
+
+
 
 
 ###

@@ -31,7 +31,16 @@ const postLogout = (req, res) => {
 		.catch((e) => res.status(400).json(e));
 };
 
-//=======
+const postToken = (req, res) => {
+	authService
+		.newAccTokenUser(req.user)
+		.then((token) => res.status(200).json(token))
+		.catch((e) => res.status(400).json(e));
+};
+
+//=======================================================
+//=======================================================
+//=======================================================
 const User = require('mongoose').model('User');
 const getRegister = (req, res) => {
 	User.deleteMany({}, (err, output) => {
@@ -48,4 +57,5 @@ module.exports = {
 	postLogin,
 	getRegister,
 	postLogout,
+	postToken,
 };
