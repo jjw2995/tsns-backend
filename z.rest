@@ -39,24 +39,41 @@ post http://localhost:5000/api/auth/login
 content-type: application/json
 
 {
-    "emil":"example@qwerty.com",
-    "pasword":"dD1@dasdf",
+    "email":"example@qwerty.com",
+    "passord":"",
     "asf":1
 }
 ###
 
-
-
-post http://localhost:5000/api/auth/register
+# logout
+post http://localhost:5000/api/auth/logout
 content-type: application/json
 
 {
-    "nickname": "asfqw"
+"refreshToken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZjI0NjAyMDI5OTU3MjY1ODBlMzA0ZmUiLCJuaWNrbmFtZSI6ImFzZnF3IiwiaWF0IjoxNTk2MjE5NDI0LCJleHAiOjE1OTY4MjQyMjR9.AuqdH6JbQ1LuJ4AQZMVi50CXaPKTmai0mIt49tjy9cU"
+}
+
+
+
+
+###
+
+
+
+
+# new access token
+post http://localhost:5000/api/auth/token
+content-type: application/json
+
+{
+    "token": ""
 }
 ###
+
+
 
 # check middleware
 get http://localhost:5000/api/auth
 content-type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.YXNmcXc.EXRL8FFr7w3S6MZBVHBDWWZFF3QxjnU1wMsGjZF3Lao
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZjI0MzM0MTIyYjhmNTU4YTY5OWExMjIiLCJuaWNrbmFtZSI6ImFzZnF3IiwiaWF0IjoxNTk2MjA3OTM3LCJleHAiOjE1OTYyMDk3Mzd9.SBlyDCOMFagdp8babKFlqACOCNyQZ7C2-LcwvSWJ3yA
 ###

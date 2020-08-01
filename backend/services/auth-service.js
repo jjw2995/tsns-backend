@@ -6,25 +6,6 @@ const jwt = require('jsonwebtoken');
 const refreshToken = process.env.REFRESH_TOKEN_SECRET;
 const accessToken = process.env.ACCESS_TOKEN_SECRET;
 
-{
-	/*
-	 * if you need to make calls to additional tables, data stores (Redis, for example),
-	 * or call an external endpoint as part of creating the blogpost, add them to this service
-	 */
-	//  input
-	// {
-	//   nickname:String,
-	//   email:String,
-	//   password:String
-	// }
-	//  output
-	// {
-	//   nickname:String,
-	//   id:String
-	//   ACCESS_TOKEN:
-	//   REFRESH_TOKEN:
-	// }
-}
 const submitFilter = ['nickname', 'password', 'email', 'salt', 'refreshToken'];
 
 const returnFilter = ['_id', 'nickname'];
@@ -34,13 +15,11 @@ function registerUser(user) {
 	user.password = bcrypt.hashSync(user.password, user.salt);
 
 	let u = new User(filterObjPropsBy(user, submitFilter));
-	console.log('\n	HEREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE\n');
 	attachAccRefTokenGivenUser(u);
 
 	let ud = getIdNick(u);
 
 	user.refreshToken = genRefreshToken(ud);
-	// console.log(jwt.verify(user.refreshToken, process.env.REFRESH_TOKEN_SECRET));
 
 	return new Promise((resolve, reject) => {
 		u.save((err, product) => {
@@ -72,7 +51,19 @@ function loginUser(loginfo) {
 					})
 					.catch((e) => reject('error updating refreshToken'));
 			})
-			.catch((e) => console.log(e));
+			.catch((e) => reject('error in while finding user'));
+	});
+}
+
+function logoutUser(user) {
+	return new Promise((resolve, reject) => {
+		User.findByIdAndUpdate(user._id, { refreshToken: undefined }, { new: true })
+			.then((res) => {
+				resolve('logged out');
+			})
+			.catch((e) => {
+				reject(e);
+			});
 	});
 }
 
@@ -101,4 +92,5 @@ function genRefreshToken(user) {
 module.exports = {
 	registerUser,
 	loginUser,
+	logoutUser,
 };

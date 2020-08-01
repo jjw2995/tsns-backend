@@ -15,6 +15,20 @@ const verifyAccessToken = function (req, res, next) {
 	});
 };
 
+const verifyRefreshToken = function (req, res, next) {
+	let token = req.body.refreshToken;
+	if (token == null) return res.sendStatus(400);
+
+	jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+		// console.log('\n', 'in verifyRefreshToken');
+		// console.log('\n', user);
+		if (err) return res.sendStatus(403);
+		req.user = user;
+		next();
+	});
+};
+
 module.exports = {
 	verifyAccessToken,
+	verifyRefreshToken,
 };

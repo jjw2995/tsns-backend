@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { authController } = require('../../controllers/index');
-const { verifyAccessToken } = require('../../middlewares');
+const { verifyAccessToken, verifyRefreshToken } = require('../../middlewares');
 const {
 	validateEmail,
 	validateNick,
@@ -33,6 +33,8 @@ router.post(
 	validate,
 	authController.postLogin
 );
+
+router.post('/logout', verifyRefreshToken, authController.postLogout);
 
 // call service layer
 

@@ -17,13 +17,18 @@ const postLogin = (req, res) => {
 	authService
 		.loginUser(req.body)
 		.then((user) => {
-			console.log('.then res');
 			res.status(200).json(user);
 		})
 		.catch((e) => {
-			console.log('.catch res');
 			res.status(400).json(e);
 		});
+};
+
+const postLogout = (req, res) => {
+	authService
+		.logoutUser(req.user)
+		.then((user) => res.status(200).send('sucessfully logged out'))
+		.catch((e) => res.status(400).json(e));
 };
 
 //=======
@@ -42,4 +47,5 @@ module.exports = {
 	postRegister,
 	postLogin,
 	getRegister,
+	postLogout,
 };

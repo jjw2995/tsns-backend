@@ -14,7 +14,6 @@ let emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@
 let passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/;
 
 const fieldsExist = (fields) => {
-	console.log(fields);
 	let v = fields.map((field) => {
 		return fieldExists(field);
 	});
@@ -38,7 +37,6 @@ const validate = (req, res, next) => {
 	if (errors.isEmpty()) {
 		return next();
 	}
-	// console.log(errors);
 	let extractedErrors = [];
 
 	// why does map work while forLoop shows undefined for err.msg?

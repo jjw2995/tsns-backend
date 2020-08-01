@@ -23,7 +23,12 @@ let dbp = 'mongodb://localhost:27017';
 let p1 = new Promise((resolve, reject) => {
 	mongoose.connect(
 		dbp,
-		{ useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true },
+		{
+			useNewUrlParser: true,
+			useUnifiedTopology: true,
+			useCreateIndex: true,
+			useFindAndModify: false,
+		},
 		(e) => {
 			if (e) reject();
 			console.log(` mongoDB connected on - ${dbp}`);

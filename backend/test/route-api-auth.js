@@ -11,21 +11,9 @@ chai.use(require('chai-http'));
 const expect = chai.expect;
 chai.should();
 
-let server;
-
-before(async () => {
-	server = await chai.request(app).keepOpen();
-});
-
-after(() => {
-	server.close;
-});
-
-function handleErr(e) {
-	if (e) assert.fail('err');
-}
-
 // let server = chai.request(app);
+
+let userProps = ['_id', 'nickname', 'accessToken', 'refreshToken'];
 
 let validUser = {
 	nickname: 'asfqw',
@@ -44,21 +32,63 @@ let invalidUser = {
 	password: 'dD1@dasdf',
 };
 
-function resetDB(done) {
-	User.deleteMany({}, () => {
-		done();
-	});
-}
+let loginVal = {
+	email: 'example@qwerty.com',
+	password: 'dD1@dasdf',
+};
+
+let loginExtFieldVal = {
+	email: 'example@qwerty.com',
+	password: 'dD1@dasdf',
+	something: 'asf',
+};
+
+let loginInvalWrongPass = {
+	email: 'example@qwerty.com',
+	password: 'dD1@dasf',
+};
+
+let loginInvalWrongFieldName1 = {
+	email: 'example@qwerty.com',
+	passord: 'dD1@dasdf',
+};
+
+let loginInvalWrongFieldName2 = {
+	emal: 'example@qwerty.com',
+	password: 'dD1@dasdf',
+};
+
+let loginInvalMissingEmail = {
+	passord: 'dD1@dasdf',
+};
+
+let loginInvalMissingPass = {
+	email: 'example@qwerty.com',
+};
+
+// function resetDB(done) {
+// 	User.deleteMany({}, () => {
+// 		done();
+// 	});
+// }
+
+let server;
+
+before(async () => {
+	server = await chai.request(app).keepOpen();
+});
+
+after(() => {
+	server.close;
+});
+
 describe('/api/auth', () => {
 	describe('POST /register', () => {
-		//
 		beforeEach((done) => {
 			User.deleteMany({}, () => {
 				done();
 			});
-			// server;
 		});
-		// chai.request().post().
 		it('should register user - has all required input, no miscellaneous fields', (done) => {
 			server
 				.post('/api/auth/register')
@@ -66,18 +96,8 @@ describe('/api/auth', () => {
 				.end((err, res) => {
 					expect(err).to.be.null;
 					expect(res).to.have.status(200);
-					// expect(res.body).to.contain([
-					// 	'_id',
-					// 	'nickname',
-					// 	'accessToken',
-					// 	'refreshToken',
-					// ]);
-					expect(res.body).to.have.keys([
-						'_id',
-						'nickname',
-						'accessToken',
-						'refreshToken',
-					]);
+					// expect(res.body).to.contain(userProps);
+					expect(res.body).to.have.keys(userProps);
 					done();
 				});
 		});
@@ -85,16 +105,11 @@ describe('/api/auth', () => {
 		it('should register user - has all required input, YES miscellaneous fields', (done) => {
 			server
 				.post('/api/auth/register')
-				.send(validUser)
+				.send(validUser1)
 				.end((err, res) => {
 					expect(err).to.be.null;
 					expect(res).to.have.status(200);
-					expect(res.body).to.have.keys([
-						'_id',
-						'nickname',
-						'accessToken',
-						'refreshToken',
-					]);
+					expect(res.body).to.have.keys(userProps);
 					done();
 				});
 		});
@@ -115,19 +130,14 @@ describe('/api/auth', () => {
 				});
 		});
 
-		it('should NOT register user - missing required input', (done) => {
+		it('should NOT register user - repeated/email already taken', (done) => {
 			server
 				.post('/api/auth/register')
 				.send(validUser)
 				.end((err, res) => {
 					expect(err).to.be.null;
 					expect(res).to.have.status(200);
-					expect(res.body).to.have.keys([
-						'_id',
-						'nickname',
-						'accessToken',
-						'refreshToken',
-					]);
+					expect(res.body).to.have.keys(userProps);
 					next();
 					// done();
 				});
@@ -136,10 +146,8 @@ describe('/api/auth', () => {
 					.post('/api/auth/register')
 					.send(validUser)
 					.end((err, res) => {
-						// if (err) done(err);
 						expect(err).to.be.null;
 						expect(res).to.have.status(400);
-						// console.log(err);
 						// expect(res.body).to.have.property('errors');
 						done();
 					});
@@ -153,8 +161,147 @@ describe('/api/auth', () => {
 		// });
 	});
 
-	describe('POST login', () => {});
-	// it('should fail to register user - repeated input', () => {});
+	describe('POST /login', () => {
+		it('should login user - has email & password, matching password', (done) => {
+			server
+				.post('/api/auth/login')
+				.send(loginVal)
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res).to.have.status(200);
+					expect(res.body).to.have.keys(userProps);
+					done();
+				});
+		});
 
-	// it('should NOT register user - bad input', () => {});
+		it('should NOT login user - has email & password, WRONG password', (done) => {
+			server
+				.post('/api/auth/login')
+				.send(loginInvalWrongPass)
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res).to.have.status(400);
+					done();
+				});
+		});
+
+		it('should NOT login user - WRONG FIELD eail & password', (done) => {
+			server
+				.post('/api/auth/login')
+				.send(loginInvalWrongFieldName1)
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res).to.have.status(400);
+				});
+			server
+				.post('/api/auth/login')
+				.send(loginInvalWrongFieldName2)
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res).to.have.status(400);
+					done();
+				});
+		});
+		it('should NOT login user - MISSING FIELD email & password', (done) => {
+			server
+				.post('/api/auth/login')
+				.send(loginInvalMissingEmail)
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res).to.have.status(400);
+				});
+			server
+				.post('/api/auth/login')
+				.send(loginInvalMissingPass)
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res).to.have.status(400);
+					done();
+				});
+		});
+	});
+
+	describe('POST /logout', () => {
+		let refreshTokenPayload;
+
+		beforeEach((done) => {
+			refreshTokenPayload = {};
+			User.deleteMany({}, () => {
+				server
+					.post('/api/auth/register')
+					.send(validUser)
+					.end((err, res) => {
+						refreshTokenPayload.refreshToken = res.body.refreshToken;
+						done();
+					});
+			});
+		});
+
+		it('should logout user - has valid refresh token', (done) => {
+			server
+				.post('/api/auth/logout')
+				.send(refreshTokenPayload)
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res).to.have.status(200);
+					done();
+				});
+		});
+		it('should logout user - has valid refresh token + miscellaneous fields', (done) => {
+			refreshTokenPayload.some = 'some stuff';
+			server
+				.post('/api/auth/logout')
+				.send(refreshTokenPayload)
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res).to.have.status(200);
+					done();
+				});
+		});
+		it('should NOT logout user - has invalid refresh token', (done) => {
+			refreshTokenPayload.refreshToken = 'wrongvalue';
+			server
+				.post('/api/auth/logout')
+				.send(refreshTokenPayload)
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res).to.have.status(403);
+					done();
+				});
+		});
+		it('should NOT logout user - has invalid token field name', (done) => {
+			delete refreshTokenPayload.refreshToken;
+			refreshTokenPayload.refeshToken = 'wrongvalue';
+			server
+				.post('/api/auth/logout')
+				.send(refreshTokenPayload)
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res).to.have.status(400);
+					done();
+				});
+		});
+	});
+
+	// it('should login user - has email & password, matching password', (done) => {
+	// 	server
+	// 		.post('/api/auth/login')
+	// 		.send(loginVal)
+	// 		.end((err, res) => {
+	// 			expect(err).to.be.null;
+	// 			expect(res).to.have.status(200);
+	// 			expect(res.body).to.have.keys(userProps);
+	// 			done();
+	// 		});
+	// });
+	// it('should NOT login user - has email & password, WRONG password', (done) => {
+	// 	server
+	// 		.post('/api/auth/login')
+	// 		.send(loginInvalWrongPass)
+	// 		.end((err, res) => {
+	// 			expect(err).to.be.null;
+	// 			expect(res).to.have.status(400);
+	// 			done();
+	// 		});
+	// });
 });
