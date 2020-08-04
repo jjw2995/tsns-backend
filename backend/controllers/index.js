@@ -1,5 +1,5 @@
 const authController = require('./controller-auth');
-const relationsController = require('./controller-relations');
+const friendController = require('./controller-friend');
 // const  = require('./')
 // const  = require('./')
 // const  = require('./')
@@ -7,5 +7,5 @@ const relationsController = require('./controller-relations');
 
 module.exports = {
 	authController,
-	relationsController,
+	friendController,
 };

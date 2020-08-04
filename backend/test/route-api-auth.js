@@ -62,22 +62,23 @@ let loginInvalMissingPass = {
 
 let server;
 
-before(async () => {
-	server = await chai.request(app).keepOpen();
-	// await new Promise((r) => setTimeout(r, 200));
-});
-
-after(() => {
-	server.close;
-});
-
 describe('/api/auth', () => {
+	before(async () => {
+		server = await chai.request(app).keepOpen();
+		// await new Promise((r) => setTimeout(r, 200));
+	});
+
+	after(() => {
+		server.close;
+	});
+
 	describe('POST /register', () => {
 		beforeEach((done) => {
 			User.deleteMany({}, () => {
 				done();
 			});
 		});
+
 		it('register user - has all required input, no miscellaneous fields', (done) => {
 			server
 				.post('/api/auth/register')

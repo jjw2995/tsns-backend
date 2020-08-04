@@ -13,3 +13,8 @@
 // 	};
 // 	return serv;
 // };
+// import Test from './x';
+const Test = require('./x');
+
+let t = new Test('in importing file');
+t.pr();

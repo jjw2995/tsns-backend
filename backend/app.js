@@ -5,7 +5,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
-require('./db/Users');
+require('./db');
 
 //  Connect all our routes to our application
 app.use('/api', require('./routes/api'));
@@ -17,7 +17,7 @@ app.use('/api', require('./routes/api'));
 // 	res.status(400).json(error);
 // 	return;
 // });
-app.listen();
+// app.listen();
 
 let dbp = 'mongodb://localhost:27017';
 let p1 = new Promise((resolve, reject) => {

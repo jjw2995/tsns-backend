@@ -1,7 +1,7 @@
 const router = require('express').Router();
 
 router.use('/auth', require('./route-auth'));
-// router.use('/relations', require('./route-relations'));
+router.use('/friends', require('./route-friend'));
 // router.use('/', require('./'));
 // router.use('/', require('./'));
 // router.use('/', require('./'));
