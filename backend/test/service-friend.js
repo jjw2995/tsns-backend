@@ -101,14 +101,17 @@ describe.only('friendService', () => {
 
 	// get all friends
 
-	describe('.getNotViewedPending', () => {
+	describe.skip('.getNotViewedPending', () => {
 		setup()
 		before(async () => {
 			await beFriendReqRec(u1, u2)
 			await beFriendReqRec(u2, u1)
 			await beFriendReqRec(u3, u1)
 			await beFriendReqRec(u4, u1)
-			await beFriendReqRec(u5, u1)
+		})
+
+		it('', () => {
+
 		})
 	})
 

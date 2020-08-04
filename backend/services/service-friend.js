@@ -39,7 +39,9 @@ module.exports = class FriendService {
 				document.users[uIndex].isPending = false
 				document.users[uIndex].hasViewed = true
 				document.isFriends = true
-				await document.save()
+				document.friendSince = Date.now()
+				let a = await document.save()
+				// log(a)
 				return { friends: [requester, receiver] }
 			}
 		} else {
@@ -50,7 +52,7 @@ module.exports = class FriendService {
 		}
 	}
 
-	async getPending (user, option = 'all') {
+	async getPending (user, getViewed = false) {
 		let rv = await Friend.find(
 			{
 				users: { $elemMatch: { _id: user._id } }

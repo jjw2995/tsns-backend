@@ -22,6 +22,7 @@ let friendSchema = new mongoose.Schema(
 			type: Boolean,
 			default: false,
 		},
+		friendSince: { type: Date, default: null }
 	},
 	{ typePojoToMixed: false, timestamps: true }
 )
