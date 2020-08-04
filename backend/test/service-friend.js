@@ -39,11 +39,10 @@ function setup () {
 	})
 	after(async () => {
 		await mongoose.disconnect()
-		log('== DONE ==')
 	})
 }
 
-describe.only('friendService', () => {
+describe('friendService', () => {
 	async function beFriendReqRec (req, rec) {
 		let result = await friendService.beFriend(req, rec)
 		// console.log(result)
@@ -56,7 +55,6 @@ describe.only('friendService', () => {
 		setup()
 		afterEach((done) => {
 			friendService.resetDB().finally(done())
-			// log('AfterEach')
 		})
 
 		it('u1 add u2		=> u1 requested, u2 pending', (done) => {
@@ -101,111 +99,25 @@ describe.only('friendService', () => {
 
 	// get all friends
 
-	describe.skip('.getNotViewedPending', () => {
+	describe.only('.getPending', () => {
 		setup()
-		before(async () => {
+		async function setFriends () {
+			// u1 
+			// u2 friend, u3 u4 pending , u4 
 			await beFriendReqRec(u1, u2)
-			await beFriendReqRec(u2, u1)
-			await beFriendReqRec(u3, u1)
-			await beFriendReqRec(u4, u1)
-		})
+			await beFriendReqRec(u2, u1) // friends
+			await beFriendReqRec(u3, u1) // pending
+			await beFriendReqRec(u4, u1) // pending
+			await friendService.query()
+			log('setViewed enter')
+			await friendService.setViewed(u1, u4, true)
+			// await beFriendReqRec(u5, u1)
+		}
 
-		it('', () => {
-
+		it('no option (default notViewed) => u1 should see u3, u4', async () => {
+			await setFriends()
+			// let list = await friendService.getPending(u1)
+			// expect(list).to.include.members([u3, u4])
 		})
 	})
-
-
 })
-
-
-
-
-// // require('../db')
-// const chai = require('chai')
-// const mongoose = require('mongoose')
-// const Friend = mongoose.model('Friend')
-// const { FriendService } = require('../services')
-// const { should } = require('chai')
-
-
-// let friendService = new FriendService(Friend)
-
-// chai.use(require('chai-http'))
-// let log = (m) => console.log('\n', m, '\n')
-
-// let u1 = { nickname: 'u1', _id: 'id1' }
-// let u2 = { nickname: 'u2', _id: 'id2' }
-// let u3 = { nickname: 'u3', _id: 'id3' }
-// let u4 = { nickname: 'u4', _id: 'id4' }
-// let u5 = { nickname: 'u5', _id: 'id5' }
-
-// // user befriends otherUser
-// // => normal add
-
-// // user befriends oU where oU befriended user
-// // => user.status=settled, isFriends:true
-
-// // getPendingList
-// //
-// // let should = chai.should
-// describe.only('service-relations', () => {
-
-// 	before('asd', (done) => {
-// 		let dbp = 'mongodb://localhost:27017'
-// 		mongoose.connect(
-// 			dbp,
-// 			{
-// 				useNewUrlParser: true,
-// 				useUnifiedTopology: true,
-// 				useCreateIndex: true,
-// 				useFindAndModify: false,
-// 			},
-// 			(e) => {
-// 				friendService.resetDB().finally(done())
-// 				// if (e) done(e)
-// 				// done()
-// 			}
-// 		)
-
-// 	})
-// 	after(async () => {
-// 		await mongoose.disconnect()
-// 		log('== DONE ==')
-// 	})
-
-// 	afterEach((done) => {
-// 		friendService.resetDB().finally(done())
-// 		// log('AfterEach')
-// 	})
-// 	async function beFriendReqRec (req, rec) {
-// 		let result = await friendService.beFriend(req, rec)
-// 		console.log(result)
-// 		return new Promise((resolve, reject) => {
-// 			resolve(result)
-// 		})
-// 	}
-
-// 	it('u1 adds u2 - u1 requested, u2 pending', (done) => {
-// 		beFriendReqRec(u1, u2).then((result) => {
-// 			assert.deepEqual(result, {
-// 				requestComplete:
-// 				{
-// 					requester: u1,
-// 					receiver: u2
-// 				}
-// 			}, "[message]")
-// 			// result.should.eql()
-// 			done()
-// 		})
-// 	})
-
-// 	it('u1 add u2, u2 add u1 - u1 u2 settled, isFriends true', (done) => {
-// 		beFriendReqRec(u1, u2).then(() => {
-// 			beFriendReqRec(u2, u1).then((rv) => {
-// 				chai.assert.deepEqual(rv, { friends: { u1, u2 } }, "[message]")
-// 				done()
-// 			})
-// 		})
-// 	})
-// })
