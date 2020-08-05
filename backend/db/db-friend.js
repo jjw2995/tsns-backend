@@ -2,8 +2,8 @@ const mongoose = require('mongoose')
 
 let friendSchema = new mongoose.Schema(
 	{
-		ids: [{ type: String, index: true, unique: true }],
-		// users: { type: [{ nickname: String, _id: mongoose.Schema.Types.ObjectId }] },
+
+		_id: { type: String },
 		users: [
 			{
 				nickname: { type: String, required: true },
@@ -12,7 +12,7 @@ let friendSchema = new mongoose.Schema(
 					default: true,
 				},
 				isFollowing: { type: Boolean, default: true },
-				_id: { type: String, required: true/* , index: true, unique: true  */ },
+				_id: { type: String, required: true, index: true },
 				hasViewed: {
 					type: Boolean,
 					default: false,
