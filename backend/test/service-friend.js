@@ -43,7 +43,7 @@ async function addFriendReqRec (req, rec) {
 }
 
 async function getAll () {
-	await Friend.find({})
+	log(await Friend.find({}))
 }
 
 async function dbReset () {
@@ -56,6 +56,7 @@ describe('friendService', () => {
 	describe('.addFriend', () => {
 		//setup()
 		afterEach(async () => {
+			// getAll()
 			dbReset()
 		})
 
@@ -92,31 +93,37 @@ describe('friendService', () => {
 			})
 		})
 
+		it('u4 add u2		=> checking users: [u1, u4] order', (done) => {
+			addFriendReqRec(u1, u4).then((rv) => {
+				expect(rv).to.eql({ requestComplete: { requester: u1, receiver: u4 } })
+				done()
+			})
+		})
+
 	})
 
-	describe('.setViewed', async () => {
-		//setup()
+	describe('.setRequestViewed', async () => {
 		before(async () => {
 			await addFriendReqRec(u5, u1) // pending viewed
 		})
 
 		it('set viewed True', async () => {
 			let viewed = true
-			let rv = await friendService.setViewed(u1, u5, viewed)
+			let rv = await friendService.setRequestViewed(u1, u5, viewed)
 			expect(rv).to.be.equal(`${u1._id} has set hasViewed:${viewed} on friend request with ${u5._id}`)
 		})
 		it('set viewed False', async () => {
 			let viewed = false
-			let rv = await friendService.setViewed(u1, u5, viewed)
+			let rv = await friendService.setRequestViewed(u1, u5, viewed)
 			expect(rv).to.be.equal(`${u1._id} has set hasViewed:${viewed} on friend request with ${u5._id}`)
 		})
 		it('set viewed with non-existing user, reject', async () => {
 			let viewed = true
 
-			friendService.setViewed(u1, u3, viewed)
+			friendService.setRequestViewed(u1, u3, viewed)
 				.catch((e) => {
 					expect(e).to.be.an.instanceOf(Error)
-					expect(e.message).equal(`setViewed from ${u1._id} -> ${u3._id}: either such users not exist OR friend request has not yet been made`)
+					expect(e.message).equal(`setRequestViewed from ${u1._id} -> ${u3._id}: either such users not exist OR friend request has not yet been made`)
 				})
 		})
 
@@ -132,7 +139,7 @@ describe('friendService', () => {
 			await addFriendReqRec(u3, u1) // pending
 			await addFriendReqRec(u4, u1) // pending
 			await addFriendReqRec(u5, u1) // pending viewed
-			await friendService.setViewed(u1, u5, true)
+			await friendService.setRequestViewed(u1, u5, true)
 		})
 
 		it('viewed = false (default)  => u1 should see u3, u4', async () => {

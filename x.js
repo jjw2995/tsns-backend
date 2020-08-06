@@ -1,15 +1,53 @@
-let a = 'qwra123'
-let b = 'qwra124'
-log = (msg) => console.log('\n', msg)
-
-// console.log(_whichIndex(4, 2))
-// function _whichIndex (me, other) {
-//     return me < other ? 0 : 1
-// }
-
-log(!null)
-
-log(!{})
-log(![])
+const mongoose = require('mongoose')
 
 
+let dbp = 'mongodb://localhost:27017'
+async await mongoose.connect(dbp, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useCreateIndex: true,
+    useFindAndModify: false,
+})
+
+
+let friendSchema = new mongoose.Schema(
+    {
+
+        _id: { type: String },
+        users: [
+            {
+                nickname: { type: String, required: true },
+                isPending: {
+                    type: Boolean,
+                    default: true,
+                },
+                isFollowing: { type: Boolean, default: true },
+                _id: { type: String, required: true, index: true },
+                hasViewed: {
+                    type: Boolean,
+                    default: false,
+                },
+            },
+        ],
+        isFriends: {
+            type: Boolean,
+            default: false,
+        },
+        friendSince: { type: Date, default: null }
+    },
+    { typePojoToMixed: false, timestamps: true }
+)
+
+//  { _id: false }
+friendSchema.path('users').validate(function (value) {
+    // console.log(value.length);
+    if (value.length != 2) {
+        throw new Error('friend must be between 2 users!')
+    }
+})
+
+module.exports = mongoose.model('Friend', friendSchema)
+const Friend = require('mongoose').model('Friend')
+
+
+Friend.find

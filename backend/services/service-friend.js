@@ -1,19 +1,27 @@
-// const riend = require('mongoose').model('Friend')
+const riend = require('mongoose').model('Friend')
+
+const { use } = require("chai")
+
 // const bcrypt = require('bcryptjs');
 let log = (m) => console.log('\n', m, '\n')
 let Friend
 function newFriendObj (requester, receiver) {
+	let req = {
+		nickname: requester.nickname,
+		isPending: false,
+		hasViewed: true,
+		_id: requester._id,
+	}
+	let rec = { nickname: receiver.nickname, _id: receiver._id }
+	let usersArr = [req, rec]
+
+	if (getUsersIdx(requester, receiver)) {
+		usersArr = [rec, req]
+	}
+
 	return new Friend({
 		_id: getDocId(requester, receiver),
-		users: [
-			{
-				nickname: requester.nickname,
-				isPending: false,
-				hasViewed: true,
-				_id: requester._id,
-			},
-			{ nickname: receiver.nickname, _id: receiver._id },
-		],
+		users: usersArr,
 	})
 }
 
@@ -23,14 +31,98 @@ function newFriendObj (requester, receiver) {
 function getDocId (u0, u1) {
 	return u0._id < u1._id ? (u0._id + '-' + u1._id) : (u1._id + '-' + u0._id)
 }
+function getUsersIdx (target, other) {
+	return target._id < other._id ? 0 : 1
+}
 
 module.exports = class FriendService {
 	constructor (friend) {
 		Friend = friend
 	}
 
-	// https://docs.mongodb.com/manual/reference/operator/aggregation/cond/
-	// optimize db operation later
+
+
+	// isFriends: t / f
+	// users:
+	// {
+	// 	isPending
+	// 	hasViewed
+	// }
+
+	// {
+	// 	'$set':
+	// 	{
+	// 		isFriends: {
+	// 			$switch: {
+	// 				branches:
+	// 					[{ case: { $eq: [('users.' + getUsersIdx(receiver, requester) + '.isPending'), false] }, then: true }]
+	// 			}
+	// 		}
+	// 	}
+	// },
+
+	// {
+	// db.students3.update(
+	// 	{},
+	// 	[
+	// 		{ $set: { average: { $trunc: [{ $avg: "$tests" }, 0] }, lastUpdate: "$$NOW" } },
+	// 		{
+	// 			$set: {
+	// 				grade: {
+	// 					$switch: {
+	// 						branches: [
+	// 							{ case: { $gte: ["$average", 90] }, then: "A" },
+	// 							{ case: { $gte: ["$average", 80] }, then: "B" },
+	// 							{ case: { $gte: ["$average", 70] }, then: "C" },
+	// 							{ case: { $gte: ["$average", 60] }, then: "D" }
+	// 						],
+	// 						default: "F"
+	// }
+
+
+	// // https://docs.mongodb.com/manual/reference/operator/aggregation/cond/
+	// // optimize db operation later
+	// async addFriend (requester, receiver) {
+	// 	if (requester._id == receiver._id) {
+	// 		// log('req id = rec id')
+	// 		throw new Error(`Cannot add oneself in a friend request`)
+	// 	}
+
+	// 	let recVal = 'users.' + toString(getUsersIdx(receiver, requester)) + '.isPending'
+	// 	let query = { _id: getDocId(requester, receiver), "users._id": requester._id }
+	// 	let update =
+	// 		// [
+	// 		{ $set: { isFriends: { $cond: [{ recVal: { $eq: false } }, true, false] } } }
+	// 	// { $set: { 'users.$.hasViewed': true } },
+	// 	// { $set: { 'users.$.isPending': false } },
+	// 	// {
+	// 	// 	'$set':
+	// 	// 	{
+	// 	// 		isFriends:
+	// 	// 			{ '$cond': [{ $eq: [('users.' + getUsersIdx(receiver, requester) + '.isPending'), false] }, true, false] }
+	// 	// 	}
+	// 	// },
+	// 	// { '$set': { friendSince: { '$cond': [{ $eq: [('isFriends'), true] }, Date.now(), null] } } }
+	// 	// ]
+	// 	let options = { new: true }
+
+	// 	// let f = await riend.findByIdAndUpdate(getDocId(requester, receiver), [])
+
+	// 	let friendDoc = await Friend.findOneAndUpdate(query, update, options)
+
+	// 	// let friendDoc = await Friend.findOneAndUpdate(query, update, options)
+	// 	log(friendDoc)
+	// 	if (!friendDoc) {
+	// 		let friendVirDoc = newFriendObj(requester, receiver)
+	// 		await friendVirDoc.save()
+	// 		return { requestComplete: { requester: requester, receiver: receiver } }
+	// 		// throw new Error(`setViewed from ${requester._id} -> ${receiver._id}: either such users not exist OR friend request has not yet been made`)
+	// 	}
+
+	// 	return `${requester._id} has set hasViewed:${viewed} on friend request with ${receiver._id}`
+	// }
+
+
 	async addFriend (requester, receiver) {
 		if (requester._id == receiver._id) {
 			// log('req id = rec id')
@@ -61,6 +153,40 @@ module.exports = class FriendService {
 			return { requestComplete: { requester: requester, receiver: receiver } }
 
 		}
+	}
+
+	async setRequestViewed (requester, receiver, viewed) {
+		// return { requestComplete: { requester: requester, receiver: receiver } }
+		let query = { _id: getDocId(requester, receiver), "users._id": requester._id }
+		let update = { '$set': { 'users.$.hasViewed': viewed } }
+		let options = { new: true }
+
+		let friendDoc = await Friend.findOneAndUpdate(query, update, options)
+		if (!friendDoc) {
+			throw new Error(`setRequestViewed from ${requester._id} -> ${receiver._id}: either such users not exist OR friend request has not yet been made`)
+			// throw new Error(
+		}
+
+		return `${requester._id} has set hasViewed:${viewed} on friend request with ${receiver._id}`
+
+	}
+
+	async setFollowing (requester, receiver, follwing) {
+		// let rv = await Friend.find({ isFriends: true, users: { $elemMatch: elMatch } }, 'users._id users.nickname', { lean: true })
+		// return { requestComplete: { requester: requester, receiver: receiver } }
+		let query = { _id: getDocId(requester, receiver), isFriends: true, "users._id": requester._id }
+		let update = { '$set': { 'users.$.isFollowing': follwing } }
+		let options = { new: true }
+
+		let friendDoc = await Friend.findOneAndUpdate(query, update, options)
+		// log(friendDoc)
+		if (!friendDoc) {
+			throw new Error(`setFollowing from ${requester._id} -> ${receiver._id}: either such users not exist OR are not friends yet`)
+			// throw new Error(
+		}
+
+		return `${requester._id} has set hasViewed:${follwing} on friend request with ${receiver._id}`
+
 	}
 
 	async getFriends (user, option = 'all') {
@@ -110,39 +236,6 @@ module.exports = class FriendService {
 
 	}
 
-	async setViewed (requester, receiver, viewed) {
-		// return { requestComplete: { requester: requester, receiver: receiver } }
-		let query = { _id: getDocId(requester, receiver), "users._id": requester._id }
-		let update = { '$set': { 'users.$.hasViewed': viewed } }
-		let options = { new: true }
-
-		let friendDoc = await Friend.findOneAndUpdate(query, update, options)
-		if (!friendDoc) {
-			throw new Error(`setViewed from ${requester._id} -> ${receiver._id}: either such users not exist OR friend request has not yet been made`)
-			// throw new Error(
-		}
-
-		return `${requester._id} has set hasViewed:${viewed} on friend request with ${receiver._id}`
-
-	}
-
-	async setFollowing (requester, receiver, follwing) {
-		// let rv = await Friend.find({ isFriends: true, users: { $elemMatch: elMatch } }, 'users._id users.nickname', { lean: true })
-		// return { requestComplete: { requester: requester, receiver: receiver } }
-		let query = { _id: getDocId(requester, receiver), isFriends: true, "users._id": requester._id }
-		let update = { '$set': { 'users.$.isFollowing': follwing } }
-		let options = { new: true }
-
-		let friendDoc = await Friend.findOneAndUpdate(query, update, options)
-		// log(friendDoc)
-		if (!friendDoc) {
-			throw new Error(`setFollowing from ${requester._id} -> ${receiver._id}: either such users not exist OR are not friends yet`)
-			// throw new Error(
-		}
-
-		return `${requester._id} has set hasViewed:${follwing} on friend request with ${receiver._id}`
-
-	}
 
 	async _getAll () {
 		let b = await Friend.find({})
@@ -165,3 +258,5 @@ module.exports = class FriendService {
 	}
 
 }
+
+
