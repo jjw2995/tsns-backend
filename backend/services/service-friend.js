@@ -1,10 +1,11 @@
-const riend = require('mongoose').model('Friend')
+// const TEST = require('mongoose').model('Friend')
 
-const { use } = require("chai")
-
-// const bcrypt = require('bcryptjs');
 let log = (m) => console.log('\n', m, '\n')
 let Friend
+
+function getDocId (u0, u1) {
+	return u0._id < u1._id ? (u0._id + '-' + u1._id) : (u1._id + '-' + u0._id)
+}
 function newFriendObj (requester, receiver) {
 	let req = {
 		nickname: requester.nickname,
@@ -28,9 +29,7 @@ function newFriendObj (requester, receiver) {
 
 // u0-u1
 // u0 < u1
-function getDocId (u0, u1) {
-	return u0._id < u1._id ? (u0._id + '-' + u1._id) : (u1._id + '-' + u0._id)
-}
+
 function getUsersIdx (target, other) {
 	return target._id < other._id ? 0 : 1
 }
@@ -40,6 +39,27 @@ module.exports = class FriendService {
 		Friend = friend
 	}
 
+	async deleteFriend (requester, receiver) {
+		let _id = getDocId(requester, receiver)
+		let deleted = await Friend.findOneAndDelete({ _id: _id, isFriends: true })
+		if (!deleted) {
+			throw new Error(`friend document between ${requester._id} and ${receiver._id} never existed OR wrong id`)
+		}
+		// log(deleted)
+		return `friend document ${_id} has been deleted`
+	}
+
+	async removeFriendRequest (requester, receiver) {
+		let _id = getDocId(requester, receiver)
+		let q = { _id: _id, isFriends: false, users: { $elemMatch: { _id: requester._id, isPending: true } } }
+		let deleted = await Friend.findOneAndDelete({ _id: _id, isFriends: false, })
+		// log(deleted)
+
+		if (!deleted) {
+			throw new Error(`friend document between ${requester._id} and ${receiver._id} never existed OR wrong id`)
+		}
+		return `friend document ${deleted._id} has been deleted`
+	}
 
 	async addFriend (requester, receiver) {
 		if (requester._id == receiver._id) {
@@ -173,6 +193,10 @@ module.exports = class FriendService {
 		return new Promise((resolve, reject) => {
 			resolve()
 		})
+	}
+
+	_getDocId (u0, u1) {
+		return getDocId(u0, u1)
 	}
 
 }

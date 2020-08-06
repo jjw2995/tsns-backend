@@ -1,11 +1,12 @@
-const authService = require('./service-auth');
-const FriendService = require('./service-friend');
-// const  = require('./')
+const AuthService = require('./service-auth')
+const FriendService = require('./service-friend')
+const UserService = require('./service-user')
 // const  = require('./')
 // const  = require('./')
 // const  = require('./')
 
 module.exports = {
-	authService,
+	AuthService,
 	FriendService,
-};
+	UserService
+}

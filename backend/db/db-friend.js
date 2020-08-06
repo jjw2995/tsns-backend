@@ -28,9 +28,7 @@ let friendSchema = new mongoose.Schema(
 	{ typePojoToMixed: false, timestamps: true }
 )
 
-//  { _id: false }
 friendSchema.path('users').validate(function (value) {
-	// console.log(value.length);
 	if (value.length != 2) {
 		throw new Error('friend must be between 2 users!')
 	}

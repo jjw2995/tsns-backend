@@ -238,5 +238,52 @@ describe('friendService', () => {
 		})
 	})
 
+	describe('.deleteFriend & .removeFriendRequest', () => {
+		beforeEach('HERE', async () => {
+			// u1 <-> u2
+			// u1 <-> u3
+			// u1(not following) <-> u4
+			// u1 <- u5
+			await dbReset()
 
+			await addFriendReqRec(u1, u2)
+			await addFriendReqRec(u2, u1)
+
+			await addFriendReqRec(u5, u1)
+		})
+
+		it('.deleteFriend 		= not friend, fail to delete', (done) => {
+			friendService.deleteFriend(u5, u1).catch(e => {
+				expect(e).to.be.an.instanceOf(Error)
+				expect(e.message).to.have.string(`friend document between ${u5._id} and ${u1._id} never existed OR wrong id`)
+				done()
+			})
+		})
+
+		it('.deleteFriend 		= friend, delete', (done) => {
+			friendService.deleteFriend(u1, u2).then((r) => {
+				// log(r)
+				expect(r).to.have.string(`friend document ${friendService._getDocId(u1, u2)} has been deleted`)
+				done()
+			})
+		})
+
+
+		it('.removeFriendRequest	= not friend, delete', (done) => {
+			friendService.removeFriendRequest(u5, u1).then((r) => {
+				expect(r).to.have.string(`friend document ${friendService._getDocId(u5, u1)} has been deleted`)
+				done()
+			})
+		})
+
+		it('.removeFriendRequest	= friend, fail delete', (done) => {
+			friendService.removeFriendRequest(u2, u1).catch(e => {
+				expect(e).to.be.an.instanceOf(Error)
+				expect(e.message).to.have.string(`friend document between ${u2._id} and ${u1._id} never existed OR wrong id`)
+				done()
+			})
+		})
+
+
+	})
 })
