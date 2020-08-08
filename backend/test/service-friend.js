@@ -8,7 +8,7 @@ const { should, expect } = require('chai')
 
 let friendService = new FriendService(Friend)
 
-chai.use(require('chai-http'))
+// chai.use(require('chai-http'))
 // let should = should
 let log = (m) => console.log('\n', m, '\n')
 
@@ -31,23 +31,20 @@ before('asd', async () => {
 	// await Friend.collection.dropIndexes()
 	await dbReset()
 })
+
 after(async () => {
 	await dbReset()
 	await mongoose.disconnect()
 })
 
+async function dbReset () {
+	await Friend.deleteMany({})
+}
+
 
 async function addFriendReqRec (req, rec) {
 	let a = await friendService.addFriend(req, rec)
 	return a
-}
-
-async function getAll () {
-	log(await Friend.find({}))
-}
-
-async function dbReset () {
-	await Friend.deleteMany({})
 }
 
 

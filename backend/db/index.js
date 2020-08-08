@@ -1,7 +1,9 @@
-const userDB = require('./db-user')
-const friendDB = require('./db-friend')
+const User = require('./db-user')
+const Friend = require('./db-friend')
+const Post = require('./db-post')
 
 module.exports = {
-	userDB,
-	friendDB,
+	User,
+	Friend,
+	Post
 }
