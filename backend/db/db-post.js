@@ -8,7 +8,7 @@ let postSchema = new mongoose.Schema(
             nickname: { type: String, required: true }
         },
         post: {
-            description: { type: String, maxlength: 150, trim: true, default: '' },
+            description: { type: String, maxlength: 200, trim: true, default: '' },
             media: [{ type: String, trim: true }], // resource address
             level: { type: String, enum: ['private', 'friends', 'public'], default: 'friends' },
             likes: { type: Number, default: 0 }

@@ -57,26 +57,15 @@ function arrify (object) {
             arr.push({ [key]: object[key] })
         }
     }
-    // arr.sort((a, b) => {
-    //     return Object.keys(a)[0] > Object.keys(b)
-    // })
-    // for (const iterator of object) {
-    // }
-    // log(arr)
     return arr
 }
 
 let u1 = { nickname: 'u1', _id: 'id1' }
 let u2 = { nickname: 'u2', _id: 'id2' }
 let u3 = { nickname: 'u3', _id: 'id3' }
-let u4 = { nickname: 'u4', _id: 'id4' }
-let u5 = { nickname: 'u5', _id: 'id5' }
-let u6 = { nickname: 'u6', _id: 'id6' }
 
 
 let p1 = { description: 'd1', media: [] }
-let p2 = { description: 'd2', media: ['url1', 'url2'] }
-let p3 = { description: 'd3', media: ['url3'] }
 let p4 = { description: 'd4', media: ['url4', 'url5', 'url6'] }
 
 let uNot = { nickname: '', _id: 'id6' }
@@ -112,7 +101,7 @@ function addPosts (u, pArr) {
     })
 }
 
-describe.only('postService', () => {
+describe('postService', () => {
     // beforeEach(async () => {
 
     // })

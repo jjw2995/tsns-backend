@@ -10,7 +10,7 @@ module.exports = class PostService {
 
     // post = { description: 'd', media: [] }
 
-    async addPost (user, post, level = 'friends') {
+    async addPost (user, post) {
         try {
             let a = await Post.create({ user, post })
             return a
@@ -40,7 +40,7 @@ module.exports = class PostService {
                     { 'user._id': { $in: friends } },
                     { 'post.level': { $ne: 'private' } }]
             }, { 'user._id': user._id }],
-        }).sort({ createdAt: 1 })
+        }).sort({ createdAt: -1 })
         // log(a)
         return a
         // } catch (error) {

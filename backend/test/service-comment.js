@@ -1,74 +1,167 @@
-// const chai = require('chai')
-// const mongoose = require('mongoose')
-// const { should, expect } = require('chai')
+const chai = require('chai')
+const mongoose = require('mongoose')
+const { expect } = require('chai')
 
-// const Post = mongoose.model('Post')
-// const { PostService } = require('../services')
+const Comment = mongoose.model('Comment')
+const { CommentService } = require('../services')
 
-// let Service = new PostService(Post)
-
-
-// let log = (m) => console.log('\n', m, '\n')
-
-// let u1 = { nickname: 'u1', _id: 'id1' }
-// let u2 = { nickname: 'u2', _id: 'id2' }
-// let u3 = { nickname: 'u3', _id: 'id3' }
-// let u4 = { nickname: 'u4', _id: 'id4' }
-// let u5 = { nickname: 'u5', _id: 'id5' }
-// let u6 = { nickname: 'u6', _id: 'id6' }
-
-// let p1 = { description: 'd1', media: [] }
-// let p2 = { description: 'd2', media: ['url1', 'url2'] }
-// let p3 = { description: 'd3', media: ['url3'] }
-// let p4 = { description: 'd4', media: ['url4', 'url5', 'url6'] }
-
-// let pNot = { description: 'd4', media: ['url4', 'url5', 'url6'], something: 2 }
+let Model = Comment
+let Service = new CommentService(Comment)
 
 
+let log = (m) => console.log('\n', m, '\n')
 
-// before('asd', async () => {
-//     let dbp = 'mongodb://localhost:27017'
-//     await mongoose.connect(dbp, {
-//         useNewUrlParser: true,
-//         useUnifiedTopology: true,
-//         useCreateIndex: true,
-//         useFindAndModify: false,
-//     })
-//     // await Friend.collection.dropIndexes()
+before('asd', async () => {
+    let dbp = 'mongodb://localhost:27017'
+    await mongoose.connect(dbp, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        useCreateIndex: true,
+        useFindAndModify: false,
+    })
+    // await Friend.collection.dropIndexes()
+    await dbReset()
+})
+
+// after(async () => {
 //     await dbReset()
+//     await mongoose.disconnect()
 // })
 
-// // after(async () => {
-// //     await dbReset()
-// //     await mongoose.disconnect()
-// // })
+async function dbReset () {
+    await Model.deleteMany({})
+}
 
-// async function dbReset () {
-//     await Post.deleteMany({})
+beforeEach(async () => {
+    await dbReset()
+})
+
+async function getAll () {
+    let a = await Model.find({})
+    log(a)
+}
+
+function arrify (object) {
+    let arr = []
+    for (const key in object) {
+        if (object.hasOwnProperty(key)) {
+            // const element = object[key]
+
+            arr.push({ [key]: object[key] })
+        }
+    }
+    return arr
+}
+
+let u1 = { _id: 'id1', nickname: 'u1' }
+let u2 = { nickname: 'u2', _id: 'id2' }
+
+let p1 = { _id: 'p1' }
+let p2 = { _id: 'p2' }
+
+let c1 = 'c 1'
+let c2 = 'c 2'
+let c3 = 'c 3'
+// let u = { nickname: 'u', _id: 'id' }
+// let u = { nickname: 'u', _id: 'id' }
+// let u = { nickname: 'u', _id: 'id' }
+let com1
+let com2
+let com3
+
+// function gen (n) {
+//     let arr = []
+//     for (let i = 0; i < n; i++) {
+//         arr.push({u:{_id:'_id'+i,nickname: 'nick'+i}})
+//     }
 // }
 
+describe.skip('service-reaction', () => {
+    describe('.addComment', () => {
+        it('ok comment', async () => {
+            com1 = await Service.addComment(u1, p1, c1)
+            // log(com1)
+        })
+        it('ok subcomment', async () => {
+            com1 = await Service.addComment(u1, p1, c1)
+            com2 = await Service.addComment(u2, p1, c2, com1)
+        })
+        it('invalid subcomment', async () => {
+            com1 = await Service.addComment(u1, p1, c1)
+            Service.addComment(u2, p2, c2, com1).catch(e => {
+                expect(e.message).to.equal('cannot leave subcomment on different post\'s subcomment')
+            })
+        })
+        it('ok subcomment', async () => {
+            com1 = await Service.addComment(u1, p1, c1)
+            com2 = await Service.addComment(u2, p1, c2, com1)
+            com3 = await Service.addComment(u2, p1, c2, com2)
+        })
+
+        it('parent comment removed, throw error', async () => {
+            // getAll()
+            await Service.addComment(u2, p1, 'subC1', { _id: '7f2fb2b46115da67baeb84d4', postID: p1._id })
+            // getAll()
+        })
+    })
+
+    describe('.getPostComments - get standalone comments /* + few subcomments */', () => {
+        it('NOT A TEST, simple block to see if code is functional', async () => {
+            await Service.addComment(u1, p1, c1)
+            com1 = await Service.addComment(u1, p1, c1)
+            com2 = await Service.addComment(u2, p1, c2, com1)
+            com3 = await Service.addComment(u2, p1, c2, com2)
+            let a = await Service.getPostComments(p1)
+        })
+    })
+
+    describe('.getPostComment', () => {
+        it('NOT A TEST, simple block to see if code is functional', async () => {
+            await Service.addComment(u1, p1, 'c1')
+            await Service.addComment(u1, p1, 'c2')
+            await Service.addComment(u1, p1, 'c3')
+            await Service.addComment(u1, p1, 'c4')
+            com1 = await Service.addComment(u1, p1, 'c7')
+            com2 = await Service.addComment(u2, p1, 'c3', com1)
+            com3 = await Service.addComment(u2, p1, 'c4', com2)
+            let a = await Service.getPostComments(p1)
+            log(a)
+        })
+    })
+
+    describe('.getSubComment', () => {
+        it('NOT A TEST, simple block to see if code is functional', async () => {
+            com1 = await Service.addComment(u1, p1, 'c1')
+            await Service.addComment(u2, p1, 'subC1', com1)
+            await Service.addComment(u2, p1, 'subC2', com1)
+            await Service.addComment(u2, p1, 'subC3', com1)
+            await Service.addComment(u2, p1, 'subC4', com1)
+            await Service.addComment(u2, p1, 'subC5', com1)
+            await Service.addComment(u2, p1, 'subC6', com1)
+            let b = await Service.addComment(u2, p1, 'subC7', com1)
+            await Service.addComment(u2, p1, 'subC8', com1)
+            await Service.addComment(u2, p1, 'subC9', com1)
+            let a = await Service.getSubComments(com1, b, 2)
+            log(a)
+        })
+    })
 
 
+    describe('.removeComment', () => {
+        it('NOT A TEST, simple block to see if code is functional', async () => {
+            com1 = await Service.addComment(u1, p1, 'c1')
+            await Service.addComment(u2, p1, 'subC2', com1)
+            await Service.addComment(u2, p1, 'subC3', com1)
+            await Service.addComment(u2, p1, 'subC4', com1)
+            await Service.addComment(u2, p1, 'subC5', com1)
+            await Service.addComment(u2, p1, 'subC6', com1)
+            let b = await Service.addComment(u2, p1, 'subC7', com1)
+            await Service.addComment(u2, p1, 'subC8', com1)
+            await Service.addComment(u2, p1, 'subC9', com1)
+            let a = await Service.removeComment(b)
+            // log(a)
+        })
+    })
 
-// describe.only('postService', () => {
-//     describe('.addPost', () => {
-//         it('normal add', async () => {
-//             let a = await Service.addPost(u1, p1)
-//             log(a)
-//         })
-//         it('abnormal add', async () => {
-//             let a = await Service.addPost(u1, pNot)
-//             log(a)
-//         })
-//     })
 
-//     // describe('.removePostByID', () => {
-
-//     // });
-//     // describe('.findPostsGivenUserIDs', () => {
-
-//     // });
-//     // describe('', () => {
-
-//     // });
-// })
+})
