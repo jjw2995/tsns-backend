@@ -76,7 +76,7 @@ let com3
 //     }
 // }
 
-describe.skip('service-reaction', () => {
+describe('service-reaction', () => {
     describe('.addComment', () => {
         it('ok comment', async () => {
             com1 = await Service.addComment(u1, p1, c1)
@@ -147,18 +147,17 @@ describe.skip('service-reaction', () => {
     })
 
 
-    describe('.removeComment', () => {
+    describe.only('.removeComment', () => {
         it('NOT A TEST, simple block to see if code is functional', async () => {
             com1 = await Service.addComment(u1, p1, 'c1')
-            await Service.addComment(u2, p1, 'subC2', com1)
-            await Service.addComment(u2, p1, 'subC3', com1)
-            await Service.addComment(u2, p1, 'subC4', com1)
-            await Service.addComment(u2, p1, 'subC5', com1)
-            await Service.addComment(u2, p1, 'subC6', com1)
+            // await Service.addComment(u2, p1, 'subC2', com1)
             let b = await Service.addComment(u2, p1, 'subC7', com1)
+
             await Service.addComment(u2, p1, 'subC8', com1)
             await Service.addComment(u2, p1, 'subC9', com1)
-            let a = await Service.removeComment(b)
+            let a = await Service.removeComment(com1)
+            // log(b)
+            getAll()
             // log(a)
         })
     })

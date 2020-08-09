@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const t = require('mongoose').model('Comment')
+const test = require('mongoose').model('Comment')
 
 let log = (m) => console.log('\n', m, '\n')
 let Comment
@@ -24,8 +24,8 @@ module.exports = class PostService {
             if (parentCom.postID != post._id) {
                 throw new Error('cannot leave subcomment on different post\'s subcomment')
             }
-            if (!parentCom.hasChild) {
-                let a = await t.findOneAndUpdate({ _id: parentCom._id }, { hasChild: true, $inc: { numChild: 1 } }, { new: true }).lean()
+            if (parentCom.numChild == 0) {
+                let a = await Comment.findOneAndUpdate({ _id: parentCom._id }, { $inc: { numChild: 1 } }, { new: true }).lean()
                 if (!a) {
                     throw new Error(`comment ${parentCom._id} has been removed`)
                 }
@@ -43,7 +43,7 @@ module.exports = class PostService {
         if (lastComment) {
             q.createdAt = { $lt: lastComment.createdAt }
         }
-        let a = await t.find(q).sort({ createdAt: -1 }).limit(page_size)
+        let a = await Comment.find(q).sort({ createdAt: -1 }).limit(page_size)
         return a
     }
 
@@ -57,14 +57,21 @@ module.exports = class PostService {
         if (lastComment) {
             q.createdAt = { $lt: lastComment.createdAt }
         }
-        let a = await t.find(q).sort({ createdAt: -1 }).limit(page_size)
+        let a = await Comment.find(q).sort({ createdAt: -1 }).limit(page_size)
         return a
 
     }
     // remove get
     async removeComment (comment) {
         // remove itself and all child comments
-        let a = await t.deleteMany({ $or: [{ _id: comment._id }, { parentComID: comment._id }] })
+        if (comment.parentComID) {
+            let a = await test.findByIdAndUpdate(comment.parentComID, { $inc: { numChild: -1 } })
+                .explain('queryPlanner')
+            log(a.stages)
+
+            // ])
+        }
+        let a = await Comment.deleteMany({ $or: [{ _id: comment._id }, { parentComID: comment._id }] })
         log(a)
         return a
     }

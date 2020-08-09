@@ -8,7 +8,7 @@ let commentSchema = new mongoose.Schema(
             _id: { type: String, index: true, required: true }
         },
         parentComID: { type: mongoose.Schema.ObjectId, default: null, index: true },
-        hasChild: { type: Boolean, default: false },
+        // hasChild: { type: Boolean, default: false },
         numChild: { type: Number, default: 0 },
         content: { type: String, minlength: 1, maxlength: 150, trim: true, required: true }
     },
