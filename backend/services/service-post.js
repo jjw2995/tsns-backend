@@ -11,12 +11,12 @@ module.exports = class PostService {
     // post = { description: 'd', media: [] }
 
     async addPost (user, post) {
-        try {
-            let a = await Post.create({ user, post })
-            return a
-        } catch (error) {
-            return new Error(error)
-        }
+        // try {
+        let a = await Post.create({ user, post })
+        return a
+        // } catch (error) {
+        //     return new Error(error)
+        // }
     }
 
     async removePost (post) {

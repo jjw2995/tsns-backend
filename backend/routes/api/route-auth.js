@@ -1,14 +1,14 @@
-const express = require('express');
-const router = express.Router();
-const { authController } = require('../../controllers/index');
-const { verifyAccessToken, verifyRefreshToken } = require('../../middlewares');
+const express = require('express')
+const router = express.Router()
+const { authController } = require('../../controllers/index')
+const { verifyAccessToken, verifyRefreshToken } = require('../../middlewares')
 const {
 	validateEmail,
 	validateNick,
 	validatePass,
 	validate,
 	fieldsExist,
-} = require('../../utils/validations');
+} = require('../../utils/validations')
 
 //  input
 // {
@@ -21,18 +21,18 @@ router.post(
 	[validateEmail, validateNick, validatePass],
 	validate,
 	authController.postRegister
-);
+)
 
 router.post(
 	'/login',
 	fieldsExist(['email', 'password']),
 	validate,
 	authController.postLogin
-);
+)
 
-router.post('/logout', verifyRefreshToken, authController.postLogout);
+router.post('/logout', verifyRefreshToken, authController.postLogout)
 
-router.post('/token', verifyRefreshToken, authController.postToken);
+router.post('/token', verifyRefreshToken, authController.postToken)
 
 // call service layer
 
@@ -42,16 +42,16 @@ router.post('/token', verifyRefreshToken, authController.postToken);
 // 	res.status(400).json();
 // });
 
-// TESTING ONLY
+// TESTING
 // ###############################
 // ###############################
 router.get('/', (req, res) => {
-	console.log('inside GET api/auth');
-	res.status(200).send('in GET api/auth');
-});
+	console.log('inside GET api/auth')
+	res.status(200).send('in GET api/auth')
+})
 
-router.get('/reset', authController.getRegister);
+router.get('/reset', authController.getRegister)
 // ###############################
 // ###############################
 
-module.exports = router;
+module.exports = router

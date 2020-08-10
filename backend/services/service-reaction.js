@@ -1,16 +1,72 @@
-const TEST = require('mongoose').model('Post')
+const qwe = require('mongoose').model('Reaction')
 
 let log = (m) => console.log('\n', m, '\n')
-let Friend
+let Reaction
 
 // function getUsersIdx (target, other) {
 //     return target._id < other._id ? 0 : 1
 // }
+function name (params) {
 
-module.exports = class PostService {
-    constructor (postModel) {
-        Post = postModel
+}
+
+module.exports = class ReactionService {
+    constructor (reactionModel) {
+        Reaction = reactionModel
     }
+
+    // add reaction
+    // contentType: enum[ 'post', 'comment' ]
+    async addReaction (user, emotion, contentID, contentType) {
+        // !contentType || 
+        if (!(contentType == 'comment' || 'post')) {
+            throw new Error('contentType needs to be declared')
+        }
+        let t = 'p'
+        if (contentType == 'comment') {
+            t = 'c'
+        }
+        let cID = t + contentID
+        let r = { emotion: emotion, user: user, contentID: cID }
+        let a = await Reaction.create(r)
+        return a
+    }
+
+
+
+    // async updateReaction (reaction, emotion) {
+    //     let q = { 'user._id': reaction.user._id, contentID: reaction.contentID }
+    //     let u = { emotion: emotion }
+    //     let ans = Reaction.findOneAndUpdate(q, u, { new: true }).lean()
+    //     return ans
+    // }
+    async updateReaction (reactionID, emotion) {
+        let u = { emotion: emotion }
+        let ans = Reaction
+            .findByIdAndUpdate(reactionID, u, { new: true })
+            .lean()
+        return ans
+    }
+
+    // {$group : { _id : '$user', count : {$sum : 1}}}
+    // get all reaction based on content (post || comment)
+    async getReactionCounts (contentID) {
+        log(contentID)
+        let a = await Reaction.aggregate([
+            { $match: { contentID: contentID } },
+            {
+                $group: {
+                    _id: "$emotion",
+                    count: { $sum: 1 }
+                }
+            },
+        ])
+        log(a)
+        return a
+    }
+
+    // remove reaction
+
 
 
     // user: {
@@ -21,19 +77,6 @@ module.exports = class PostService {
     // mediaURLs: [{ type: String, trim: true }],
     // viewLevel: { type: String, enum: ['private', 'friends', 'public'] }
 
-    async deleteFriend (requester, receiver) {
-        let _id = getDocId(requester, receiver)
-        let deleted = await Friend.findOneAndDelete({ _id: _id, isFriends: true })
-        if (!deleted) {
-            throw new Error(`friend document between ${requester._id} and ${receiver._id} never existed OR wrong id`)
-        }
-        // log(deleted)
-        return `friend document ${_id} has been deleted`
-    }
-
-    _getDocId (u0, u1) {
-        return getDocId(u0, u1)
-    }
 
 }
 

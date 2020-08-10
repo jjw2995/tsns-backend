@@ -20,7 +20,9 @@ before('asd', async () => {
         useCreateIndex: true,
         useFindAndModify: false,
     })
-    // await Friend.collection.dropIndexes()
+    // let a = await Post.collection.getIndexes({ full: true })
+    // log(a)
+    // await Post.collection.dropIndexes()
     await dbReset()
 })
 
@@ -118,7 +120,7 @@ describe('postService', () => {
         // it('normal, no post.media add', async () => {
         // })
 
-        // it.only('abnormal, both fields empty post add', async () => {
+        // it('abnormal, both fields empty post add', async () => {
         // })
 
         // it('abnormal, invalid user add', async () => {

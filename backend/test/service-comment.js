@@ -19,7 +19,7 @@ before('asd', async () => {
         useCreateIndex: true,
         useFindAndModify: false,
     })
-    // await Friend.collection.dropIndexes()
+    // await Comment.collection.dropIndexes()
     await dbReset()
 })
 
@@ -84,6 +84,7 @@ describe('service-reaction', () => {
         })
         it('ok subcomment', async () => {
             com1 = await Service.addComment(u1, p1, c1)
+            log(com1._id)
             com2 = await Service.addComment(u2, p1, c2, com1)
         })
         it('invalid subcomment', async () => {
@@ -147,7 +148,7 @@ describe('service-reaction', () => {
     })
 
 
-    describe.only('.removeComment', () => {
+    describe('.removeComment', () => {
         it('NOT A TEST, simple block to see if code is functional', async () => {
             com1 = await Service.addComment(u1, p1, 'c1')
             // await Service.addComment(u2, p1, 'subC2', com1)

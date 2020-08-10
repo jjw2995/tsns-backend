@@ -57,7 +57,7 @@ module.exports = class PostService {
         if (lastComment) {
             q.createdAt = { $lt: lastComment.createdAt }
         }
-        let a = await Comment.find(q).sort({ createdAt: -1 }).limit(page_size)
+        let a = await Comment.find(q).sort({ createdAt: 1 }).limit(page_size)
         return a
 
     }
@@ -66,13 +66,10 @@ module.exports = class PostService {
         // remove itself and all child comments
         if (comment.parentComID) {
             let a = await test.findByIdAndUpdate(comment.parentComID, { $inc: { numChild: -1 } })
-                .explain('queryPlanner')
-            log(a.stages)
 
             // ])
         }
         let a = await Comment.deleteMany({ $or: [{ _id: comment._id }, { parentComID: comment._id }] })
-        log(a)
         return a
     }
 

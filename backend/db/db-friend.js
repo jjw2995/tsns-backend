@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 
+// TODO: modified userSchema (optimize)
 let friendSchema = new mongoose.Schema(
 	{
 
