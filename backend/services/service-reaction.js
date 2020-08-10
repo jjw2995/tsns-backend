@@ -17,29 +17,11 @@ module.exports = class ReactionService {
 
     // add reaction
     // contentType: enum[ 'post', 'comment' ]
-    async addReaction (user, emotion, contentID, contentType) {
-        // !contentType || 
-        if (!(contentType == 'comment' || 'post')) {
-            throw new Error('contentType needs to be declared')
-        }
-        let t = 'p'
-        if (contentType == 'comment') {
-            t = 'c'
-        }
-        let cID = t + contentID
-        let r = { emotion: emotion, user: user, contentID: cID }
-        let a = await Reaction.create(r)
+    async addReaction (user, emotion, contentID) {
+        let a = await Reaction.create({ emotion, user, contentID })
         return a
     }
 
-
-
-    // async updateReaction (reaction, emotion) {
-    //     let q = { 'user._id': reaction.user._id, contentID: reaction.contentID }
-    //     let u = { emotion: emotion }
-    //     let ans = Reaction.findOneAndUpdate(q, u, { new: true }).lean()
-    //     return ans
-    // }
     async updateReaction (reactionID, emotion) {
         let u = { emotion: emotion }
         let ans = Reaction
@@ -51,7 +33,6 @@ module.exports = class ReactionService {
     // {$group : { _id : '$user', count : {$sum : 1}}}
     // get all reaction based on content (post || comment)
     async getReactionCounts (contentID) {
-        log(contentID)
         let a = await Reaction.aggregate([
             { $match: { contentID: contentID } },
             {
@@ -61,7 +42,6 @@ module.exports = class ReactionService {
                 }
             },
         ])
-        log(a)
         return a
     }
 

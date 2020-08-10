@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 let postSchema = new mongoose.Schema(
 
     {
+        _id: { type: String, required: true },
         user: {
             _id: { type: String, index: true, required: true },
             nickname: { type: String, required: true }
@@ -14,7 +15,7 @@ let postSchema = new mongoose.Schema(
             likes: { type: Number, default: 0 }
         }
     },
-    { typePojoToMixed: false, timestamps: true }
+    { autoIndex: false, typePojoToMixed: false, timestamps: true }
 )
 
 // postSchema.set('toJSON', {

@@ -1,4 +1,4 @@
-const test = require('mongoose').model('Post')
+const mongoose = require('mongoose')
 
 let log = (m) => console.log('\n', m, '\n')
 let Post
@@ -12,7 +12,8 @@ module.exports = class PostService {
 
     async addPost (user, post) {
         // try {
-        let a = await Post.create({ user, post })
+        let _id = 'p' + mongoose.Types.ObjectId()
+        let a = await Post.create({ _id, user, post })
         return a
         // } catch (error) {
         //     return new Error(error)
@@ -20,12 +21,8 @@ module.exports = class PostService {
     }
 
     async removePost (post) {
-        try {
-            let a = await Post.findByIdAndDelete(post._id)
-            return {}
-        } catch (error) {
-            log(error)
-        }
+        let a = await Post.findByIdAndDelete(post._id)
+        return {}
 
     }
 
@@ -60,12 +57,7 @@ module.exports = class PostService {
         //   ) 
 
         let a = await Post.find({ 'post.level': 'public', createdAt: { $gt: lastHour } }).sort({ createdAt: 1 }).limit(n)
-
-        // log(a)
         return a
-        // } catch (error) {
-        //      log(error)
-        // }
     }
 
     // user: {

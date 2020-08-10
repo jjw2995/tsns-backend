@@ -15,8 +15,9 @@ module.exports = class PostService {
     }
 
     async addComment (user, post, content, parentCom = null) {
+        let _id = 'c' + mongoose.Types.ObjectId()
         // let comment = new t({ postID: post._id, user: user, content: content })
-        let comment = { postID: post._id, user: user, content: content }
+        let comment = { _id: _id, postID: post._id, user: user, content: content }
         if (parentCom) {
             if (parentCom.parentComID) {
                 parentCom._id = parentCom.parentComID

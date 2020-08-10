@@ -36,10 +36,11 @@ after(async () => {
     dbReset()
 })
 beforeEach(async () => {
-    // await dbReset()
+    dbReset()
 })
 
-let id = '5f2fe93b2ff6db7576fbbce0'
+let postID = 'p5f2fe93b2ff6db7576fbbce0'
+let commentID = 'c5f2fe93b2ff6db7576fbbce0'
 
 let u1 = { nickname: 'u1', _id: 'id1' }
 let u2 = { nickname: 'u2', _id: 'id2' }
@@ -47,19 +48,20 @@ let u2 = { nickname: 'u2', _id: 'id2' }
 let emotions = ['love', 'haha', 'sad', 'angry']
 let ctype = ['comment', 'post']
 
-describe.skip('service-reaction', () => {
+
+describe('service-reaction', () => {
     describe('.addReaction', () => {
         it('normal add', async () => {
-            let a = await Service.addReaction(u1, emotions[2], id, ctype[1])
+            let a = await Service.addReaction(u1, emotions[2], postID)
         })
         it('inserting on same user and different content', async () => {
-            await Service.addReaction(u1, emotions[3], id, ctype[1])
-            await Service.addReaction(u1, emotions[3], id, ctype[0])
+            await Service.addReaction(u1, emotions[3], postID)
+            await Service.addReaction(u1, emotions[3], commentID)
             // await getAll()
         })
-        it('inserting twice on same user and content, reject', (done) => {
-            Service.addReaction(u1, emotions[3], id, ctype[1]).then(() => {
-                return Service.addReaction(u1, emotions[3], id, ctype[1])
+        it('insert twice by same user and content, reject', (done) => {
+            Service.addReaction(u1, emotions[3], postID).then(() => {
+                return Service.addReaction(u1, emotions[3], postID)
             }).catch((e) => {
                 expect(e).to.be.an("error")
                 done()
@@ -71,7 +73,7 @@ describe.skip('service-reaction', () => {
 
     describe('.updateReacion', () => {
         it('normal update', async () => {
-            let a = await Service.addReaction(u1, emotions[3], id, ctype[1])
+            let a = await Service.addReaction(u1, emotions[3], postID)
             let b = await Service.updateReaction(a._id, emotions[1])
             log(b)
         })
@@ -84,19 +86,19 @@ describe.skip('service-reaction', () => {
             for (; i < n; i++) {
                 u = { _id: i, nickname: 'u' + i }
                 // log(u)
-                arr.push(Service.addReaction(u, emotion, '1', ctype[1]))
+                arr.push(Service.addReaction(u, emotion, postID))
             }
             return await Promise.all(arr)
         }
 
-        it('a', async () => {
+        // it('a', async () => {
+        // })
+        it('b', async () => {
             gen(0, 10, emotions[0])
             gen(10, 20, emotions[1])
             gen(20, 30, emotions[2])
-        })
-        it('b', async () => {
-            await Service.addReaction(u, emotions[2], 'NOTTHEONE', ctype[1])
-            await Service.getReactionCounts('p1')
+            await Service.addReaction(u1, emotions[2], commentID)
+            await Service.getReactionCounts(postID)
             // getAll()
         })
     })
