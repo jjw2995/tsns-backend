@@ -76,15 +76,13 @@ let com3
 //     }
 // }
 
-describe('service-reaction', () => {
+describe('service-comments', () => {
     describe('.addComment', () => {
         it('ok comment', async () => {
             com1 = await Service.addComment(u1, p1, c1)
-            // log(com1)
         })
         it('ok subcomment', async () => {
             com1 = await Service.addComment(u1, p1, c1)
-            log(com1._id)
             com2 = await Service.addComment(u2, p1, c2, com1)
         })
         it('invalid subcomment', async () => {
@@ -126,7 +124,6 @@ describe('service-reaction', () => {
             com2 = await Service.addComment(u2, p1, 'c3', com1)
             com3 = await Service.addComment(u2, p1, 'c4', com2)
             let a = await Service.getPostComments(p1)
-            log(a)
         })
     })
 
@@ -143,7 +140,6 @@ describe('service-reaction', () => {
             await Service.addComment(u2, p1, 'subC8', com1)
             await Service.addComment(u2, p1, 'subC9', com1)
             let a = await Service.getSubComments(com1, b, 2)
-            log(a)
         })
     })
 
@@ -157,9 +153,17 @@ describe('service-reaction', () => {
             await Service.addComment(u2, p1, 'subC8', com1)
             await Service.addComment(u2, p1, 'subC9', com1)
             let a = await Service.removeComment(com1)
-            // log(b)
             getAll()
-            // log(a)
+        })
+    })
+    describe('.incrementReaction - reactionable superclass', () => {
+        it('', async () => {
+            com1 = await Service.addComment(u1, p1, c1)
+            let a = await Service.incrementReaction(com1._id, 'haha')
+            a = await Service.incrementReaction(com1._id, 'haha')
+            a = await Service.incrementReaction(com1._id, 'haha')
+            a = await Service.incrementReaction(com1._id, 'haha')
+            a = await Service.updateReaction(com1._id, 'haha', 'sad')
         })
     })
 

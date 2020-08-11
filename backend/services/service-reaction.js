@@ -30,6 +30,13 @@ module.exports = class ReactionService {
         return ans
     }
 
+    // remove reaction
+    async removeReaction (reactionID) {
+        let ans = qwe.findByIdAndDelete(reactionID)
+        return ans
+    }
+
+
     // {$group : { _id : '$user', count : {$sum : 1}}}
     // get all reaction based on content (post || comment)
     async getReactionCounts (contentID) {
@@ -38,14 +45,15 @@ module.exports = class ReactionService {
             {
                 $group: {
                     _id: "$emotion",
-                    count: { $sum: 1 }
+                    'count': { $sum: 1 }
                 }
             },
+            { $unwind: '$_id' }
         ])
+        log(a)
         return a
     }
 
-    // remove reaction
 
 
 

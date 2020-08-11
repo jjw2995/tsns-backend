@@ -11,7 +11,14 @@ let commentSchema = new mongoose.Schema(
         parentComID: { type: String, default: null, index: true },
         // hasChild: { type: Boolean, default: false },
         numChild: { type: Number, default: 0 },
-        content: { type: String, minlength: 1, maxlength: 150, trim: true, required: true }
+        content: { type: String, minlength: 1, maxlength: 150, trim: true, required: true },
+        // emotion: { type: String, enum: ['love', 'haha', 'sad', 'angry'], required: true },
+        reactions: {
+            love: { type: Number, default: 0 },
+            haha: { type: Number, default: 0 },
+            sad: { type: Number, default: 0 },
+            angry: { type: Number, default: 0 }
+        }
     },
     { autoIndex: false, typePojoToMixed: false, timestamps: true, collection: 'Comment' }
 )

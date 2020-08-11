@@ -103,7 +103,7 @@ function addPosts (u, pArr) {
     })
 }
 
-describe('postService', () => {
+describe('service-post', () => {
     // beforeEach(async () => {
 
     // })

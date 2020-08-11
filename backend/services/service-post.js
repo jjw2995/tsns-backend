@@ -1,36 +1,31 @@
 const mongoose = require('mongoose')
+const Reactionable = require('./reactionable')
+
 
 let log = (m) => console.log('\n', m, '\n')
 let Post
 
-module.exports = class PostService {
+const PAGE_SIZE = 3
+module.exports = class PostService extends Reactionable {
     constructor (postModel) {
+        super(postModel)
         Post = postModel
     }
 
-    // post = { description: 'd', media: [] }
-
     async addPost (user, post) {
-        // try {
         let _id = 'p' + mongoose.Types.ObjectId()
         let a = await Post.create({ _id, user, post })
         return a
-        // } catch (error) {
-        //     return new Error(error)
-        // }
     }
 
     async removePost (post) {
         let a = await Post.findByIdAndDelete(post._id)
         return {}
-
     }
 
     async getPosts (user, friends) {
-        // try {
         let ids = friends.map(x => { return x._id })
 
-        // test.find().sort
         let a = await Post.find({
             $or: [{
                 $and: [

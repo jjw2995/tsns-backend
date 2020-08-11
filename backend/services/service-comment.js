@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const test = require('mongoose').model('Comment')
+const Reactionable = require('./reactionable')
 
 let log = (m) => console.log('\n', m, '\n')
 let Comment
@@ -9,8 +10,9 @@ let Comment
 // }
 
 const PAGE_SIZE = 3
-module.exports = class PostService {
+module.exports = class PostService extends Reactionable {
     constructor (commentModel) {
+        super(commentModel)
         Comment = commentModel
     }
 

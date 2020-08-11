@@ -13,6 +13,12 @@ let postSchema = new mongoose.Schema(
             media: [{ type: String, trim: true }], // resource address
             level: { type: String, enum: ['private', 'friends', 'public'], default: 'friends' },
             likes: { type: Number, default: 0 }
+        },
+        reactions: {
+            love: { type: Number, default: 0 },
+            haha: { type: Number, default: 0 },
+            sad: { type: Number, default: 0 },
+            angry: { type: Number, default: 0 }
         }
     },
     { autoIndex: false, typePojoToMixed: false, timestamps: true }
