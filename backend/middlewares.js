@@ -1,24 +1,27 @@
 const jwt = require('jsonwebtoken');
 
 const verifyAccessToken = function (req, res, next) {
+	let msg = 'invalid access token, refresh token';
 	const authHeader = req.headers['authorization'];
 	const token = authHeader && authHeader.split(' ')[1];
-	// Bearer TOKEN
-	if (token == null) return res.sendStatus(401);
+	// Bearer <access token>
+	if (token == null) return res.status(401).json({ error: msg });
 
 	jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-		if (err) return res.sendStatus(403);
+		if (err) return res.status(403).json({ error: msg });
 		req.user = user;
 		next();
 	});
 };
 
 const verifyRefreshToken = function (req, res, next) {
+	let msg = 'invalid refresh token, log in again';
 	let token = req.body.refreshToken;
-	if (token == null) return res.sendStatus(400);
+	if (token == null) return res.status(401).json({ error: msg });
 
 	jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
-		if (err) return res.status(403).json('invalid refresh token, log in');
+		if (err) return res.status(403).json({ error: msg });
+		// console.log('verifyRefreshToken\n', user);
 		user.refreshToken = token;
 		req.user = user;
 		next();

@@ -66,9 +66,9 @@ before(async () => {
 	server = await chai.request(app).keepOpen();
 	// await new Promise((r) => setTimeout(r, 200));
 });
-after(() => {
-	server.close;
-});
+// after(() => {
+// 	server.close;
+// });
 describe('/api/auth', () => {
 	describe('POST /register', () => {
 		beforeEach((done) => {
@@ -368,26 +368,90 @@ describe('/api/auth', () => {
 		});
 	});
 });
-
-
+beforeEach((done) => {
+	// User.find({}, (r) => {
+	// 	log(r);
+	// });
+	User.deleteMany({}, () => {
+		done();
+	});
+});
 describe('QUICK TESTING', () => {
-
-	// it('register user - has all required input, no miscellaneous fields', (done) => {
+	// it('', (done) => {
+	// 	// chai.request(app).post().
 	// 	server
 	// 		.post('/api/auth/register')
 	// 		.send(validUser)
 	// 		.end((err, res) => {
 	// 			expect(err).to.be.null;
-	// 			// log(res);
-	// 			expect(res).to.have.status(200);
-	// 			// expect(res.body).to.contain(userProps);
-	// 			expect(res.body).to.have.keys(userProps);
+	// 			log(res.status);
+	// 			log(res.header);
 	// 			done();
 	// 		});
 	// });
 
+	function logRes(res, method) {
+		console.log(
+			'\n\n',
+			method,
+			'\n\n',
+			'STATUS:',
+			res.status,
+			// '\n',
+			// 'HEADER:',
+			// res.header,
+			'\n',
+			'BODY: ',
+			res.body,
+			'\n'
+		);
+	}
 
-	it('', () => {
-		server.
+	// it.only('', async () => {
+	// 	let a = await server.post('/api/auth/register').send(validUser);
+	// 	// logRes(a);
+
+	// 	let b = await server.post('/api/auth/login').send(loginVal);
+	// 	// logRes(b);
+
+	// 	let accToken = b.body.accessToken;
+	// 	let refToken = b.body.refreshToken;
+	// 	// log(accToken);
+	// 	// log(refToken);
+
+	// 	// let users = await User.find({});
+	// 	// log(users);
+
+	// 	let d = await server
+	// 		.post('/api/auth/token')
+	// 		.send({ refreshToken: refToken });
+	// 	logRes(d);
+
+	// 	let c = await server
+	// 		.post('/api/auth/logout')
+	// 		.send({ refreshToken: refToken });
+	// 	logRes(c);
+	// });
+
+	it('', async () => {
+		let a = await server.post('/api/auth/register').send(validUser);
+		logRes(a, 'POST /auth/register');
+		let b = await server.post('/api/auth/login').send(loginVal);
+		logRes(b, 'POST /auth/login');
+
+		let accToken = b.body.accessToken;
+		let refToken = b.body.refreshToken;
+		// let users = await User.find({});
+		// log(users);
+
+		let d = await server
+			.post('/api/auth/token')
+			.send({ refreshToken: refToken });
+		logRes(d, 'POST /auth/token');
+
+		let c = await server
+			.post('/api/auth/logout')
+			.send({ refreshToken: refToken });
+		logRes(c, 'POST /auth/logout');
 	});
 });

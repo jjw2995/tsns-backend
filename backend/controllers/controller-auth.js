@@ -30,7 +30,7 @@ const postLogout = (req, res) => {
 	authService
 		.logoutUser(req.user)
 		.then((user) => res.status(200).send('sucessfully logged out'))
-		.catch((e) => res.status(400).json(e));
+		.catch((e) => res.status(401).json(e));
 };
 
 const postToken = (req, res) => {
@@ -39,7 +39,7 @@ const postToken = (req, res) => {
 		.then((token) => {
 			res.status(200).json(token);
 		})
-		.catch((e) => res.status(400).json(e));
+		.catch((e) => res.status(401).json(e));
 };
 
 //=======================================================

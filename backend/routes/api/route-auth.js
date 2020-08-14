@@ -10,6 +10,7 @@ const {
 	fieldsExist,
 } = require('../../utils/validations');
 
+// TODO: email verification, for now it just sends back user nickname and id
 router.post(
 	'/register',
 	[validateEmail, validateNick, validatePass],

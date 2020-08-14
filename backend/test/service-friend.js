@@ -2,10 +2,10 @@
 const chai = require('chai');
 const mongoose = require('mongoose');
 const Friend = mongoose.model('Friend');
-const { FriendService } = require('../services');
+const { FollowerService } = require('../services');
 const { should, expect } = require('chai');
 
-let friendService = new FriendService(Friend);
+let followerService = new FollowerService(Friend);
 
 // chai.use(require('chai-http'))
 // let should = should
@@ -40,11 +40,11 @@ async function dbReset() {
 }
 
 async function addFriendReqRec(req, rec) {
-	let a = await friendService.addFriend(req, rec);
+	let a = await followerService.addFriend(req, rec);
 	return a;
 }
 
-describe('friendService', () => {
+describe.only('followerService', () => {
 	describe('.addFriend', () => {
 		//setup()
 		afterEach(async () => {
@@ -103,14 +103,14 @@ describe('friendService', () => {
 
 		it('set viewed True', async () => {
 			let viewed = true;
-			let rv = await friendService.setRequestViewed(u1, u5, viewed);
+			let rv = await followerService.setRequestViewed(u1, u5, viewed);
 			expect(rv).to.be.equal(
 				`${u1._id} has set hasViewed:${viewed} on friend request with ${u5._id}`
 			);
 		});
 		it('set viewed False', async () => {
 			let viewed = false;
-			let rv = await friendService.setRequestViewed(u1, u5, viewed);
+			let rv = await followerService.setRequestViewed(u1, u5, viewed);
 			expect(rv).to.be.equal(
 				`${u1._id} has set hasViewed:${viewed} on friend request with ${u5._id}`
 			);
@@ -118,7 +118,7 @@ describe('friendService', () => {
 		it('set viewed with non-existing user, reject', async () => {
 			let viewed = true;
 
-			friendService.setRequestViewed(u1, u3, viewed).catch((e) => {
+			followerService.setRequestViewed(u1, u3, viewed).catch((e) => {
 				expect(e).to.be.an.instanceOf(Error);
 				expect(e.message).equal(
 					`setRequestViewed from ${u1._id} -> ${u3._id}: either such users not exist OR friend request has not yet been made`
@@ -136,18 +136,18 @@ describe('friendService', () => {
 			await addFriendReqRec(u3, u1); // pending
 			await addFriendReqRec(u4, u1); // pending
 			await addFriendReqRec(u5, u1); // pending viewed
-			await friendService.setRequestViewed(u1, u5, true);
+			await followerService.setRequestViewed(u1, u5, true);
 		});
 
 		it('viewed = false (default)  => u1 should see u3, u4', async () => {
 			// await getAll()
-			let list = await friendService.getPending(u1);
+			let list = await followerService.getPending(u1);
 			expect(list).to.eql([u3, u4]);
 		});
 
 		it('viewed = true		  => u1 should only see u5', async () => {
 			// await getAll()
-			let list = await friendService.getPending(u1, true);
+			let list = await followerService.getPending(u1, true);
 			expect(list).to.eql([u5]);
 		});
 	});
@@ -162,7 +162,7 @@ describe('friendService', () => {
 
 		it('set following False', async () => {
 			let viewed = false;
-			let rv = await friendService.setFollowing(u1, u5, viewed);
+			let rv = await followerService.setFollowing(u1, u5, viewed);
 			expect(rv).to.be.equal(
 				`${u1._id} has set hasViewed:${viewed} on friend request with ${u5._id}`
 			);
@@ -170,7 +170,7 @@ describe('friendService', () => {
 
 		it('set following True', async () => {
 			let viewed = true;
-			let rv = await friendService.setFollowing(u1, u5, viewed);
+			let rv = await followerService.setFollowing(u1, u5, viewed);
 			expect(rv).to.be.equal(
 				`${u1._id} has set hasViewed:${viewed} on friend request with ${u5._id}`
 			);
@@ -178,7 +178,7 @@ describe('friendService', () => {
 		it('set following with non-existing user/friendDoc, reject', async () => {
 			let viewed = true;
 
-			friendService.setFollowing(u1, u3, viewed).catch((e) => {
+			followerService.setFollowing(u1, u3, viewed).catch((e) => {
 				expect(e).to.be.an.instanceOf(Error);
 				expect(e.message).equal(
 					`setFollowing from ${u1._id} -> ${u3._id}: either such users not exist OR are not friends yet`
@@ -208,29 +208,29 @@ describe('friendService', () => {
 			await addFriendReqRec(u1, u4);
 
 			await addFriendReqRec(u5, u1);
-			await friendService.setFollowing(u1, u4, false);
+			await followerService.setFollowing(u1, u4, false);
 		});
 		it("u1 get 'all' (default) friends - get u2, u3, u4", async () => {
-			let a = await friendService.getFriends(u1);
+			let a = await followerService.getFriends(u1);
 			expect(a).to.eql([u2, u3, u4]);
 		});
 		it("u1 get 'follwing' friends - get u2, u3", async () => {
-			let a = await friendService.getFriends(u1, 'following');
+			let a = await followerService.getFriends(u1, 'following');
 			expect(a).to.eql([u2, u3]);
 		});
 
 		it("u1 get 'notFollwing' friends - get u4", async () => {
-			let a = await friendService.getFriends(u1, 'notFollowing');
+			let a = await followerService.getFriends(u1, 'notFollowing');
 			expect(a).to.eql([u4]);
 		});
 
 		it('get friends for u6 no pending, should get []', async () => {
-			let a = await friendService.getFriends(u6);
+			let a = await followerService.getFriends(u6);
 			expect(a).to.eql([]);
 			// expect(a.users).to.eql([u2, u3])
 		});
 		it('get friends for u5 one pending no friends, should get []', async () => {
-			let a = await friendService.getFriends(u5);
+			let a = await followerService.getFriends(u5);
 			expect(a).to.eql([]);
 			// expect(a.users).to.eql([u2, u3])
 		});
@@ -251,7 +251,7 @@ describe('friendService', () => {
 		});
 
 		it('.deleteFriend 		= not friend, fail to delete', (done) => {
-			friendService.deleteFriend(u5, u1).catch((e) => {
+			followerService.deleteFriend(u5, u1).catch((e) => {
 				expect(e).to.be.an.instanceOf(Error);
 				expect(e.message).to.have.string(
 					`friend document between ${u5._id} and ${u1._id} never existed OR wrong id`
@@ -261,26 +261,32 @@ describe('friendService', () => {
 		});
 
 		it('.deleteFriend 		= friend, delete', (done) => {
-			friendService.deleteFriend(u1, u2).then((r) => {
+			followerService.deleteFriend(u1, u2).then((r) => {
 				// log(r)
 				expect(r).to.have.string(
-					`friend document ${friendService._getDocId(u1, u2)} has been deleted`
+					`friend document ${followerService._getDocId(
+						u1,
+						u2
+					)} has been deleted`
 				);
 				done();
 			});
 		});
 
 		it('.removeFriendRequest	= not friend, delete', (done) => {
-			friendService.removeFriendRequest(u5, u1).then((r) => {
+			followerService.removeFriendRequest(u5, u1).then((r) => {
 				expect(r).to.have.string(
-					`friend document ${friendService._getDocId(u5, u1)} has been deleted`
+					`friend document ${followerService._getDocId(
+						u5,
+						u1
+					)} has been deleted`
 				);
 				done();
 			});
 		});
 
 		it('.removeFriendRequest	= friend, fail delete', (done) => {
-			friendService.removeFriendRequest(u2, u1).catch((e) => {
+			followerService.removeFriendRequest(u2, u1).catch((e) => {
 				expect(e).to.be.an.instanceOf(Error);
 				expect(e.message).to.have.string(
 					`friend document between ${u2._id} and ${u1._id} never existed OR wrong id`

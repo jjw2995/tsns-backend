@@ -1,11 +1,12 @@
 const bcrypt = require('bcryptjs');
 const { filterObjPropsBy } = require('../utils/sanatizor');
 const jwt = require('jsonwebtoken');
+const { use } = require('chai');
 
 const refreshToken = process.env.REFRESH_TOKEN_SECRET;
 const accessToken = process.env.ACCESS_TOKEN_SECRET;
 
-const submitFilter = ['nickname', 'password', 'email', 'salt', 'refreshToken'];
+const submitFilter = ['nickname', 'password', 'email', 'salt'];
 
 const returnFilter = ['_id', 'nickname'];
 
@@ -20,17 +21,20 @@ module.exports = class AuthService {
 		user.password = bcrypt.hashSync(user.password, user.salt);
 
 		let u = new User(filterObjPropsBy(user, submitFilter));
-		attachAccRefTokenGivenUser(u);
+		// attachAccRefTokenGivenUser(u);
 
 		let ud = getIdNick(u);
 
 		return new Promise((resolve, reject) => {
 			u.save((err, docUser) => {
-				if (err) reject(err);
-				else {
+				if (err) {
+					// console.log(err);
+					reject(err);
+				} else {
 					user = docUser.toJSON();
-					user.accessToken = genAccessToken(ud);
-					user.refreshToken = genRefreshToken(ud);
+					// user.accessToken = genAccessToken(ud);
+					// user.refreshToken = genRefreshToken(ud);
+					// console.log(user);
 					resolve(user);
 				}
 			});
@@ -41,8 +45,11 @@ module.exports = class AuthService {
 		return new Promise((resolve, reject) => {
 			User.findOne({ email: loginfo.email })
 				.then((user) => {
-					let tf = bcrypt.compareSync(loginfo.password, user.password);
-					if (!tf) {
+					let passwordMatch = bcrypt.compareSync(
+						loginfo.password,
+						user.password
+					);
+					if (!passwordMatch) {
 						return reject('wrong password or email');
 					}
 					let userJson = user.toJSON();
@@ -55,7 +62,7 @@ module.exports = class AuthService {
 						})
 						.catch((e) => reject('error updating refreshToken'));
 				})
-				.catch((e) => reject('error in while finding user'));
+				.catch((e) => reject('error while finding user'));
 		});
 	}
 
@@ -79,8 +86,6 @@ module.exports = class AuthService {
 		return new Promise((resolve, reject) => {
 			User.findById(user._id).then((doc) => {
 				let doctok = doc.refreshToken;
-				// console.log(!doctok);
-				// console.log(doctok != user.refreshToken);
 				if (!doctok || doctok != user.refreshToken) {
 					reject(
 						'not a valid refreshToken OR a logged out user, try logging in again'
@@ -100,6 +105,7 @@ function attachAccRefTokenGivenUser(userJson) {
 }
 
 function getIdNick(user) {
+	// console.log(user);
 	return filterObjPropsBy(user, ['_id', 'nickname']);
 }
 

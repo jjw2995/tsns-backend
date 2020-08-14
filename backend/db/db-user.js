@@ -39,6 +39,19 @@ userSchema.set('toJSON', {
 	},
 });
 
+// userSchema.set('toJSON', {
+// 	transform: function (doc, ret, options) {
+// 		ret.id = ret._id;
+// 		delete ret.password;
+// 		delete ret._id;
+// 		delete ret.__v;
+// 		delete ret.updatedAt;
+// 		delete ret.email;
+// 		delete ret.salt;
+// 		// delete
+// 	},
+// });
+
 userSchema.methods.toFilteredJSON = function (filters = []) {
 	var json = {};
 	filters.map((filter) => {
