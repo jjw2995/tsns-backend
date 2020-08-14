@@ -6,9 +6,6 @@ let Reaction
 // function getUsersIdx (target, other) {
 //     return target._id < other._id ? 0 : 1
 // }
-function name (params) {
-
-}
 
 module.exports = class ReactionService {
     constructor (reactionModel) {

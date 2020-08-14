@@ -16,13 +16,15 @@
 		"express-validator": "^6.6.0",
 		"jsonwebtoken": "^8.5.1",
 		"mongoose": "^5.9.25",
-		"mongoose-unique-validator": "^2.0.3"
+		"mongoose-unique-validator": "^2.0.3",
+		"swagger-jsdoc": "^4.0.0",
+		"swagger-ui-express": "^4.1.4"
 	},
 	"devDependencies": {
 		"chai": "^4.2.0",
 		"chai-http": "^4.3.0",
 		"kill-port": "^1.6.1",
-		"mocha": "^8.0.1",
+		"mocha": "^8.1.1",
 		"nodemon": "^2.0.4"
 	}
 }

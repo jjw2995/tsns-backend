@@ -41,7 +41,6 @@ const validate = (req, res, next) => {
 
 	// why does map work while forLoop shows undefined for err.msg?
 	extractedErrors = mapErrors(errors, extractedErrors);
-	// console.log('\n \n 	in err pringing \n \n');
 
 	return res.status(400).json({
 		errors: extractedErrors,

@@ -1,0 +1,118 @@
+{
+	"openapi": "3.0.0",
+	"info": {
+		"version": "1.0.0",
+		"title": "tSNS API",
+		"description": "tSNS API Information"
+	},
+	"paths": {
+		"/api/auth/register": {
+			"post": {
+				"summary": "register new users",
+				"tags": ["Auth"],
+				"description": "register new users",
+				"parameters": [],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/User"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/auth/login": {
+			"post": {
+				"summary": "login users",
+				"tags": ["Auth"],
+				"description": "test",
+				"parameters": [],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			}
+		},
+		"/api/auth/logout": {
+			"post": {
+				"tags": ["Auth"],
+				"description": "test",
+				"parameters": [],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			}
+		},
+		"/api/auth/token": {
+			"post": {
+				"tags": ["Auth"],
+				"description": "Get token",
+				"parameters": [],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			}
+		},
+		"/api/users": {
+			"get": {
+				"tags": ["User"],
+				"summary": "",
+				"description": "",
+				"parameters": [],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			}
+		},
+		"/api/": {
+			"get": {
+				"tags": [],
+				"summary": "",
+				"description": "",
+				"parameters": [],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			}
+		}
+	},
+	"components": {
+		"securitySchemes": {
+			"bearerAuth": {
+				"type": "http",
+				"scheme": "bearer",
+				"bearerFormat": "JWT"
+			}
+		},
+
+		"schemas": {
+			"User": {
+				"required": ["_id", "nickname"],
+				"properties": {
+					"_id": {
+						"type": "string",
+						"uniqueItems": true
+					},
+					"email": {
+						"type": "string",
+						"uniqueItems": true
+					}
+				}
+			}
+		}
+	}
+}

@@ -25,13 +25,6 @@ let userSchema = new mongoose.Schema(
 );
 
 userSchema.plugin(uniqueValidator, { type: 'mongoose-unique-validator' });
-// userSchema.plugin(uniqueValidator);
-
-// userSchema.pre('save', function (next) {
-// 	this.salt = new String(bcrypt.genSaltSync(10));
-// 	this.password = bcrypt.hashSync(this.password, this.salt);
-// 	next();
-// });
 
 userSchema.set('toJSON', {
 	transform: function (doc, ret, options) {
@@ -42,21 +35,9 @@ userSchema.set('toJSON', {
 		delete ret.updatedAt;
 		delete ret.__v;
 		delete ret.refreshToken;
-		// return filterObjPropsBy(ret, ['_id', 'nickname', 'refreshToken']);
-		// console.log(ret.keyValue('_id'));
-		// ret.keyValue('')
 		return ret;
 	},
 });
-
-// userSchema.methods.verifyPassword = (pass) => {
-// 	// return function (pass) {
-// 	console.log(this);
-// 	console.log(this.password);
-// 	console.log(pass);
-// 	// return bcrypt.compareSync(pass, this.password);
-// 	// };
-// };
 
 userSchema.methods.toFilteredJSON = function (filters = []) {
 	var json = {};
@@ -67,33 +48,11 @@ userSchema.methods.toFilteredJSON = function (filters = []) {
 };
 
 userSchema.post('save', function (error, doc, next) {
-	// console.log(error);
 	if (error.name === 'MongoError' && error.code === 11000) {
-		// console.log(Object.keys(error.keyValue));
 		next(new Error('There was a duplicate key error'));
 	} else {
-		// console.log('\n in post save \n');
 		next();
 	}
 });
 
 module.exports = mongoose.model('User', userSchema);
-
-// //////////////////////////////////////////////////////////////////
-// // make sure every value is equal to "something"
-// function validator (val) {return val == 'something';}
-// new Schema({ name: { type: String, validate: validator }});
-
-// // with a custom error message
-// var custom = [validator, 'Uh oh, {PATH} does not equal "something".']
-// new Schema({ name: { type: String, validate: custom }});
-
-// // adding many validators at a time
-// var many = [{ validator: validator, msg: 'uh oh' },
-//             { validator: anotherValidator, msg: 'failed' }]
-// new Schema({ name: { type: String, validate: many }});
-
-// // or utilizing SchemaType methods directly:
-// var schema = new Schema({ name: 'string' });
-// schema.path('name').validate(validator,
-//   'validation of `{PATH}` failed with value `{VALUE}`');

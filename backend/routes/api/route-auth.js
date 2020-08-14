@@ -1,57 +1,39 @@
-const express = require('express')
-const router = express.Router()
-const { authController } = require('../../controllers/index')
-const { verifyAccessToken, verifyRefreshToken } = require('../../middlewares')
+const express = require('express');
+const router = express.Router();
+const { AuthController } = require('../../controllers/index');
+const { verifyAccessToken, verifyRefreshToken } = require('../../middlewares');
 const {
 	validateEmail,
 	validateNick,
 	validatePass,
 	validate,
 	fieldsExist,
-} = require('../../utils/validations')
+} = require('../../utils/validations');
 
-//  input
-// {
-//   nickname:String,
-//   email:String,
-//   password:String
-// }
 router.post(
 	'/register',
 	[validateEmail, validateNick, validatePass],
 	validate,
-	authController.postRegister
-)
+	AuthController.postRegister
+);
 
 router.post(
 	'/login',
 	fieldsExist(['email', 'password']),
 	validate,
-	authController.postLogin
-)
+	AuthController.postLogin
+);
 
-router.post('/logout', verifyRefreshToken, authController.postLogout)
+router.post('/logout', verifyRefreshToken, AuthController.postLogout);
 
-router.post('/token', verifyRefreshToken, authController.postToken)
-
-// call service layer
-
-// ###############################
-// router.get('/', verifyAccessToken, (req, res) => {
-// 	console.log('authed user inside');
-// 	res.status(400).json();
-// });
+router.post('/token', verifyRefreshToken, AuthController.postToken);
 
 // TESTING
 // ###############################
 // ###############################
-router.get('/', (req, res) => {
-	console.log('inside GET api/auth')
-	res.status(200).send('in GET api/auth')
-})
 
-router.get('/reset', authController.getRegister)
+router.get('/reset', AuthController.getRegister);
 // ###############################
 // ###############################
 
-module.exports = router
+module.exports = router;
