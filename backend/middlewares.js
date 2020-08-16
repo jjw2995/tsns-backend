@@ -9,6 +9,8 @@ const verifyAccessToken = function (req, res, next) {
 
 	jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
 		if (err) return res.status(403).json({ error: msg });
+		delete user.iat;
+		delete user.exp;
 		req.user = user;
 		next();
 	});

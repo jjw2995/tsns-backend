@@ -12,8 +12,10 @@ let userSchema = new mongoose.Schema(
 			required: [true, 'email cannot be blank'],
 			unique: [true, 'email must be unique'],
 			trim: true,
+			lowercase: true,
 			index: true,
 		},
+		isPrivate: { type: Boolean, default: false },
 		password: {
 			type: String,
 			required: true,

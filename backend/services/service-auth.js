@@ -6,7 +6,7 @@ const { use } = require('chai');
 const refreshToken = process.env.REFRESH_TOKEN_SECRET;
 const accessToken = process.env.ACCESS_TOKEN_SECRET;
 
-const submitFilter = ['nickname', 'password', 'email', 'salt'];
+const submitFilter = ['nickname', 'password', 'email', 'salt', 'isPrivate'];
 
 const returnFilter = ['_id', 'nickname'];
 
