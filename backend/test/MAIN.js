@@ -1,0 +1,281 @@
+const chai = require('chai');
+const { expect } = chai;
+const app = require('../app');
+
+const mongoose = require('mongoose');
+const User = mongoose.model('User');
+const Follower = mongoose.model('Follower');
+const Post = mongoose.model('Post');
+const Comment = mongoose.model('Comment');
+const Reaction = mongoose.model('Reaction');
+
+chai.use(require('chai-http'));
+
+let server;
+
+before(() => {
+	server = chai.request(app).keepOpen();
+	// log('\n\n\n\n\n');
+});
+
+// auth
+// user
+// follower
+// post
+// comment
+// reaction
+let user_1 = {
+	nickname: 'user1',
+	email: 'user_1@qwerty.com',
+	password: 'dD1@dasdf',
+};
+let user_2 = {
+	nickname: 'user2',
+	email: 'user_2@qwerty.com',
+	password: 'dD1@dasdf',
+};
+let privateUser_1 = {
+	nickname: 'privateUser1',
+	email: 'privateUser_1@qwerty.com',
+	password: 'dD1@dasdf',
+	// isPrivate: true,
+};
+let privateUser_2 = {
+	nickname: 'privateUser2',
+	email: 'privateUser_2@qwerty.com',
+	password: 'dD1@dasdf',
+	// isPrivate: true,
+};
+
+let postFollowers = {
+	description: 'followers',
+	media: ['asf'],
+	level: 'followers',
+};
+
+let postPrivate = { description: 'private', media: ['fasf'], level: 'private' };
+
+let postPublic = { description: 'public', media: ['qwrs'], level: 'public' };
+
+function postAppendNick(user, post) {
+	post.description = post.description + '_' + user.nickname;
+	return post;
+}
+
+function getAuthBear(user) {
+	return { authorization: 'Bearer ' + user.accessToken };
+}
+
+function logRes(res, method = '') {
+	// return;
+	console.log(
+		'\n\n',
+		method,
+		'\n\n',
+		'STATUS:\n	',
+		res.status,
+		'\n',
+		'HEADER:\n	',
+		res.header,
+		'\n',
+		'BODY:\n	',
+		res.body,
+		'\n'
+	);
+}
+
+function log(msg) {
+	console.log('\n\n', msg);
+}
+
+async function initUsers(users) {
+	for (let i = 0; i < users.length; i++) {
+		await server.post('/api/auth/register').send(users[i]);
+		let r = await server.post('/api/auth/login').send(users[i]);
+		// log(r.body);
+		users[i]._id = r.body._id;
+		users[i].accessToken = r.body.accessToken;
+		users[i].refreshToken = r.body.refreshToken;
+	}
+	return users;
+}
+function expToHaveProps(value, propsArr) {
+	for (const iterator of propsArr) {
+		expect(value).to.have.property(iterator);
+	}
+}
+
+async function regAndLogin(user) {
+	await server.post('/api/auth/register').send(user);
+	let temp = JSON.parse(JSON.stringify(user));
+	delete temp.nickname;
+	let a = await server.post('/api/auth/login').send(temp);
+	user.accessToken = a.body.accessToken;
+	user.refreshToken = a.body.refreshToken;
+}
+
+beforeEach(async () => {
+	await User.deleteMany({});
+});
+
+describe('/api/auths', () => {
+	describe('POST /register', () => {
+		it('correct input', async () => {
+			let a = await server.post('/api/auth/register').send(user_1);
+			// logRes(a);
+			expToHaveProps(a.body, ['_id', 'nickname']);
+		});
+		it('incorrect inputs', async () => {
+			let invalNick = JSON.parse(JSON.stringify(user_1));
+			let invalPass = JSON.parse(JSON.stringify(user_1));
+			let invalEmail = JSON.parse(JSON.stringify(user_1));
+			// invalNick.nickname = 'd';
+			delete invalNick.nickname;
+			delete invalPass.password;
+			delete invalEmail.email;
+
+			invalNick.nickname = 'd';
+			invalPass.password = 'asd';
+			invalEmail.email = 'das';
+			invalEmail.nickname = 'd';
+
+			let a = await server.post('/api/auth/register').send(invalNick);
+			let b = await server.post('/api/auth/register').send(invalPass);
+			let c = await server.post('/api/auth/register').send(invalEmail);
+			// logRes(a);
+			// logRes(b);
+			// logRes(c);
+			expect(a.status).to.eql(400);
+			expect(b.status).to.eql(400);
+			expect(c.status).to.eql(400);
+		});
+		it('email already taken', async () => {
+			await server.post('/api/auth/register').send(user_1);
+			let a = await server.post('/api/auth/register').send(user_1);
+			// logRes(a);
+			expect(a.status).to.eql(400);
+		});
+	});
+	describe('POST /login', () => {
+		beforeEach(async () => {
+			await server.post('/api/auth/register').send(user_1);
+		});
+		it('correct login', async () => {
+			let temp = JSON.parse(JSON.stringify(user_1));
+			delete temp.nickname;
+			let a = await server.post('/api/auth/login').send(temp);
+			// logRes(a);
+			expToHaveProps(a.body, [
+				'_id',
+				'nickname',
+				'accessToken',
+				'refreshToken',
+			]);
+		});
+
+		it('wrong password', async () => {
+			let temp = JSON.parse(JSON.stringify(user_1));
+			delete temp.nickname;
+			temp.password = 'as!2aDfsd';
+			let a = await server.post('/api/auth/login').send(temp);
+			expect(a.status).to.eql(400);
+		});
+		it('wrong email', async () => {
+			let temp = JSON.parse(JSON.stringify(user_1));
+			delete temp.nickname;
+			temp.email = 'as!2aDfsd@gnal.com';
+			let a = await server.post('/api/auth/login').send(temp);
+			expect(a.status).to.eql(400);
+		});
+	});
+
+	describe('POST /logout', () => {
+		beforeEach(async () => {
+			await regAndLogin(user_1);
+		});
+		it('correct logout', async () => {
+			let temp = JSON.parse(JSON.stringify(user_1));
+			delete temp.nickname;
+
+			let a = await server.post('/api/auth/logout').send(temp);
+			expect(a.status).to.eql(204);
+		});
+		it('wrong refreshToken', async () => {
+			let temp = JSON.parse(JSON.stringify(user_1));
+			delete temp.nickname;
+			temp.refreshToken =
+				'yJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZjNjYTY0Y2M1NjVjMjA1MzlkODJhY2EiLCJuaWNrbmFtZSI6InVzZXIxIiwiaWF0IjoxNTk3ODEwMjUyLCJleHAiOjE1OTg0MTUwNTJ9.FcBESGe13duFGHzerVCqwHzFvtFqZ-fxpIgdku7CJE';
+
+			let a = await server.post('/api/auth/logout').send(temp);
+
+			delete temp.refreshToken;
+			let b = await server.post('/api/auth/logout').send(temp);
+			// let c = await server.post('/api/auth/logout').send(temp);
+			// logRes(a);
+			// logRes(b);
+			expect(a.status).to.eql(401);
+			expect(b.status).to.eql(401);
+		});
+	});
+
+	describe('POST /token', () => {
+		beforeEach(async () => {
+			await regAndLogin(user_1);
+		});
+		it('correct request', async () => {
+			let temp = JSON.parse(JSON.stringify(user_1));
+			// delete temp.nickname;
+
+			let a = await server.post('/api/auth/token').send(temp);
+			// logRes(a);
+			expect(a.status).to.eql(200);
+		});
+		it('wrong refreshToken/inputs', async () => {
+			let temp = JSON.parse(JSON.stringify(user_1));
+
+			await server.post('/api/auth/logout').send(temp);
+			let a = await server.post('/api/auth/token').send(temp);
+			// logRes(a);
+			expect(a.status).to.eql(401);
+
+			delete temp.nickname;
+			temp.refreshToken =
+				'yJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZjNjYTY0Y2M1NjVjMjA1MzlkODJhY2EiLCJuaWNrbmFtZSI6InVzZXIxIiwiaWF0IjoxNTk3ODEwMjUyLCJleHAiOjE1OTg0MTUwNTJ9.FcBESGe13duFGHzerVCqwHzFvtFqZ-fxpIgdku7CJE';
+
+			let b = await server.post('/api/auth/token').send(temp);
+			// logRes(b);
+			expect(b.status).to.eql(401);
+
+			delete temp.refreshToken;
+			let c = await server.post('/api/auth/token').send(temp);
+			// logRes(c);
+			expect(c.status).to.eql(401);
+		});
+	});
+});
+
+// describe('/api, those that need authed users', () => {
+// 	// describe('/users', () => {});
+// 	// describe('/followers', () => {});
+// 	// describe('/posts', () => {});
+// 	// describe('/comments', () => {});
+// 	// describe('/reactions', () => {});
+// });
+
+// beforeEach(async () => {
+// 	await User.deleteMany({});
+// 	await Follower.deleteMany({});
+// 	await Reaction.deleteMany({});
+// 	[user1, user2, privUser] = await init([
+// 		validUser1,
+// 		validUser2,
+// 		validPrivateUser,
+// 	]);
+// });
+
+// auth
+// user
+// follower
+// post
+// comment
+// reaction

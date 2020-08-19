@@ -1,11 +1,10 @@
-const mongoose = require('mongoose');
 const Reactionable = require('./reactionable');
-const qwe = mongoose.model('Post');
+// const qwe = require('mongoose');.model('Post');
 
 let log = (m) => console.log('\n', m, '\n');
 let Post;
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 8;
 module.exports = class PostService extends Reactionable {
 	constructor(postModel) {
 		super(postModel);
@@ -14,44 +13,63 @@ module.exports = class PostService extends Reactionable {
 
 	async addPost(user, post) {
 		let _id = 'p' + mongoose.Types.ObjectId();
-		let a = await Post.create({ _id, user, post });
+
+		let a = await Post.create({
+			_id,
+			user,
+			description: post.description,
+			media: post.media,
+			level: post.level,
+		});
+		// log(a.toJSON());
 		return a;
 	}
 
-	async removePost(post) {
-		let a = await Post.findByIdAndDelete(post._id);
-		return {};
+	async removePost(user, post) {
+		let a = await Post.findOneAndDelete({
+			_id: post._id,
+			'user._id': user._id,
+		});
+		if (!a) {
+			throw new Error('post is not yours or no such post exists');
+		}
+		// TODO: delete images on GCC or AWS s3
+		// a.media -> remove from cloud storage...
+		return;
 	}
 
-	// async updatePost(postID, post, user) {
-	// 	let a = await qwe.updateOne({ _id: postID, 'user._id': user._ud }, post, {
-	// 		new: true,
-	// 	});
+	async updatePost(user, post) {
+		let a = await Post.updateOne(
+			{
+				_id: post._id,
+				'user._id': user._id,
+			},
+			{
+				description: post.description,
+				// media: post.media,
+				level: post.level,
+			}
+		);
+		if (a.n == 0) {
+			throw new Error('post is not yours or no such user/post exists');
+		}
+		return;
+	}
 
-	// 	if (!a) {
-	// 		throw new Error("user didn't post the post or no such user/post");
-	// 	}
-	// 	return a;
-	// }
-
-	async getPosts(user, friends, pageSize = PAGE_SIZE) {
-		let ids = friends.map((x) => {
+	// TODO: append users Reaction using super
+	async getPosts(user, followers, pageSize = PAGE_SIZE) {
+		let ids = followers.map((x) => {
 			return x._id;
 		});
+		let q1 = { 'user._id': { $in: ids } };
+		let q2 = { level: { $ne: 'private' } };
 
 		let a = await Post.find({
-			$or: [
-				{
-					$and: [
-						{ 'user._id': { $in: friends } },
-						{ 'post.level': { $ne: 'private' } },
-					],
-				},
-				{ 'user._id': user._id },
-			],
+			$or: [{ $and: [q1, q2] }, { 'user._id': user._id }],
 		})
 			.sort({ createdAt: -1 })
-			.limit(pageSize);
+			.limit(pageSize)
+			.lean();
 		return a;
 	}
 
@@ -60,7 +78,7 @@ module.exports = class PostService extends Reactionable {
 		lastHour.setHours(lastHour.getHours() - 1);
 
 		let matching = {
-			'post.level': 'public',
+			level: 'public',
 			createdAt: { $gt: lastHour },
 		};
 
@@ -72,7 +90,16 @@ module.exports = class PostService extends Reactionable {
 				'$reactions.angry',
 			],
 		};
-		let projecting = { user: 1, post: 1, reactions: 1, factor: factoring };
+		let projecting = {
+			user: 1,
+			description: 1,
+			media: 1,
+			level: 1,
+			reactions: 1,
+			createdAt: 1,
+			updatedAt: 1,
+			factor: factoring,
+		};
 
 		let a = await Post.aggregate([
 			{ $match: matching },
@@ -84,15 +111,4 @@ module.exports = class PostService extends Reactionable {
 
 		return a;
 	}
-
-	// user: {
-	//     _id: { type: String, index: true, required: true },
-	//     nickname: { type: String, required: true }
-	// },
-	// post: {
-	//     description: { type: String, maxlength: 150, trim: true, default: '' },
-	//     media: [{ type: String, trim: true }], // resource address
-	//     level: { type: String, enum: ['private', 'friends', 'public'], default: 'friends' },
-	//     likes: { type: Number, default: 0 }
-	// }
 };

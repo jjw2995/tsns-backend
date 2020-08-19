@@ -5,7 +5,7 @@ const app = express();
 // const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUI = require('swagger-ui-express');
 const swaggerDoc = require('./swagger.json');
-
+const { errors } = require('celebrate');
 const PORT = process.env.PORT || 5000;
 
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDoc));
@@ -16,6 +16,9 @@ require('./db');
 
 //  Connect all our routes to our application
 app.use('/api', require('./routes/api'));
+
+// celebrate error handler middleware
+app.use(errors());
 
 let dbp = 'mongodb://localhost:27017';
 let p1 = new Promise((resolve, reject) => {
@@ -29,7 +32,7 @@ let p1 = new Promise((resolve, reject) => {
 		},
 		(e) => {
 			if (e) reject();
-			console.log(` mongoDB connected on - ${dbp}`);
+			// console.log(` mongoDB connected on - ${dbp}`);
 			resolve();
 		}
 	);
@@ -37,13 +40,15 @@ let p1 = new Promise((resolve, reject) => {
 
 let p2 = new Promise((resolve, reject) => {
 	app.listen(PORT, () => {
-		console.log(`\n BACKEND ON PORT - http://localhost:${PORT}`);
+		// console.log(`\n BACKEND ON PORT - http://localhost:${PORT}`);
 		resolve();
 	});
 });
 
 Promise.all([p1, p2])
-	.then(console.log('\n app and db running...'))
+	.then(() => {
+		// console.log('\n app and db running...');
+	})
 	.catch((e) => console.log(e));
 
 module.exports = app;

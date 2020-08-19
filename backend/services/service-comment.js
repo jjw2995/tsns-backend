@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const test = require('mongoose').model('Comment');
+// const test = require('mongoose').model('Comment');
+
 const Reactionable = require('./reactionable');
 
 let log = (m) => console.log('\n', m, '\n');
@@ -9,7 +9,7 @@ let Comment;
 //     return target._id < other._id ? 0 : 1
 // }
 
-const PAGE_SIZE = 3;
+const PAGE_SIZE = 10;
 module.exports = class PostService extends Reactionable {
 	constructor(commentModel) {
 		super(commentModel);
@@ -74,7 +74,7 @@ module.exports = class PostService extends Reactionable {
 	async removeComment(comment) {
 		// remove itself and all child comments
 		if (comment.parentComID) {
-			let a = await test.findByIdAndUpdate(comment.parentComID, {
+			let a = await Comment.findByIdAndUpdate(comment.parentComID, {
 				$inc: { numChild: -1 },
 			});
 

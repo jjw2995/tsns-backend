@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 
-// TODO: modified userSchema (optimize)
 let FollowerSchema = new mongoose.Schema(
 	{
 		follower: {

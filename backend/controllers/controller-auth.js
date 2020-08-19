@@ -11,7 +11,7 @@ const postRegister = (req, res) => {
 		.registerUser(req.body)
 		.then((newUser) => res.status(200).json(newUser))
 		.catch((e) => {
-			res.status(400).json(e.message);
+			res.status(400).json(e);
 		});
 };
 
@@ -29,7 +29,7 @@ const postLogin = (req, res) => {
 const postLogout = (req, res) => {
 	authService
 		.logoutUser(req.user)
-		.then((user) => res.status(200).send('sucessfully logged out'))
+		.then((msg) => res.status(204).json(msg))
 		.catch((e) => res.status(401).json(e));
 };
 
@@ -42,23 +42,9 @@ const postToken = (req, res) => {
 		.catch((e) => res.status(401).json(e));
 };
 
-//=======================================================
-//=======================================================
-//=======================================================
-const getRegister = (req, res) => {
-	User.deleteMany({}, (err, output) => {
-		if (err) {
-			console.log(err);
-		} else {
-			res.json(output);
-		}
-	});
-};
-
 module.exports = {
 	postRegister,
 	postLogin,
-	getRegister,
 	postLogout,
 	postToken,
 };

@@ -3,7 +3,7 @@ const { body, validationResult } = require('express-validator');
 let emailMsg = { email: 'must be valid email addr' };
 let passMsg = {
 	password:
-		'must contain #, lowercase, UPPERCASE, speci@l, and be 8 characters long',
+		'must contain a number, lowercase, UPPERCASE, special, and be 8 characters long',
 };
 let nickMsg = {
 	nickname: 'must be 2~16 characters long and not contain special characters',
@@ -26,11 +26,12 @@ const fieldExists = (field) => {
 		checkFalsy: true,
 	});
 };
-const validateNick = body('nickname', nickMsg).matches(nickRegex);
+const validateNick = body('nickname', nickMsg).matches(nickRegex).exists();
 const validateEmail = body('email', emailMsg)
 	.matches(emailRegex)
-	.normalizeEmail();
-const validatePass = body('password', passMsg).matches(passRegex);
+	.normalizeEmail()
+	.exists();
+const validatePass = body('password', passMsg).matches(passRegex).exists();
 
 const validate = (req, res, next) => {
 	const errors = validationResult(req);
@@ -43,11 +44,14 @@ const validate = (req, res, next) => {
 	extractedErrors = mapErrors(errors, extractedErrors);
 
 	return res.status(400).json({
+		statusCode: 400,
+		error: 'Bad Request',
 		errors: extractedErrors,
 	});
 };
 
 function mapErrors(errors, extractedErrors) {
+	console.log(errors);
 	errors.array().map((err) => {
 		let key = err.param;
 		extractedErrors.push({ [key]: err.msg[key] });

@@ -2,39 +2,59 @@ const express = require('express');
 const router = express.Router();
 const { AuthController } = require('../../controllers/index');
 const { verifyAccessToken, verifyRefreshToken } = require('../../middlewares');
-const {
-	validateEmail,
-	validateNick,
-	validatePass,
-	validate,
-	fieldsExist,
-} = require('../../utils/validations');
 
-// TODO: email verification, for now it just sends back user nickname and id
+const { Joi, celebrate, Segments } = require('celebrate');
+
+const nickname = Joi.string()
+	.pattern(/^[a-zA-Z0-9 ]{3,16}$/)
+	.message(
+		'"nickname" must be 3~16 characters long and not contain special characters'
+	)
+	.required();
+const email = Joi.string().email().required();
+const password = Joi.string()
+	.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/)
+	.message(
+		'"password" must contain a number, lowercase, UPPERCASE, special, and be 8 characters long'
+	)
+	.required();
+
+// TODO: add email verification
 router.post(
 	'/register',
-	[validateEmail, validateNick, validatePass],
-	validate,
+	celebrate(
+		{
+			[Segments.BODY]: Joi.object().keys({
+				nickname,
+				email,
+				password,
+			}),
+		},
+		{ abortEarly: false }
+	),
 	AuthController.postRegister
 );
 
+// email pass
 router.post(
 	'/login',
-	fieldsExist(['email', 'password']),
-	validate,
+	celebrate(
+		{
+			[Segments.BODY]: Joi.object().keys({
+				email,
+				password,
+			}),
+		},
+		{ abortEarly: false }
+	),
 	AuthController.postLogin
 );
 
-router.post('/logout', verifyRefreshToken, AuthController.postLogout);
+router.use(verifyRefreshToken);
+// refreshToken
+router.post('/logout', AuthController.postLogout);
 
-router.post('/token', verifyRefreshToken, AuthController.postToken);
-
-// TESTING
-// ###############################
-// ###############################
-
-router.get('/reset', AuthController.getRegister);
-// ###############################
-// ###############################
+// refreshToken
+router.post('/token', AuthController.postToken);
 
 module.exports = router;

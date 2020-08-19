@@ -5,8 +5,9 @@ const uniqueValidator = require('mongoose-unique-validator');
 
 let userSchema = new mongoose.Schema(
 	{
+		// _id
 		nickname: { type: String, required: [true, 'cannot be blank'], trim: true },
-		birthday: Date,
+		isPrivate: { type: Boolean, default: false },
 		email: {
 			type: String,
 			required: [true, 'email cannot be blank'],
@@ -15,13 +16,15 @@ let userSchema = new mongoose.Schema(
 			lowercase: true,
 			index: true,
 		},
-		isPrivate: { type: Boolean, default: false },
+		birthday: Date,
+		//
+		refreshToken: { type: String },
+		//
 		password: {
 			type: String,
 			required: true,
 		},
 		salt: { type: String, required: true },
-		refreshToken: { type: String },
 	},
 	{ timestamps: true }
 );
