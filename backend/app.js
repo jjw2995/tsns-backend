@@ -14,6 +14,11 @@ app.use(express.json());
 
 require('./db');
 
+// app.get('/', (req, res) => {
+// 	console.log(req.headers);
+// 	res.status(200).json('HEREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE');
+// });
+
 //  Connect all our routes to our application
 app.use('/api', require('./routes/api'));
 

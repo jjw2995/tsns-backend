@@ -8,48 +8,59 @@ let followerService = new FollowerService(Follower);
 let userService = new UserService(User);
 
 module.exports = class FollowerController {
-	_confirmUserExists(user) {
-		return new Promise((resolve, reject) => {
-			userService.getUser;
-		});
-	}
+	// _confirmUserExists(user) {
+	// 	return new Promise((resolve, reject) => {
+	// 		userService.getUser;
+	// 	});
+	// }
 
-	post(req, res) {
+	postFollowee(req, res) {
 		userService
 			.getUser(req.body)
 			.then((r) => {
-				return followerService.createFollower(req.user, r);
+				return followerService.createFollow(req.user, r);
 			})
 			.then((r) => res.status(200).json(r))
 			.catch((e) => res.status(400).json(formatError(e)));
 	}
 
-	delete(req, res) {
+	getFollowees(req, res) {
 		followerService
-			.deleteFollower(req.user, req.body)
-			.then(() => res.sendStatus(204))
+			.getFollowees(req.user)
+			.then((r) => res.status(200).json(r))
+			.catch((e) => res.status(500));
+	}
+
+	getPendingFollowees(req, res) {
+		followerService
+			.getPendingFollowees(req.user)
+			.then((r) => res.status(200).json(r))
+			.catch((e) => res.status(500));
+	}
+
+	deleteFollowee(req, res) {
+		followerService
+			.deleteFollowee(req.user, req.body)
+			.then((r) => res.status(200).json(r))
 			.catch((e) => {
 				res.status(400).json(formatError(e));
 			});
 	}
 
-	get(req, res) {
+	//
+	//
+	//
+
+	getFollowers(req, res) {
 		followerService
 			.getFollowers(req.user)
 			.then((r) => res.status(200).json(r))
 			.catch((e) => res.status(500));
 	}
 
-	getWaiting(req, res) {
+	getPendingFollowers(req, res) {
 		followerService
-			.getWaiting(req.user)
-			.then((r) => res.status(200).json(r))
-			.catch((e) => res.status(500));
-	}
-
-	getPending(req, res) {
-		followerService
-			.getPending(req.user)
+			.getPendingFollowers(req.user)
 			.then((r) => res.status(200).json(r))
 			.catch((e) => res.status(500));
 	}
@@ -57,9 +68,18 @@ module.exports = class FollowerController {
 	postAccept(req, res) {
 		// console.log(req.body);
 		followerService
-			.acceptPending(req.user, req.body)
+			.acceptPendingFollower(req.user, req.body)
 			.then((r) => res.status(200).json(r))
 			.catch((e) => res.status(400).json(formatError(e)));
+	}
+
+	deleteFollower(req, res) {
+		followerService
+			.deleteFollower(req.user, req.body)
+			.then((r) => res.status(200).json(r))
+			.catch((e) => {
+				res.status(400).json(formatError(e));
+			});
 	}
 
 	// res.status().send().;

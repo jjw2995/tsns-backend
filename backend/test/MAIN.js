@@ -1,4 +1,12 @@
+// auth
+// follower
+// post
+// comment
+// reaction
+// user
+
 const chai = require('chai');
+const chaiHttp = require('chai-http');
 const { expect } = chai;
 const app = require('../app');
 
@@ -9,53 +17,15 @@ const Post = mongoose.model('Post');
 const Comment = mongoose.model('Comment');
 const Reaction = mongoose.model('Reaction');
 
-chai.use(require('chai-http'));
+chai.use(chaiHttp);
+
+let { user_1, user_2, privateUser_1, privateUser_2 } = require('./variables');
 
 let server;
 
 before(() => {
 	server = chai.request(app).keepOpen();
-	// log('\n\n\n\n\n');
 });
-
-// auth
-// user
-// follower
-// post
-// comment
-// reaction
-let user_1 = {
-	nickname: 'user1',
-	email: 'user_1@qwerty.com',
-	password: 'dD1@dasdf',
-};
-let user_2 = {
-	nickname: 'user2',
-	email: 'user_2@qwerty.com',
-	password: 'dD1@dasdf',
-};
-let privateUser_1 = {
-	nickname: 'privateUser1',
-	email: 'privateUser_1@qwerty.com',
-	password: 'dD1@dasdf',
-	// isPrivate: true,
-};
-let privateUser_2 = {
-	nickname: 'privateUser2',
-	email: 'privateUser_2@qwerty.com',
-	password: 'dD1@dasdf',
-	// isPrivate: true,
-};
-
-let postFollowers = {
-	description: 'followers',
-	media: ['asf'],
-	level: 'followers',
-};
-
-let postPrivate = { description: 'private', media: ['fasf'], level: 'private' };
-
-let postPublic = { description: 'public', media: ['qwrs'], level: 'public' };
 
 function postAppendNick(user, post) {
 	post.description = post.description + '_' + user.nickname;
@@ -67,7 +37,6 @@ function getAuthBear(user) {
 }
 
 function logRes(res, method = '') {
-	// return;
 	console.log(
 		'\n\n',
 		method,
@@ -88,39 +57,55 @@ function log(msg) {
 	console.log('\n\n', msg);
 }
 
-async function initUsers(users) {
-	for (let i = 0; i < users.length; i++) {
-		await server.post('/api/auth/register').send(users[i]);
-		let r = await server.post('/api/auth/login').send(users[i]);
-		// log(r.body);
-		users[i]._id = r.body._id;
-		users[i].accessToken = r.body.accessToken;
-		users[i].refreshToken = r.body.refreshToken;
-	}
-	return users;
-}
 function expToHaveProps(value, propsArr) {
 	for (const iterator of propsArr) {
 		expect(value).to.have.property(iterator);
 	}
 }
 
-async function regAndLogin(user) {
+async function regAndLogin(user, is_private = false) {
+	user = {
+		nickname: user.nickname,
+		email: user.email,
+		password: user.password,
+	};
 	await server.post('/api/auth/register').send(user);
 	let temp = JSON.parse(JSON.stringify(user));
 	delete temp.nickname;
+	// log(user);
 	let a = await server.post('/api/auth/login').send(temp);
+	// log(a.body);
+	user._id = a.body._id;
 	user.accessToken = a.body.accessToken;
 	user.refreshToken = a.body.refreshToken;
+	if (is_private) {
+		let a = await server
+			.post('/api/users/private')
+			.set(getAuthBear(user))
+			.send({ isPrivate: is_private });
+		// logRes(a);
+	}
+	return user;
+}
+
+function getAuthBear(u) {
+	// log(u);
+	return { authorization: 'Bearer ' + u.accessToken };
 }
 
 beforeEach(async () => {
+	// log('in b4Each reset');
 	await User.deleteMany({});
+	await Follower.deleteMany({});
+	await Post.deleteMany({});
+	await Comment.deleteMany({});
+	await Reaction.deleteMany({});
 });
-
+// describe('/api', () => {
 describe('/api/auths', () => {
 	describe('POST /register', () => {
 		it('correct input', async () => {
+			// user_1.asd = 'asd';
 			let a = await server.post('/api/auth/register').send(user_1);
 			// logRes(a);
 			expToHaveProps(a.body, ['_id', 'nickname']);
@@ -188,12 +173,12 @@ describe('/api/auths', () => {
 			expect(a.status).to.eql(400);
 		});
 	});
-
 	describe('POST /logout', () => {
 		beforeEach(async () => {
-			await regAndLogin(user_1);
+			user_1 = await regAndLogin(user_1);
 		});
 		it('correct logout', async () => {
+			// log(user_1);
 			let temp = JSON.parse(JSON.stringify(user_1));
 			delete temp.nickname;
 
@@ -217,10 +202,9 @@ describe('/api/auths', () => {
 			expect(b.status).to.eql(401);
 		});
 	});
-
 	describe('POST /token', () => {
 		beforeEach(async () => {
-			await regAndLogin(user_1);
+			user_1 = await regAndLogin(user_1);
 		});
 		it('correct request', async () => {
 			let temp = JSON.parse(JSON.stringify(user_1));
@@ -254,28 +238,280 @@ describe('/api/auths', () => {
 	});
 });
 
-// describe('/api, those that need authed users', () => {
-// 	// describe('/users', () => {});
-// 	// describe('/followers', () => {});
-// 	// describe('/posts', () => {});
-// 	// describe('/comments', () => {});
-// 	// describe('/reactions', () => {});
-// });
+async function postFollow(req, other) {
+	return await server.post('/api/followees/').set(getAuthBear(req)).send(other);
+}
 
-// beforeEach(async () => {
-// 	await User.deleteMany({});
-// 	await Follower.deleteMany({});
-// 	await Reaction.deleteMany({});
-// 	[user1, user2, privUser] = await init([
-// 		validUser1,
-// 		validUser2,
-// 		validPrivateUser,
-// 	]);
-// });
+usersInit = async () => {
+	user_1 = await regAndLogin(user_1);
+	user_2 = await regAndLogin(user_2);
+	privateUser_1 = await regAndLogin(privateUser_1, true);
+	privateUser_2 = await regAndLogin(privateUser_2, true);
+	// log(user_1);
+};
 
-// auth
-// user
-// follower
-// post
-// comment
-// reaction
+describe('/api/*, those that need authed users', () => {
+	beforeEach(async () => {
+		await usersInit();
+	});
+	describe('/followers /followees', () => {
+		describe('POST /followees', () => {
+			it('correct input', async () => {
+				let a = await server
+					.post('/api/followees')
+					.set(getAuthBear(user_1))
+					.send({ _id: user_2._id });
+				// logRes(a);
+				expect(a.status).to.eql(200);
+				expect(a.body.isPending).to.eql(false);
+			});
+			it('correct, private user', async () => {
+				let a = await server
+					.post('/api/followees')
+					.set(getAuthBear(user_1))
+					.send({ _id: privateUser_1._id });
+				// logRes(a);
+				expect(a.status).to.eql(200);
+				expect(a.body.isPending).to.eql(true);
+			});
+			it('req twice, ', async () => {
+				await server
+					.post('/api/followees')
+					.set(getAuthBear(user_1))
+					.send({ _id: privateUser_1._id });
+				let a = await server
+					.post('/api/followees')
+					.set(getAuthBear(user_1))
+					.send({ _id: privateUser_1._id });
+				// logRes(a);
+				expect(a.status).to.eql(400);
+			});
+			it('no such user', async () => {
+				let a = await server
+					.post('/api/followees')
+					.set(getAuthBear(user_1))
+					.send({ _id: '5f38bfae4b1b3d3100e431a3' });
+				// logRes(a);
+				expect(a.status).to.eql(400);
+			});
+		});
+
+		describe('follower init', () => {
+			beforeEach('followers init, u1 -> u2, u1-> pu1', async () => {
+				let a = await postFollow(user_1, user_2);
+				let b = await postFollow(user_1, privateUser_1);
+				// logRes(a);
+				// logRes(b);
+			});
+
+			describe('GET /followees', () => {
+				it('should get user2', async () => {
+					let a = await server.get('/api/followees').set(getAuthBear(user_1));
+					// logRes(a);
+					// log(a);
+					expect(a.body[0]._id).to.eql(user_2._id);
+				});
+				it('should get 0 followees', async () => {
+					let a = await server
+						.get('/api/followees')
+						.set(getAuthBear(privateUser_1));
+					// logRes(a);
+					expect(a.body.length).to.eql(0);
+				});
+			});
+			describe('GET /followees/pending', () => {
+				it('user_1 should get privateUser_1', async () => {
+					let a = await server
+						.get('/api/followees/pending')
+						.set(getAuthBear(user_1));
+					// logRes(a);
+					expect(a.body[0]._id).to.eql(privateUser_1._id);
+				});
+				it('user_1 should get 2 users', async () => {
+					await postFollow(user_1, privateUser_2);
+
+					let a = await server
+						.get('/api/followees/pending')
+						.set(getAuthBear(user_1));
+					// logRes(a);
+					expect(a.body.length).to.eql(2);
+				});
+			});
+			describe('GET /followers', () => {
+				it('user_2 should get user_1', async () => {
+					let a = await server.get('/api/followers').set(getAuthBear(user_2));
+					// logRes(a);
+					expect(a.body[0]._id).to.eql(user_1._id);
+				});
+				it('privateUser_1 should get 0 users', async () => {
+					await postFollow(privateUser_2, privateUser_1);
+					let a = await server
+						.get('/api/followers')
+						.set(getAuthBear(privateUser_1));
+					// logRes(a);
+
+					expect(a.body.length).to.eql(0);
+				});
+			});
+
+			describe('GET /followers/pending', () => {
+				it('privateUser_1 should get user_1', async () => {
+					let a = await server
+						.get('/api/followers/pending')
+						.set(getAuthBear(privateUser_1));
+					// logRes(a);
+					expect(a.body[0]._id).to.eql(user_1._id);
+				});
+				it('privateUser_1 should get 2 users', async () => {
+					await postFollow(privateUser_2, privateUser_1);
+
+					let a = await server
+						.get('/api/followers/pending')
+						.set(getAuthBear(privateUser_1));
+					// logRes(a);
+					expect(a.body.length).to.eql(2);
+				});
+			});
+
+			describe('POST /followers/accept', () => {
+				it('privateUser_1 accepts user_1', async () => {
+					let a = await server
+						.post('/api/followers/accept')
+						.set(getAuthBear(privateUser_1))
+						.send(user_1);
+					// logRes(a);
+					expect(a.body.isPending).to.eql(false);
+					expect(a.body.follower._id).to.eql(user_1._id);
+				});
+				it('privateUser_1 accepts user_1 twice, error', async () => {
+					await server
+						.post('/api/followers/accept')
+						.set(getAuthBear(privateUser_1))
+						.send(user_1);
+					let a = await server
+						.post('/api/followers/accept')
+						.set(getAuthBear(privateUser_1))
+						.send(user_1);
+					// logRes(a);
+					expect(a.status).to.eql(400);
+				});
+				it('user_1 accepts user_1, error', async () => {
+					let a = await server
+						.post('/api/followers/accept')
+						.set(getAuthBear(user_2))
+						.send(user_1);
+					// logRes(a);
+					expect(a.status).to.eql(400);
+				});
+			});
+
+			describe('DELETE /followees', () => {
+				it('user_1 deletes user_2', async () => {
+					let a = await server
+						.delete('/api/followees')
+						.set(getAuthBear(user_1))
+						.send(user_2);
+					// logRes(a);
+					expect(a.body.followee._id).to.eql(user_2._id);
+				});
+				it('user_1 deletes privateUser_1', async () => {
+					let a = await server
+						.delete('/api/followees')
+						.set(getAuthBear(user_1))
+						.send(privateUser_1);
+					// logRes(a);
+					// expect(a.body.isPending).to.eql(false);
+					expect(a.body.followee._id).to.eql(privateUser_1._id);
+				});
+			});
+
+			describe('DELETE /followers', () => {
+				it('user_2 deletes user_1', async () => {
+					let a = await server
+						.delete('/api/followers')
+						.set(getAuthBear(user_2))
+						.send(user_1);
+					// logRes(a);
+					expect(a.body.follower._id).to.eql(user_1._id);
+				});
+
+				it('privateUser_1 deletes user_1, error', async () => {
+					let a = await server
+						.delete('/api/followers')
+						.set(getAuthBear(privateUser_1))
+						.send(user_1);
+					// logRes(a);
+					expect(a.status).to.eql(400);
+				});
+			});
+		});
+	});
+	describe.only('/posts', () => {
+		beforeEach('followers init, u1 -> u2, u1-> pu1', async () => {
+			await usersInit();
+			let a = await postFollow(user_1, user_2);
+			let b = await postFollow(user_1, privateUser_1);
+			// logRes(a);
+			// logRes(b);
+		});
+
+		describe('POST', () => {
+			it('d', () => {
+				log('a');
+			});
+		});
+		describe('DELETE', () => {});
+		describe('PATCH', () => {});
+		describe('GET', () => {});
+		describe('GET /explore', () => {});
+	});
+	// describe('/comments', () => {
+	// 	describe('POST', () => {});
+	// 	describe('DELETE', () => {});
+	// 	describe('PATCH', () => {});
+	// 	describe('GET', () => {});
+	// });
+	// describe('/reactions', () => {});
+	// describe('/users', () => {});
+
+	// user_1
+	// user_2,
+	// privateUser_1,
+	// privateUser_2,
+	// postFollowers,
+	// postPrivate,
+	// postPublic,
+});
+
+// let user_1 = {
+// 	nickname: 'user1',
+// 	email: 'user_1@qwerty.com',
+// 	password: 'dD1@dasdf',
+// };
+// let user_2 = {
+// 	nickname: 'user2',
+// 	email: 'user_2@qwerty.com',
+// 	password: 'dD1@dasdf',
+// };
+// let privateUser_1 = {
+// 	nickname: 'privateUser1',
+// 	email: 'privateUser_1@qwerty.com',
+// 	password: 'dD1@dasdf',
+// 	// isPrivate: true,
+// };
+// let privateUser_2 = {
+// 	nickname: 'privateUser2',
+// 	email: 'privateUser_2@qwerty.com',
+// 	password: 'dD1@dasdf',
+// 	// isPrivate: true,
+// };
+
+// let postFollowers = {
+// 	description: 'followers',
+// 	media: ['asf'],
+// 	level: 'followers',
+// };
+
+// let postPrivate = { description: 'private', media: ['fasf'], level: 'private' };
+
+// let postPublic = { description: 'public', media: ['qwrs'], level: 'public' };

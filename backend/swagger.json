@@ -11,18 +11,33 @@
 				"summary": "register new users",
 				"tags": ["Auth"],
 				"description": "register new users",
-				"parameters": [],
+				"requestBody": {
+					"description": "password must contain least one special char, lower and upper char, and a number",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": { "$ref": "#/components/schemas/register" },
+							"example": {
+								"nickname": "user1",
+								"email": "example@gmail.com",
+								"password": "UPlow123!"
+							}
+						}
+					}
+				},
 				"responses": {
 					"200": {
 						"description": "OK",
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/User"
-								}
+									"$ref": "#/components/schemas/registerRes"
+								},
+								"example": { "_id": "a1froas2314adf", "nickname": "user1" }
 							}
 						}
-					}
+					},
+					"400": { "description": "Bad Request, reason in body" }
 				}
 			}
 		},
@@ -100,6 +115,53 @@
 		},
 
 		"schemas": {
+			"register": {
+				"required": ["email", "nickname", "password"],
+				"properties": {
+					"nickname": {
+						"type": "string",
+						"minimum": 3
+					},
+					"email": {
+						"type": "string",
+						"uniqueItems": true
+					},
+					"password": {
+						"type": "string",
+						"minimum": 8,
+						"maximum": 15,
+						"description": "must contain least one special char, lower and upper char, and a number"
+					}
+				}
+			},
+			"registerRes": {
+				"properties": {
+					"_id": { "type": "string" },
+					"nickname": { "type": "string" }
+				}
+			},
+			"login": {
+				"required": ["email", "password"],
+				"properties": {
+					"email": {
+						"type": "string",
+						"uniqueItems": true
+					},
+					"password": {
+						"type": "string",
+						"minimum": 8,
+						"maximum": 15,
+						"description": "must contain least one special char, lower and upper char, and a number"
+					}
+				}
+			},
+			"user_id": {
+				"properties": {
+					"user_id": {
+						"type": "string"
+					}
+				}
+			},
 			"User": {
 				"required": ["_id", "nickname"],
 				"properties": {

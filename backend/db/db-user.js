@@ -40,7 +40,8 @@ userSchema.set('toJSON', {
 		delete ret.updatedAt;
 		delete ret.__v;
 		delete ret.refreshToken;
-		return ret;
+		// delete ret.isPrivate;
+		// return ret;
 	},
 });
 

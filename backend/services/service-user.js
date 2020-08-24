@@ -1,5 +1,7 @@
-const riend = require('mongoose').model('User');
+const test = require('mongoose').model('User');
 const bcrypt = require('bcryptjs');
+const { Mongoose } = require('mongoose');
+const { body } = require('express-validator');
 
 let log = (m) => console.log('\n', m, '\n');
 let User;
@@ -19,6 +21,19 @@ module.exports = class UserService {
 					if (!r) return reject(Error('such user does not exist'));
 					resolve(r.toJSON());
 				})
+				.catch((e) => reject(e));
+		});
+	}
+	setIsPrivate(user, body) {
+		return new Promise((resolve, reject) => {
+			// log(body);
+			test
+				.findOneAndUpdate(
+					{ _id: user._id },
+					{ isPrivate: body.isPrivate },
+					{ new: true }
+				)
+				.then((r) => resolve(r))
 				.catch((e) => reject(e));
 		});
 	}

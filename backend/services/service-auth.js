@@ -21,13 +21,16 @@ module.exports = class AuthService {
 	}
 
 	registerUser(user) {
+		// log(user);
 		user.salt = bcrypt.genSaltSync(10);
 		user.password = bcrypt.hashSync(user.password, user.salt);
-
+		delete user.isPrivate;
 		return new Promise((resolve, reject) => {
 			User.create(user)
 				.then((r) => {
-					resolve(r.toJSON());
+					let res = r.toJSON();
+					res.email = user.email;
+					resolve(res);
 				})
 				.catch((e) => {
 					reject({ errors: [{ email: e.errors.email.properties.message }] });
@@ -52,12 +55,11 @@ module.exports = class AuthService {
 
 	logoutUser(user) {
 		return new Promise((resolve, reject) => {
-			test
-				.findOneAndUpdate(
-					{ _id: user._id, refreshToken: user.refreshToken },
-					{ refreshToken: undefined },
-					{ new: true }
-				)
+			User.findOneAndUpdate(
+				{ _id: user._id, refreshToken: user.refreshToken },
+				{ refreshToken: undefined },
+				{ new: true }
+			)
 				.then((res) => {
 					resolve();
 				})
@@ -69,17 +71,19 @@ module.exports = class AuthService {
 
 	newAccTokenUser(user) {
 		return new Promise((resolve, reject) => {
-			User.findById(user._id).then((doc) => {
-				let doctok = doc.refreshToken;
-				if (!doctok || doctok != user.refreshToken) {
-					reject({
-						error:
-							'not a valid refreshToken OR a logged out user, try logging in again',
-					});
-				} else {
-					resolve({ accessToken: genAccessToken(doc.toJSON()) });
-				}
-			});
+			User.findById(user._id)
+				.then((doc) => {
+					let doctok = doc.refreshToken;
+					if (!doctok || doctok != user.refreshToken) {
+						reject({
+							error:
+								'not a valid refreshToken OR a logged out user, try logging in again',
+						});
+					} else {
+						resolve({ accessToken: genAccessToken(doc.toJSON()) });
+					}
+				})
+				.catch((e) => reject(e));
 		});
 	}
 };

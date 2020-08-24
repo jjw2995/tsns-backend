@@ -11,12 +11,12 @@ let FollowerSchema = new mongoose.Schema(
 			nickname: { type: String, required: true },
 		},
 		isPending: { type: Boolean, default: false },
-		hasViewed: {
-			type: Boolean,
-			default: false,
-		},
+		// hasViewed: {
+		// 	type: Boolean,
+		// 	default: false,
+		// },
 	},
-	{ typePojoToMixed: false /* , timestamps: true */ }
+	{ typePojoToMixed: false, timestamps: true }
 );
 
 FollowerSchema.index(
@@ -33,12 +33,12 @@ FollowerSchema.set('toJSON', {
 	},
 });
 
-// FollowerSchema.post('save', function (error, doc, next) {
-// 	if (error.name === 'MongoError' && error.code === 11000) {
-// 		next(new Error('There was a duplicate key error'));
-// 	} else {
-// 		next();
-// 	}
-// });
+FollowerSchema.post('save', function (error, doc, next) {
+	if (error.name === 'MongoError' && error.code === 11000) {
+		next(new Error('There already exists such follower followee relationship'));
+	} else {
+		next();
+	}
+});
 
 module.exports = mongoose.model('Follower', FollowerSchema);
