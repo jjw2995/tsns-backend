@@ -53,7 +53,6 @@ module.exports = class FollowerService {
 
 	// get people that are following the user
 	getFollowers(user) {
-		// log(user);
 		return new Promise((resolve, reject) => {
 			Follower.aggregate([
 				{ $match: { 'followee._id': user._id, isPending: false } },

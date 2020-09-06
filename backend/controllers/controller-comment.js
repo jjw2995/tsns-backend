@@ -1,5 +1,5 @@
 const { formatError } = require('./helper');
-const { PostService, FollowerService } = require('../services');
+const { PostService, FollowService } = require('../services');
 const mongoose = require('mongoose');
 
 const Post = mongoose.model('Post');
@@ -7,7 +7,7 @@ const Follower = mongoose.model('Follower');
 const Reaction = mongoose.model('Reaction');
 
 const postService = new PostService(Post, Reaction);
-const followerService = new FollowerService(Follower);
+const followService = new FollowService(Follower);
 
 module.exports = class CommentController {
 	post(req, res) {
@@ -37,7 +37,7 @@ module.exports = class CommentController {
 		let limit;
 
 		let user = req.user;
-		followerService
+		followService
 			.getFollowers(user)
 			.then((followers) => {
 				return postService.getPosts(user, followers, limit);

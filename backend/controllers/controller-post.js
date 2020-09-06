@@ -1,18 +1,21 @@
 const { formatError } = require('./helper');
-const { PostService, FollowerService } = require('../services');
+const { PostService, FollowService } = require('../services');
 const mongoose = require('mongoose');
 
 const Post = mongoose.model('Post');
 const Follower = mongoose.model('Follower');
-const Reaction = mongoose.model('Reaction');
+// const Reaction = mongoose.model('Reaction');
 
-const postService = new PostService(Post, Reaction);
-const followerService = new FollowerService(Follower);
+const postService = new PostService(Post);
+const followService = new FollowService(Follower);
 
 module.exports = class PostController {
 	post(req, res) {
+		// console.log(req.files);
+		console.log(req.body);
+		let files = Object.values(req.files);
 		postService
-			.addPost(req.user, req.body)
+			.addPost(req.user, req.body, files)
 			.then((r) => res.status(200).json(r))
 			.catch((e) => res.status(400).json(formatError(e)));
 	}
@@ -38,11 +41,20 @@ module.exports = class PostController {
 		let limit;
 
 		let user = req.user;
-		followerService
-			.getFollowers(user)
-			.then((followers) => {
-				return postService.getPosts(user, followers, limit);
+		followService
+			.getFollowees(user)
+			.then((followees) => {
+				console.log(followees);
+				return postService.getPosts(user, followees, limit);
 			})
+			.then((r) => res.status(200).json(r))
+			.catch((e) => res.status(500).json(formatError(e)));
+	}
+
+	getMine(req, res) {
+		let limit;
+		postService
+			.getMyPosts(req.user, limit)
 			.then((r) => res.status(200).json(r))
 			.catch((e) => res.status(500).json(formatError(e)));
 	}

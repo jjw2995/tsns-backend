@@ -2,15 +2,35 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const app = express();
-// const swaggerJsDoc = require('swagger-jsdoc');
-const swaggerUI = require('swagger-ui-express');
-const swaggerDoc = require('./swagger.json');
+
 const { errors } = require('celebrate');
+const { urlencoded } = require('express');
+
+const formData = require('express-form-data');
 const PORT = process.env.PORT || 5000;
 
-app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDoc));
+// // =================== SWAGGER DOC =========================
+// const swaggerUI = require('swagger-ui-express');
+// const swaggerDoc = require('./swagger.json');
+// app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDoc));
+// // =================== SWAGGER DOC =========================
 
 app.use(express.json());
+app.use(urlencoded({ extended: true }));
+
+// parse data with connect-multiparty.
+app.use(formData.parse({ extended: true, autoClean: true }));
+// delete from the request all empty files (size == 0)
+app.use(formData.format());
+// // change the file objects to fs.ReadStream
+// app.use(formData.stream());
+// // union the body and the files
+// app.use(formData.union());
+
+// app.use((req, res, next) => {
+// 	console.log('\n\n', req.method, ' ', req.path /* , req.headers */);
+// 	next();
+// });
 
 require('./db');
 

@@ -24,6 +24,10 @@ const password = Joi.string()
 // TODO: add email verification
 router.post(
 	'/register',
+	// (req, res, next) => {
+	// 	console.log(req.body);
+	// 	next();
+	// },
 	celebrate(
 		{
 			[Segments.BODY]: Joi.object().keys({

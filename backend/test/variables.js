@@ -22,14 +22,19 @@ let privateUser_2 = {
 };
 
 let postFollowers = {
-	description: 'followers',
-	media: ['asf'],
+	description: 'FollowersPost',
 	level: 'followers',
 };
 
-let postPrivate = { description: 'private', media: ['fasf'], level: 'private' };
+let postPrivate = {
+	description: 'PrivatePost',
+	level: 'private',
+};
 
-let postPublic = { description: 'public', media: ['qwrs'], level: 'public' };
+let postPublic = {
+	description: 'PublicPost',
+	level: 'public',
+};
 
 module.exports = {
 	user_1,

@@ -1,5 +1,5 @@
 const AuthController = require('./controller-auth');
-const FollowerController = require('./controller-follower');
+const FollowController = require('./controller-follower');
 const PostController = require('./controller-post');
 const CommentController = require('./controller-comment');
 const UserController = require('./controller-user');
@@ -9,7 +9,7 @@ const UserController = require('./controller-user');
 
 module.exports = {
 	AuthController,
-	FollowerController,
+	FollowController,
 	PostController,
 	CommentController,
 	UserController,

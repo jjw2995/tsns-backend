@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { FollowerController } = require('../../controllers/index');
+const { FollowController } = require('../../controllers/index');
 const { Joi, celebrate, Segments } = require('celebrate');
 
-let followerController = new FollowerController();
+let followController = new FollowController();
 
 let followers = '/followers';
 let followees = '/followees';
@@ -23,20 +23,20 @@ router.post(
 			})
 			.unknown(true),
 	}),
-	followerController.postFollowee
+	followController.postFollowee
 );
 
 // get
 // /followees
-router.get(followees, followerController.getFollowees);
+router.get(followees, followController.getFollowees);
 
 // get
 // /followees/pending
-router.get(followees + '/pending', followerController.getPendingFollowees);
+router.get(followees + '/pending', followController.getPendingFollowees);
 
 // delete
 // /followees
-router.delete(followees, followerController.deleteFollowee);
+router.delete(followees, followController.deleteFollowee);
 
 //
 //==================================================================
@@ -46,18 +46,18 @@ router.delete(followees, followerController.deleteFollowee);
 
 // get
 // /followers
-router.get(followers, followerController.getFollowers);
+router.get(followers, followController.getFollowers);
 
 // get
 // /followers/pending
-router.get(followers + '/pending', followerController.getPendingFollowers);
+router.get(followers + '/pending', followController.getPendingFollowers);
 
 // post
 // /followers/accept
-router.post(followers + '/accept', followerController.postAccept);
+router.post(followers + '/accept', followController.postAccept);
 
 // delete
 // /followers
-router.delete(followers, followerController.deleteFollower);
+router.delete(followers, followController.deleteFollower);
 
 module.exports = router;
