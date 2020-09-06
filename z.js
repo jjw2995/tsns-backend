@@ -1,14 +1,9 @@
-// const { Storage } = require('@google-cloud/storage');
+log = (...args) => {
+	args.forEach((el) => {
+		console.log(el, '\n');
+	});
+};
+let date = new Date();
+log(date.getTime());
 
-// const storage = new Storage();
-// storage.bucket();
-
-let a = [
-	{ a: 1, b: 2 },
-	{ a: 1, b: 3 },
-];
-let b = a.map((e) => {
-	return e.b;
-});
-
-console.log(a);
+log(Date.now());

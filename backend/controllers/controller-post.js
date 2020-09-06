@@ -12,7 +12,7 @@ const followService = new FollowService(Follower);
 module.exports = class PostController {
 	post(req, res) {
 		// console.log(req.files);
-		console.log(req.body);
+		// console.log(req.body);
 		let files = Object.values(req.files);
 		postService
 			.addPost(req.user, req.body, files)

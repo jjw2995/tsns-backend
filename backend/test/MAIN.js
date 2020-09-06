@@ -527,6 +527,11 @@ describe('/api/*, those that need authed users', () => {
 				// .send(postAppendNick(user_1, postPrivate));
 				// chai.request().post().field().attach();
 				logRes(a);
+				let b = await server
+					.post('/api/posts')
+					.set(getAuthBear(user_1))
+					.send(a.body);
+				logRes(b);
 			});
 			it('TEST', async () => {
 				let a = await server

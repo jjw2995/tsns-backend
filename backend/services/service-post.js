@@ -96,18 +96,15 @@ const gcsUrl = 'https://storage.cloud.google.com/tsns/';
 function getImgUrls(media) {
 	return new Promise((resolve, reject) => {
 		let temp = media.map((id) => {
-			log(Date.now());
 			return gcsBucket
 				.file(id)
-				.getSignedUrl({ expires: Date.now() + 360000, action: 'read' });
+				.getSignedUrl({ expires: Date.now() + 7200000, action: 'read' });
 		});
 		Promise.all(temp)
 			.then((r) => {
-				log(r);
 				resolve(r);
 			})
 			.catch((e) => {
-				log(e);
 				reject(e);
 			});
 	});
@@ -135,7 +132,6 @@ module.exports = class PostService extends Reactionable {
 		});
 		let res = a.toJSON();
 		res.media = await getImgUrls(media);
-		// await removeFiles(media);
 		log(res);
 		return res;
 	}
@@ -147,10 +143,9 @@ module.exports = class PostService extends Reactionable {
 		});
 		if (!a) {
 			throw new Error('post is not yours or no such post exists');
+		} else {
+			await removeFiles(a.media);
 		}
-		// TODO: delete images on GCC or AWS s3
-		// a.media -> remove from cloud storage...
-		return;
 	}
 
 	async updatePost(user, post) {
