@@ -1,7 +1,8 @@
 let formatError = (error) => {
-	return { Error: error.message };
+  console.log(error);
+  return { Error: error.message };
 };
 
 module.exports = {
-	formatError,
+  formatError,
 };
