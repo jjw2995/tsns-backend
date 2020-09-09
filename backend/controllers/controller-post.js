@@ -11,14 +11,11 @@ const followService = new FollowService(Follower);
 
 module.exports = class PostController {
   post(req, res) {
-    // console.log(req.files);
-    // console.log(req.body);
     let files = Object.values(req.files);
-    // console.log(files);
     postService
       .addPost(req.user, req.body, files)
       .then((r) => res.status(200).json(r))
-      .catch((e) => res.status(e.code).json(e));
+      .catch((e) => res.status(e.status).json(e));
   }
 
   /**

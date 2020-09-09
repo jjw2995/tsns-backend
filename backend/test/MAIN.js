@@ -517,7 +517,7 @@ describe("/api/*, those that need authed users", () => {
           .send(postAppendNick(user_1, postPrivate));
         // logRes(c);
       });
-      it.only("TEST", async () => {
+      it("TEST", async () => {
         let a = await server
           .post("/api/posts")
           .set(getAuthBear(user_1))
@@ -531,21 +531,24 @@ describe("/api/*, those that need authed users", () => {
         // chai.request().post().field().attach();
 
         logRes(a);
-        log("\n\n\n");
         let b = await server
           .delete("/api/posts")
           .set(getAuthBear(user_1))
           .send(a.body);
         logRes(b);
       });
-      it("TEST", async () => {
+      it.only("TEST", async () => {
         let a = await server
           .post("/api/posts")
           .set(getAuthBear(user_1))
           // .attach()
-          .attach("f_1", fs.readFileSync("./z.png"), "z.png")
-          .attach("f_2", fs.readFileSync("./test1.png"), "test1.png")
-          .attach("t_1", fs.readFileSync("./text.png"), "text.png")
+          // .attach("f_1", fs.readFileSync("./z.png"), "z.png")
+          // .attach("f_2", fs.readFileSync("./test1.png"), "test1.png")
+          // .attach("t_1", fs.readFileSync("./text.png"), "text.png")
+          // .attach("t_2", fs.readFileSync("./text.png"), "text.png")
+          // .attach("t_3", fs.readFileSync("./text.png"), "text.png")
+          // .attach("t_4", fs.readFileSync("./text.png"), "text.png")
+          // .attach("t_5", fs.readFileSync("./text.png"), "text.png")
           .field(postPublic);
         //
         // .send(postAppendNick(user_1, postPrivate));

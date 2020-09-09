@@ -22,15 +22,21 @@ function modifyPictures(files) {
   return files.map((file) => {
     return new Promise((resolve, reject) => {
       jimp.read(file.path, (err, val) => {
-        if (err) return reject(err);
-        // log(file.path);
+        if (err) {
+          log("asfasd");
+
+          return reject(error(400, "file not of image-type"));
+        }
+
         val.contain(720, 720).quality(60).write(file.path);
-        // log(val);
         resolve(file.path);
-        // resolve(val);
       });
     });
   });
+}
+
+function error(status, error) {
+  return { status: status, error: error };
 }
 
 function uploadFile(filePath, dest) {
@@ -41,12 +47,11 @@ function uploadFile(filePath, dest) {
     gcsBucket
       .upload(filePath, { destination: dest, public: false })
       .then((r) => {
-        // log(r);
         resolve(r);
       })
       .catch((e) => {
         log(e);
-        reject({ code: 500, message: "internal server error" });
+        reject(error(500, "internal server error"));
       });
   });
 }
@@ -63,35 +68,36 @@ function removeFiles(media) {
 }
 
 function uploadFiles(files) {
-  // log(files);
-
   return new Promise((resolve, reject) => {
-    if (files.length > 4)
-      return reject(new Error("cannot upload more than 4 pictures"));
+    if (files.length > 4) {
+      return reject(error(400, "4 images max"));
+    }
 
     files = modifyPictures(files);
-    Promise.all(files).then((r) => {
-      files = r.map((path) => {
-        return uploadFile(path, uuidv4() + ".png");
-      });
-      // log(files);
-      Promise.all(files)
-        .then((r) => {
-          log("herererererere");
-
-          r = r.map((file) => {
-            log(file);
-            // log(file[0].id);
-            return file[0].id;
-          });
-          // log(r);
-          resolve(r);
-        })
-        .catch((e) => {
-          // log(e);
-          reject(e);
+    Promise.all(files)
+      .then((r) => {
+        files = r.map((path) => {
+          return uploadFile(path, uuidv4() + ".png");
         });
-    });
+        // log(files);
+        Promise.all(files)
+          .then((r) => {
+            r = r.map((file) => {
+              // log(file);
+              // log(file[0].id);
+              return file[0].id;
+            });
+            // log(r);
+            resolve(r);
+          })
+          .catch((e) => {
+            // log(e);
+            // log("asfasd");
+
+            reject(e);
+          });
+      })
+      .catch((e) => reject(e));
   });
 }
 
@@ -106,7 +112,11 @@ function getImgUrls(media) {
     });
     Promise.all(temp)
       .then((r) => {
-        resolve(r);
+        resolve(
+          r.map((nested) => {
+            return nested[0];
+          })
+        );
       })
       .catch((e) => {
         reject(e);
@@ -123,8 +133,33 @@ module.exports = class PostService extends Reactionable {
     Post = postModel;
   }
 
+  // addPost(user, post, files) {
+  //   uploadFiles(files)
+  //     .then((media) => {
+  //       let _id = "p" + mongoose.Types.ObjectId();
+  //       return Post.create({
+  //         _id,
+  //         user,
+  //         description: post.description,
+  //         media: media,
+  //         level: post.level,
+  //       });
+  //     })
+  //     .then((doc) => {
+  //       doc = doc.toJSON();
+  //       return getImgUrls(doc.media);
+  //     })
+  //     .catch((e) => {
+  //       return  error(400, "a file is not an image");
+  //     })
+  //     .then((mediaUrls) => {
+  //       log("asfasd");
+  //       doc.media = mediaUrls;
+  //       return doc;
+  //     });
+  // }
+
   async addPost(user, post, files) {
-    log("===================================");
     let media = await uploadFiles(files);
 
     let _id = "p" + mongoose.Types.ObjectId();
