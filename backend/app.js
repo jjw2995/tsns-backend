@@ -1,12 +1,12 @@
-require('dotenv').config();
-const express = require('express');
-const mongoose = require('mongoose');
+require("dotenv").config();
+const express = require("express");
+const mongoose = require("mongoose");
 const app = express();
 
-const { errors } = require('celebrate');
-const { urlencoded } = require('express');
+const { errors } = require("celebrate");
+const { urlencoded } = require("express");
 
-const formData = require('express-form-data');
+const formData = require("express-form-data");
 const PORT = process.env.PORT || 5000;
 
 // // =================== SWAGGER DOC =========================
@@ -32,7 +32,7 @@ app.use(formData.format());
 // 	next();
 // });
 
-require('./db');
+require("./db");
 
 // app.get('/', (req, res) => {
 // 	console.log(req.headers);
@@ -40,40 +40,40 @@ require('./db');
 // });
 
 //  Connect all our routes to our application
-app.use('/api', require('./routes/api'));
+app.use("/api", require("./routes/api"));
 
 // celebrate error handler middleware
 app.use(errors());
 
-let dbp = 'mongodb://localhost:27017';
+let dbp = "mongodb://localhost:27017";
 let p1 = new Promise((resolve, reject) => {
-	mongoose.connect(
-		dbp,
-		{
-			useNewUrlParser: true,
-			useUnifiedTopology: true,
-			useCreateIndex: true,
-			useFindAndModify: false,
-		},
-		(e) => {
-			if (e) reject();
-			// console.log(` mongoDB connected on - ${dbp}`);
-			resolve();
-		}
-	);
+  mongoose.connect(
+    dbp,
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      useCreateIndex: true,
+      useFindAndModify: false,
+    },
+    (e) => {
+      if (e) reject();
+      // console.log(` mongoDB connected on - ${dbp}`);
+      resolve();
+    }
+  );
 });
 
 let p2 = new Promise((resolve, reject) => {
-	app.listen(PORT, () => {
-		// console.log(`\n BACKEND ON PORT - http://localhost:${PORT}`);
-		resolve();
-	});
+  app.listen(PORT, () => {
+    // console.log(`\n BACKEND ON PORT - http://localhost:${PORT}`);
+    resolve();
+  });
 });
 
 Promise.all([p1, p2])
-	.then(() => {
-		// console.log('\n app and db running...');
-	})
-	.catch((e) => console.log(e));
+  .then(() => {
+    // console.log('\n app and db running...');
+  })
+  .catch((e) => console.log(e));
 
 module.exports = app;

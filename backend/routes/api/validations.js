@@ -1,35 +1,19 @@
-const { Joi, Segments, celebrate } = require('celebrate');
+const { Joi, celebrate, Segments } = require("celebrate");
 
-// module.exports = class
-const nickname = Joi.string()
-	.pattern(/^[a-zA-Z0-9 ]{3,16}$/)
-	.message(
-		'"nickname" must be 3~16 characters long and not contain special characters'
-	)
-	.required();
-const email = Joi.string().email().required();
-const password = Joi.string()
-	.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/)
-	.message(
-		'"password" must contain a number, lowercase, UPPERCASE, special, and be 8 characters long'
-	)
-	.required();
+// class validate {
+//   Segments = Segments;
+// }
 
-module.exports = class Validate {
-	constructor() {}
-	Body() {
-		return celebrate({
-			[Segments.BODY]: Joi.object().keys({
-				nickname,
-				email,
-				password,
-			}),
-		});
-	}
+let log = (msg) => console.log(msg);
+function validate(segment, fields = {}) {
+  return celebrate({ [segment]: Joi.object().keys(fields).unknown(true) });
+}
+// [{Segments, [_id, name]},{Segments, [_id, name]}]
+// validate(body,[_id, describe])
+// let a = new validate();
+
+module.exports = {
+  validate,
+  Segments,
+  Joi,
 };
-
-// module.exports = {
-// 	nickname,
-// 	email,
-// 	password,
-// };

@@ -11,7 +11,7 @@ const followService = new FollowService(Follower);
 
 module.exports = class PostController {
   post(req, res) {
-    let files = Object.values(req.files);
+    let files = Object.values(req.files || []);
     postService
       .addPost(req.user, req.body, files)
       .then((r) => res.status(200).json(r))
@@ -42,7 +42,6 @@ module.exports = class PostController {
     followService
       .getFollowees(user)
       .then((followees) => {
-        console.log(followees);
         return postService.getPosts(user, followees, limit);
       })
       .then((r) => res.status(200).json(r))

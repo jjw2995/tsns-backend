@@ -1,5 +1,5 @@
 let formatError = (error) => {
-  console.log(error);
+  // console.log(error);
   return { Error: error.message };
 };
 

@@ -29,6 +29,8 @@ let {
   postFollowers,
   postPrivate,
 } = require("./variables");
+const { stringify } = require("querystring");
+const { json } = require("express");
 
 let server;
 
@@ -64,6 +66,10 @@ function logRes(res, method = "") {
 
 function log(msg) {
   console.log("\n\n", msg);
+}
+
+function copy(obj) {
+  return JSON.parse(JSON.stringify(obj));
 }
 
 function expToHaveProps(value, propsArr) {
@@ -500,60 +506,89 @@ describe("/api/*, those that need authed users", () => {
     // postPublic,
 
     describe("POST", () => {
-      it("normal", async () => {
+      it("normal insert without pictures", async () => {
         let a = await server
           .post("/api/posts")
           .set(getAuthBear(user_1))
           .send(postAppendNick(user_1, postPublic));
-        // logRes(a);
+        expect(a.body.level).to.eql(postPublic.level);
+
         let b = await server
           .post("/api/posts")
           .set(getAuthBear(user_1))
           .send(postAppendNick(user_1, postFollowers));
-        // logRes(b);
+        expect(b.body.level).to.eql(postFollowers.level);
+
         let c = await server
           .post("/api/posts")
           .set(getAuthBear(user_1))
           .send(postAppendNick(user_1, postPrivate));
-        // logRes(c);
+        expect(c.body.level).to.eql(postPrivate.level);
       });
-      it("TEST", async () => {
+      it("normal insert with pictures", async () => {
         let a = await server
           .post("/api/posts")
           .set(getAuthBear(user_1))
-          // .attach()
           .attach("f_1", fs.readFileSync("./z.png"), "z.png")
           .attach("f_2", fs.readFileSync("./test1.png"), "test1.png")
-          // .attach('t_1', fs.readFileSync('./text.png'), 'text.png')
           .field(postPrivate);
-        //
-        // .send(postAppendNick(user_1, postPrivate));
-        // chai.request().post().field().attach();
 
-        logRes(a);
+        expect(a.body.user._id).to.eql(user_1._id);
+        expect(a.body.media.length).to.eql(2);
+
         let b = await server
           .delete("/api/posts")
           .set(getAuthBear(user_1))
           .send(a.body);
-        logRes(b);
+        expect(b.status).to.eql(204);
       });
-      it.only("TEST", async () => {
+      it("Err, no such level", async () => {
+        let p = copy(postPublic);
+        p.level = "asd";
+
         let a = await server
           .post("/api/posts")
           .set(getAuthBear(user_1))
-          // .attach()
-          // .attach("f_1", fs.readFileSync("./z.png"), "z.png")
-          // .attach("f_2", fs.readFileSync("./test1.png"), "test1.png")
-          // .attach("t_1", fs.readFileSync("./text.png"), "text.png")
-          // .attach("t_2", fs.readFileSync("./text.png"), "text.png")
-          // .attach("t_3", fs.readFileSync("./text.png"), "text.png")
-          // .attach("t_4", fs.readFileSync("./text.png"), "text.png")
-          // .attach("t_5", fs.readFileSync("./text.png"), "text.png")
-          .field(postPublic);
-        //
-        // .send(postAppendNick(user_1, postPrivate));
-        // chai.request().post().field().attach();
-        logRes(a);
+          .field(p);
+        expect(a.status).to.eql(400);
+      });
+      it("Err, too short description", async () => {
+        let p = copy(postPublic);
+        p.description = "d";
+
+        let a = await server
+          .post("/api/posts")
+          .set(getAuthBear(user_1))
+          .field(p);
+        expect(a.status).to.eql(400);
+      });
+      it("Err, more than 4 images", async () => {
+        let p = copy(postPublic);
+
+        let a = await server
+          .post("/api/posts")
+          .set(getAuthBear(user_1))
+          .attach("f_1", fs.readFileSync("./test1.png"), "test1.png")
+          .attach("f_2", fs.readFileSync("./test1.png"), "test1.png")
+          .attach("f_3", fs.readFileSync("./test1.png"), "test1.png")
+          .attach("f_4", fs.readFileSync("./test1.png"), "test1.png")
+          .attach("f_5", fs.readFileSync("./test1.png"), "test1.png")
+          .field(p);
+        expect(a.status).to.eql(400);
+      });
+      it("Err, image not an image", async () => {
+        let p = copy(postPublic);
+
+        let a = await server
+          .post("/api/posts")
+          .set(getAuthBear(user_1))
+          .attach("t_1", fs.readFileSync("./text.png"), "text.png")
+          .attach("t_2", fs.readFileSync("./text.png"), "text.png")
+          .attach("t_3", fs.readFileSync("./text.png"), "text.png")
+          .field(p);
+
+        expect(a.status).to.eql(400);
+        // logRes(a);
       });
     });
     describe("those that need posts set up", () => {
@@ -620,6 +655,9 @@ describe("/api/*, those that need authed users", () => {
           expect(a.body.length).eql(3);
         });
       });
+      //
+      //
+      //
       describe("GET /mine", () => {
         it("fetch user_1's own posts", async () => {
           let a = await server.get("/api/posts/mine").set(getAuthBear(user_1));

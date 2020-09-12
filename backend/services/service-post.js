@@ -23,8 +23,6 @@ function modifyPictures(files) {
     return new Promise((resolve, reject) => {
       jimp.read(file.path, (err, val) => {
         if (err) {
-          log("asfasd");
-
           return reject(error(400, "file not of image-type"));
         }
 
@@ -41,9 +39,6 @@ function error(status, error) {
 
 function uploadFile(filePath, dest) {
   return new Promise((resolve, reject) => {
-    // log(dest);
-    log(filePath);
-
     gcsBucket
       .upload(filePath, { destination: dest, public: false })
       .then((r) => {
@@ -83,8 +78,6 @@ function uploadFiles(files) {
         Promise.all(files)
           .then((r) => {
             r = r.map((file) => {
-              // log(file);
-              // log(file[0].id);
               return file[0].id;
             });
             // log(r);
@@ -128,36 +121,9 @@ const PAGE_SIZE = 8;
 
 module.exports = class PostService extends Reactionable {
   constructor(postModel) {
-    // log(postModel);
     super(postModel);
     Post = postModel;
   }
-
-  // addPost(user, post, files) {
-  //   uploadFiles(files)
-  //     .then((media) => {
-  //       let _id = "p" + mongoose.Types.ObjectId();
-  //       return Post.create({
-  //         _id,
-  //         user,
-  //         description: post.description,
-  //         media: media,
-  //         level: post.level,
-  //       });
-  //     })
-  //     .then((doc) => {
-  //       doc = doc.toJSON();
-  //       return getImgUrls(doc.media);
-  //     })
-  //     .catch((e) => {
-  //       return  error(400, "a file is not an image");
-  //     })
-  //     .then((mediaUrls) => {
-  //       log("asfasd");
-  //       doc.media = mediaUrls;
-  //       return doc;
-  //     });
-  // }
 
   async addPost(user, post, files) {
     let media = await uploadFiles(files);
