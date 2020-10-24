@@ -1,4 +1,4 @@
-describe("/api/auths", () => {
+describe("/auths", () => {
   describe("POST /register", () => {
     it("correct input", async () => {
       // user_1.asd = 'asd';

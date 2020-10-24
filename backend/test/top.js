@@ -37,25 +37,30 @@ function importTest(name, path) {
 
 // // var common = require("./common");
 
-describe("top", function () {
-  beforeEach(async function () {
-    await User.deleteMany({});
-    await Follower.deleteMany({});
-    await Post.deleteMany({});
-    await Comment.deleteMany({});
-    await Reaction.deleteMany({});
-  });
+// describe("top", function () {
+beforeEach(async function () {
+  await User.deleteMany({});
+  await Follower.deleteMany({});
+  await Post.deleteMany({});
+  await Comment.deleteMany({});
+  await Reaction.deleteMany({});
+});
 
-  //
-  importTest("auth", "./routes/auth");
+//
+// importTest("auth", "./routes/auth");
 
-  describe("those that require authed users", () => {
+describe("/api", () => {
+  require("./routes/auth");
+
+  describe("\n * those that require authed users *\n", () => {
     beforeEach(async () => {
       await usersInit();
     });
-    importTest("follow", "./routes/follower");
-    importTest("post", "./routes/post");
-  });
+    require("./routes/follower");
+    require("./routes/post");
+    require("./routes/comment");
 
-  //   importTest("b", "./b/b");
+    // importTest("/followers /followees", "./routes/follower");
+    // importTest("/posts", "./routes/post");
+  });
 });

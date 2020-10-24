@@ -1,88 +1,140 @@
-// const test = require('mongoose').model('Comment');
+const test = require("mongoose").model("Comment");
+const mongoose = require("mongoose");
+const { post } = require("../routes/api/route-post");
+const Reactionable = require("./reactionable");
 
-const Reactionable = require('./reactionable');
-
-let log = (m) => console.log('\n', m, '\n');
+let log = (m) => console.log("\n", m, "\n");
 let Comment;
 
 // function getUsersIdx (target, other) {
 //     return target._id < other._id ? 0 : 1
 // }
 
-const PAGE_SIZE = 10;
-module.exports = class PostService extends Reactionable {
-	constructor(commentModel) {
-		super(commentModel);
-		Comment = commentModel;
-	}
+const PAGE_SIZE = 8;
+module.exports = class CommentService extends Reactionable {
+  constructor(commentModel, reactionsModel) {
+    super(commentModel, reactionsModel);
+    Comment = commentModel;
+  }
 
-	async addComment(user, post, content, parentCom = null) {
-		let _id = 'c' + mongoose.Types.ObjectId();
-		// let comment = new t({ postID: post._id, user: user, content: content })
-		let comment = { _id: _id, postID: post._id, user: user, content: content };
-		if (parentCom) {
-			if (parentCom.parentComID) {
-				parentCom._id = parentCom.parentComID;
-			}
-			if (parentCom.postID != post._id) {
-				throw new Error("cannot leave subcomment on different post's comment");
-			}
-			if (parentCom.numChild == 0) {
-				let a = await Comment.findOneAndUpdate(
-					{ _id: parentCom._id },
-					{ $inc: { numChild: 1 } },
-					{ new: true }
-				).lean();
-				if (!a) {
-					throw new Error(`comment ${parentCom._id} has been removed`);
-				}
-			}
-			comment.parentComID = parentCom._id;
-		}
+  async addComment(user, postID, content, parentCom = null) {
+    let _id = "c" + mongoose.Types.ObjectId();
+    // log("HIHHIHIHHI");
+    // let comment = new t({ postID: postID, user: user, content: content })
+    let comment = { _id: _id, postID: postID, user: user, content: content };
+    if (parentCom) {
+      if (parentCom.parentComID) {
+        parentCom._id = parentCom.parentComID;
+      }
+      //   if (parentCom.postID != postID) {
+      //     throw new Error("cannot leave subcomment on different post's comment");
+      //   }
+      //
+      //   if (parentCom.numChild == 0) {
+      let parentComment = await Comment.findOneAndUpdate(
+        { _id: parentCom._id },
+        { $inc: { numChild: 1 } },
+        { new: true }
+      ).lean();
+      // log(parentComment);
+      if (!parentComment) {
+        throw new Error(`comment ${parentCom._id} has been removed`);
+      }
+      //   }
+      comment.parentComID = parentCom._id;
+    }
 
-		let a = await Comment.create(comment);
-		return a;
-	}
+    let newComment = await Comment.create(comment);
+    // log(newComment);
+    return newComment;
+  }
 
-	async getPostComments(post, lastComment = null, page_size = PAGE_SIZE) {
-		// get all standalone comments
-		let q = { postID: post._id, parentComID: null };
-		if (lastComment) {
-			q.createdAt = { $lt: lastComment.createdAt };
-		}
-		let a = await Comment.find(q).sort({ createdAt: -1 }).limit(page_size);
-		return a;
-	}
+  async getPostComments(postID, lastComment = null, page_size = PAGE_SIZE) {
+    // get all standalone comments
+    let query = { postID: postID, parentComID: null };
+    if (lastComment) {
+      query.createdAt = { $gt: new Date(lastComment.createdAt) };
+    }
 
-	async getSubComments(
-		parentComment,
-		lastComment = null,
-		page_size = PAGE_SIZE
-	) {
-		// get subcomments of a comment
-		if (parentComment.parentComID) {
-			parentComment._id = parentComment.parentComID;
-		}
-		let q = { parentComID: parentComment._id };
-		if (lastComment) {
-			q.createdAt = { $lt: lastComment.createdAt };
-		}
-		let a = await Comment.find(q).sort({ createdAt: 1 }).limit(page_size);
-		return a;
-	}
-	// remove get
-	async removeComment(comment) {
-		// remove itself and all child comments
-		if (comment.parentComID) {
-			let a = await Comment.findByIdAndUpdate(comment.parentComID, {
-				$inc: { numChild: -1 },
-			});
+    let a = await Comment.aggregate([
+      { $match: query },
+      // { $sort: { createdAt: -1 } },
+      { $limit: parseInt(page_size) },
+      {
+        $lookup: {
+          from: "Comment",
+          as: "subcomments",
+          let: { parentID: "$_id" },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$parentComID", "$$parentID"] } } },
+            // { $sort: { createdAt: -1 } },
+            { $limit: 3 },
+          ],
+        },
+      },
+    ]);
+    return a;
+  }
 
-			// ])
-		}
-		let a = await Comment.deleteMany({
-			$or: [{ _id: comment._id }, { parentComID: comment._id }],
-		});
-		return a;
-	}
+  async getSubComments(parentCommentID, lastComment, page_size = PAGE_SIZE) {
+    let query = {
+      parentComID: parentCommentID,
+      createdAt: { $gt: lastComment.createdAt },
+    };
+    let subComments = await Comment.find(query).limit(parseInt(page_size));
+    return subComments;
+  }
+
+  async removeCommentsOnPost(postID) {
+    log(postID);
+    let commentsToBeRemoved = await Comment.aggregate([
+      { $match: { postID: postID } },
+      { $project: { _id: "$_id" } },
+    ]);
+    commentsToBeRemoved = commentsToBeRemoved.map((comment) => {
+      return comment._id;
+    });
+    log(commentsToBeRemoved);
+    await super.deleteReactions(commentsToBeRemoved);
+    // del all comments
+    // del all related reactions
+
+    return;
+  }
+  // remove get
+
+  async removeComment(user, commentID) {
+    let relatedComments = await Comment.aggregate([
+      { $match: { $or: [{ _id: commentID }, { parentComID: commentID }] } },
+      {
+        $project: {
+          _id: "$_id",
+          user: "$user",
+        },
+      },
+    ]);
+
+    let toBeDeleted;
+
+    relatedComments = relatedComments.map((comment) => {
+      if (comment._id == commentID) {
+        toBeDeleted = comment;
+      }
+      return comment._id;
+    });
+
+    // log(toBeDeleted);
+    // log(relatedComments);
+
+    if (toBeDeleted.user._id != user._id)
+      throw Error(`${user.nickname} does not own comment with ${commentID}`);
+
+    let deleted = await Comment.deleteMany({
+      $or: [{ _id: commentID }, { parentComID: commentID }],
+    });
+
+    await super.deleteReactions(relatedComments);
+
+    return deleted;
+  }
 };

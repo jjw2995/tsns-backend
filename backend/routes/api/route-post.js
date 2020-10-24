@@ -8,6 +8,7 @@ const { validate, Segments, Joi } = require("./validations");
 router.use(verifyAccessToken);
 
 let postController = new PostController();
+// console.log("\n asd\n");
 
 /**			api/posts
  */
@@ -17,6 +18,8 @@ let postController = new PostController();
 const description = Joi.string().min(3).max(200).required();
 const level = Joi.string().valid("public", "followers", "private").required();
 const _id = Joi.string().alphanum();
+const reaction = Joi.string().valid("love", "haha", "sad", "angry").required();
+
 /**
  * body {
  * description
@@ -27,6 +30,17 @@ router.post(
   "/",
   validate(Segments.BODY, { level, description }),
   postController.post
+);
+
+/**
+ * body{
+ * _id
+ * }
+ */
+router.post(
+  "/react",
+  validate(Segments.BODY, { _id }),
+  postController.postReact
 );
 
 /**
@@ -56,5 +70,17 @@ router.get("/mine", postController.getMine);
 
 // let limit = req.query.limit ???
 router.get("/explore", postController.getExplore);
+
+router.post(
+  "/react",
+  validate(Segments.BODY, { _id, reaction }),
+  postController.postReact
+);
+
+router.delete(
+  "/react",
+  validate(Segments.BODY, { _id }),
+  postController.postReact
+);
 
 module.exports = router;

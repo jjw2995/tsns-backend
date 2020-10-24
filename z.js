@@ -1,19 +1,20 @@
-// // require("./y");
+let a = [
+  { a: 1, b: 1 },
+  { a: 2, b: 2 },
+  { a: 3, b: 3 },
+];
 
-// log = (...args) => {
-//   args.forEach((el) => {
-//     console.log(el, "\n");
-//   });
-// };
-// // global.d = "d";
-// function asd(params) {
-//   global
-// }
-// function expToHaveProps(value, propsArr) {
-//   for (const iterator of propsArr) {
-//     expect(value).to.have.property(iterator);
-//   }
-// }
-// global["d"] = "d";
+// let b = [
+//   { a: 1, b: 1 },
+//   { a: 2, b: 2 },
+//   { a: 3, b: 3 },
+// ];
 
-// require("./y");
+// a.map((r) => {});
+// let
+a.find((elem) => {
+  return (elem.a = 2);
+}).a = 6;
+// c.a = 5;
+// console.log(c);
+console.log(a);

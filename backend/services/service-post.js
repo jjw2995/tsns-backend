@@ -16,7 +16,7 @@ const gc = new Storage({
 // for-tsns@clever-spirit-285705.iam.gserviceaccount.com
 const gcsBucket = gc.bucket("tsns");
 const jimp = require("jimp");
-const os = require("os");
+// const os = require("os");
 
 function modifyPictures(files) {
   return files.map((file) => {
@@ -74,19 +74,14 @@ function uploadFiles(files) {
         files = r.map((path) => {
           return uploadFile(path, uuidv4() + ".png");
         });
-        // log(files);
         Promise.all(files)
           .then((r) => {
             r = r.map((file) => {
               return file[0].id;
             });
-            // log(r);
             resolve(r);
           })
           .catch((e) => {
-            // log(e);
-            // log("asfasd");
-
             reject(e);
           });
       })
@@ -120,8 +115,8 @@ function getImgUrls(media) {
 const PAGE_SIZE = 8;
 
 module.exports = class PostService extends Reactionable {
-  constructor(postModel) {
-    super(postModel);
+  constructor(postModel, reactionModel) {
+    super(postModel, reactionModel);
     Post = postModel;
   }
 
@@ -138,24 +133,27 @@ module.exports = class PostService extends Reactionable {
     });
     let res = a.toJSON();
     res.media = await getImgUrls(media);
+    super.appendReaction(res);
     // log(res);
     return res;
   }
 
   async removePost(user, post) {
+    log(post);
     let a = await Post.findOneAndDelete({
       _id: post._id,
       "user._id": user._id,
     });
     if (!a) {
-      throw new Error("post is not yours or no such post exists");
+      throw new Error("user does not own the post or no such post exists");
     } else {
       await removeFiles(a.media);
     }
+    log(a);
   }
 
   async updatePost(user, post) {
-    let a = await Post.updateOne(
+    let updatedPost = await Post.findOneAndUpdate(
       {
         _id: post._id,
         "user._id": user._id,
@@ -164,15 +162,18 @@ module.exports = class PostService extends Reactionable {
         description: post.description,
         // media: post.media,
         level: post.level,
-      }
+      },
+      { new: true }
     );
-    if (a.n == 0) {
-      throw new Error("post is not yours or no such user/post exists");
+    // console.log(updatedPost);
+    if (!updatedPost) {
+      throw new Error("user does not own the post or no such post exists");
     }
-    return;
+    updatedPost = await super.appendReqReactions(user, [updatedPost]);
+    // console.log(updatedPost);
+    return updatedPost[0];
   }
 
-  // TODO: append users Reaction using super
   async getPosts(user, followers, pageSize = PAGE_SIZE) {
     let ids = followers.map((x) => {
       return x._id;
@@ -180,24 +181,27 @@ module.exports = class PostService extends Reactionable {
     let q1 = { "user._id": { $in: ids } };
     let q2 = { level: { $ne: "private" } };
 
-    let a = await Post.find({
+    let posts = await Post.find({
       $or: [{ $and: [q1, q2] }, { "user._id": user._id }],
     })
       .sort({ createdAt: -1 })
       .limit(pageSize)
       .lean();
-    return a;
+    posts = await super.appendReqReactions(user, posts);
+    return posts;
   }
 
   async getMyPosts(user, pageSize = PAGE_SIZE) {
-    let a = await Post.find({ "user._id": user._id })
+    let posts = await Post.find({ "user._id": user._id })
       .sort({ createdAt: -1 })
       .limit(pageSize)
       .lean();
-    return a;
+    posts = await super.appendReqReactions(user, posts);
+
+    return posts;
   }
 
-  async getPublicPosts(pageSize = PAGE_SIZE) {
+  async getPublicPosts(user, pageSize = PAGE_SIZE) {
     let lastHour = new Date();
     lastHour.setHours(lastHour.getHours() - 1);
 
@@ -225,7 +229,7 @@ module.exports = class PostService extends Reactionable {
       factor: factoring,
     };
 
-    let a = await Post.aggregate([
+    let posts = await Post.aggregate([
       { $match: matching },
       { $project: projecting },
       { $sort: { factor: -1 } },
@@ -233,6 +237,13 @@ module.exports = class PostService extends Reactionable {
       { $limit: pageSize },
     ]);
 
-    return a;
+    posts = await super.appendReqReactions(user, posts);
+    return posts;
+  }
+  // appendReqReactions() {}
+
+  async postReaction(user, postID, reaction) {
+    let reactDoc = await super.postReaction(user, postID, reaction);
+    return reactDoc;
   }
 };

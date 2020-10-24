@@ -34,9 +34,13 @@ app.use(formData.format());
 
 require("./db");
 
-// app.get('/', (req, res) => {
-// 	console.log(req.headers);
-// 	res.status(200).json('HEREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE');
+// // for logging purposes
+// app.use((req, res, next) => {
+//   res.on("finish", () => {
+//     console.log("\n\n", req.method, " ", req.path /* , req.headers */);
+//     console.log(res.body);
+//   });
+//   next();
 // });
 
 //  Connect all our routes to our application

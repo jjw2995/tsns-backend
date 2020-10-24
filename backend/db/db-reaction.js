@@ -1,21 +1,21 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 let reactionSchema = new mongoose.Schema(
-	{
-		reaction: {
-			type: String,
-			enum: ['love', 'haha', 'sad', 'angry'],
-			required: true,
-		},
-		user: {
-			_id: { type: String, /* index: true, */ required: true },
-			nickname: { type: String, required: true },
-		},
-		contentID: { type: String, index: true, required: true },
-	},
-	{ typePojoToMixed: false }
+  {
+    reaction: {
+      type: String,
+      enum: ["love", "haha", "sad", "angry"],
+      required: true,
+    },
+    user: {
+      _id: { type: String, /* index: true, */ required: true },
+      nickname: { type: String, required: true },
+    },
+    contentID: { type: String, index: true, required: true },
+  },
+  { typePojoToMixed: false }
 );
-reactionSchema.index({ contentID: 1, 'user._id': 1 }, { unique: true });
+reactionSchema.index({ contentID: 1, "user._id": 1 }, { unique: true });
 
 // postSchema.set('toJSON', {
 //     transform: function (doc, ret, option) {
@@ -24,4 +24,4 @@ reactionSchema.index({ contentID: 1, 'user._id': 1 }, { unique: true });
 //     }
 // })
 
-module.exports = mongoose.model('Reaction', reactionSchema);
+module.exports = mongoose.model("Reaction", reactionSchema);

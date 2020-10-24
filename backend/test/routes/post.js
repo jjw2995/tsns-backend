@@ -21,6 +21,7 @@ describe("/posts", () => {
         .post("/api/posts")
         .set(getAuthBear(user_1))
         .send(postAppendNick(user_1, postPublic));
+      // logRes(a);
       expect(a.body.level).to.eql(postPublic.level);
 
       let b = await server
@@ -155,26 +156,71 @@ describe("/posts", () => {
     //
     //
     describe("GET /mine", () => {
-      it("fetch user_1's own posts", async () => {
+      it("fetch user_1's own posts, 3", async () => {
         let a = await server.get("/api/posts/mine").set(getAuthBear(user_1));
-        logRes(a);
-        // expect(a.body.length).eql(3);
+        // logRes(a);
+        expect(a.body.length).eql(3);
       });
-      it("fetch privateUser_2's own posts", async () => {
+      it("fetch privateUser_2's own posts, none", async () => {
         let a = await server
           .get("/api/posts/mine")
           .set(getAuthBear(privateUser_2));
-        logRes(a);
-        // expect(a.body.length).eql(0);
+        // logRes(a);
+        expect(a.body.length).eql(0);
       });
     });
-    describe("DELETE", () => {
-      // it("fetch user_1's own posts", async () => {
-      // 	let a = await server.get('/api/posts/mine').set(getAuthBear(user_1));
-      // 	logRes(a);
-      // 	// expect(a.body.length).eql(3);
-      // });
+    // TODO
+    describe("POST /reaction", () => {
+      it("user_1 react to own post, 3", async () => {
+        let a = await server.get("/api/posts/mine").set(getAuthBear(user_1));
+        // log(a.body[0]);
+        let b = await server
+          .post("/api/posts/react")
+          .set(getAuthBear(user_1))
+          .send({ _id: a.body[0]._id, reaction: "haha" });
+        log(b.body.reactions.haha);
+        expect(b.body.reactions.haha).to.eql(1);
+        // expect(a.body.length).eql(3);
+      });
+      it("wrong reaction", async () => {
+        let a = await server.get("/api/posts/mine").set(getAuthBear(user_1));
+        // log(a.body[0]);
+        let b = await server
+          .post("/api/posts/react")
+          .set(getAuthBear(user_1))
+          .send({ _id: a.body[0]._id, reaction: "hahaa" });
+        expect(b.status).to.eql(400);
+      });
     });
-    describe("PATCH", () => {});
+    // only
+    describe("PATCH", () => {
+      it("user_1 patch own post", async () => {
+        let b = await server.patch("/api/posts").set(getAuthBear(user_1)).send({
+          _id: user_1.publicPostID,
+          description: "patched",
+          level: "private",
+        });
+        expect(b.body.description).eql("patched");
+        expect(b.body.level).eql("private");
+      });
+      it("user_1 tries to patch other user's post", async () => {
+        let b = await server.patch("/api/posts").set(getAuthBear(user_1)).send({
+          _id: privateUser_1.publicPostID,
+          description: "patched",
+          level: "private",
+        });
+        // logRes(b);
+        expect(b.status).eql(400);
+      });
+    });
+    //
+    // NEED TO POPULATE COMMENTS B4 DELETING
+    describe("DELETE", () => {
+      it("fetch user_1's own posts", async () => {
+        let a = await server.delete("/api/posts").set(getAuthBear(user_1));
+        logRes(a);
+        // expect(a.body.length).eql(3);
+      });
+    });
   });
 });

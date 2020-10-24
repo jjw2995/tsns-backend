@@ -1,15 +1,20 @@
 const { formatError } = require("./helper");
-const { PostService, FollowService } = require("../services");
+const { PostService, FollowService, CommentService } = require("../services");
 const mongoose = require("mongoose");
 
 const Post = mongoose.model("Post");
+const Reaction = mongoose.model("Reaction");
 const Follower = mongoose.model("Follower");
-// const Reaction = mongoose.model('Reaction');
+const Comment = mongoose.model("Comment");
 
-const postService = new PostService(Post);
+const postService = new PostService(Post, Reaction);
+// const commentService = new CommentService(Comment, Reaction);
 const followService = new FollowService(Follower);
 
 module.exports = class PostController {
+  // constructor() {
+  //   console.log("\n asd\n");
+  // }
   post(req, res) {
     let files = Object.values(req.files || []);
     postService
@@ -26,12 +31,20 @@ module.exports = class PostController {
       .removePost(req.user, req.body)
       .then((r) => res.status(204).json(r))
       .catch((e) => res.status(400).json(formatError(e)));
+
+    // postService
+    //   .removePost(req.user, req.body)
+    //   .then((r) => {
+    //     return commentService.removeCommentsOnPost(req.body);
+    //   })
+    //   .then((r) => res.status(204))
+    //   .catch((e) => res.status(400).json(formatError(e)));
   }
 
   patch(req, res) {
     postService
       .updatePost(req.user, req.body)
-      .then((r) => res.status(204).json(r))
+      .then((r) => res.status(200).json(r))
       .catch((e) => res.status(400).json(formatError(e)));
   }
   get(req, res) {
@@ -60,9 +73,17 @@ module.exports = class PostController {
     // let limit = req.query.limit;
     let limit;
     postService
-      .getPublicPosts(limit)
+      .getPublicPosts(req.user, limit)
       .then((r) => res.status(200).json(r))
       .catch((e) => res.status(500).json(formatError(e)));
+  }
+
+  postReact(req, res) {
+    // console.log(req.body);
+    postService
+      .postReaction(req.user, req.body._id, req.body.reaction)
+      .then((r) => res.status(200).json(r))
+      .catch((e) => res.status(400).json(e.message));
   }
 };
 

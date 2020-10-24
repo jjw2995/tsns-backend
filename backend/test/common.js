@@ -90,18 +90,23 @@ global.usersInit = async function () {
 };
 
 global.userPrivPubFolPost = async (user) => {
-  await server
+  let a = await server
     .post("/api/posts")
     .set(getAuthBear(user))
     .send(postAppendNick(user, postPublic));
-  await server
+  let b = await server
     .post("/api/posts")
     .set(getAuthBear(user))
     .send(postAppendNick(user, postFollowers));
-  await server
+  let c = await server
     .post("/api/posts")
     .set(getAuthBear(user))
     .send(postAppendNick(user, postPrivate));
+
+  user.publicPostID = a.body._id;
+  user.followerPostID = b.body._id;
+  user.privatePostID = c.body._id;
+  // console.log(user);
 };
 global.acceptFollower = async function (user, follower) {
   await server
