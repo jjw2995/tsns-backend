@@ -225,7 +225,7 @@ describe("/comments", () => {
         expect(a).to.not.contain(toDeleteSubComID);
       });
 
-      it.only("delete a post, delete all comments", async () => {
+      it("delete a post, delete all comments", async () => {
         // it.only("delete a post, delete all comments", async () => {
         let a = await server
           .delete("/api/posts")

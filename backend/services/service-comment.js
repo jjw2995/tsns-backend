@@ -1,6 +1,5 @@
-const test = require("mongoose").model("Comment");
 const mongoose = require("mongoose");
-const { post } = require("../routes/api/route-post");
+const test = mongoose.model("Comment");
 const Reactionable = require("./reactionable");
 
 let log = (m) => console.log("\n", m, "\n");
