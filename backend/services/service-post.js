@@ -138,10 +138,10 @@ module.exports = class PostService extends Reactionable {
     return res;
   }
 
-  async removePost(user, post) {
-    log(post);
+  async removePost(user, postID) {
+    log(postID);
     let a = await Post.findOneAndDelete({
-      _id: post._id,
+      _id: postID,
       "user._id": user._id,
     });
     if (!a) {

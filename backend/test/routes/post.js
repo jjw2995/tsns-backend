@@ -215,12 +215,15 @@ describe("/posts", () => {
     });
     //
     // NEED TO POPULATE COMMENTS B4 DELETING
-    describe("DELETE", () => {
-      it("fetch user_1's own posts", async () => {
-        let a = await server.delete("/api/posts").set(getAuthBear(user_1));
-        logRes(a);
-        // expect(a.body.length).eql(3);
-      });
-    });
+    // describe("DELETE", () => {
+    //   it("fetch user_1's own posts", async () => {
+    //     let a = await server.delete("/api/posts").set(getAuthBear(user_1));
+    //     logRes(a);
+    //     // expect(a.body.length).eql(3);
+    //   });
+    // });
+    //
+    //
+    //
   });
 });

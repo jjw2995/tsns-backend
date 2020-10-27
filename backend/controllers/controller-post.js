@@ -8,7 +8,7 @@ const Follower = mongoose.model("Follower");
 const Comment = mongoose.model("Comment");
 
 const postService = new PostService(Post, Reaction);
-// const commentService = new CommentService(Comment, Reaction);
+const commentService = new CommentService(Comment, Reaction);
 const followService = new FollowService(Follower);
 
 module.exports = class PostController {
@@ -26,19 +26,26 @@ module.exports = class PostController {
   /**
    * TODO: also delete the REACTiONS and COMMENTS and COMMENTS' REACTIONS
    */
-  delete(req, res) {
-    postService
-      .removePost(req.user, req.body)
-      .then((r) => res.status(204).json(r))
-      .catch((e) => res.status(400).json(formatError(e)));
-
-    // postService
-    //   .removePost(req.user, req.body)
-    //   .then((r) => {
-    //     return commentService.removeCommentsOnPost(req.body);
-    //   })
-    //   .then((r) => res.status(204))
-    //   .catch((e) => res.status(400).json(formatError(e)));
+  // delete(req, res) {
+  //   postService
+  //     .removePost(req.user, req.body.postID)
+  //     .then((r) => {
+  //       return commentService.removeCommentsOnPost(req.body.postID);
+  //     })
+  //     .then((r) => res.status(204))
+  //     .catch((e) => res.status(400).json(e));
+  // }
+  async delete(req, res) {
+    // await
+    try {
+      let postID = req.body.postID;
+      await postService.removePost(req.user, postID);
+      let a = await commentService.removeCommentsOnPost(postID);
+      console.log(a);
+      res.status(204);
+    } catch (error) {
+      res.status(400).json(error);
+    }
   }
 
   patch(req, res) {

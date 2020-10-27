@@ -94,11 +94,11 @@ module.exports = class CommentService extends Reactionable {
       return comment._id;
     });
     log(commentsToBeRemoved);
-    await super.deleteReactions(commentsToBeRemoved);
+    let a = await super.deleteReactions(commentsToBeRemoved);
     // del all comments
     // del all related reactions
-
-    return;
+    log("asfasdafasd");
+    return a;
   }
   // remove get
 

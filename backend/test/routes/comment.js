@@ -32,7 +32,7 @@ async function nSubcomComment(user, postID, content, parentCom, n = 1) {
   return;
 }
 
-describe("/comments", () => {
+describe.only("/comments", () => {
   beforeEach(async () => {
     await userPrivPubFolPost(user_1);
     await userPrivPubFolPost(user_2);
@@ -225,19 +225,20 @@ describe("/comments", () => {
         expect(a).to.not.contain(toDeleteSubComID);
       });
 
-      it("delete a post, delete all comments", async () => {
+      it.only("delete a post, delete all comments", async () => {
         // it.only("delete a post, delete all comments", async () => {
         let a = await server
           .delete("/api/posts")
           .set(getAuthBear(user_1))
-          .send({ _id: user_1.publicPostID });
+          .send({ postID: user_1.publicPostID });
         logRes(a);
 
-        let z = await server
-          .get("/api/comments?num=2")
-          .set(getAuthBear(user_1))
-          .send({ postID: user_1.publicPostID });
-        logRes(z);
+        // let z = await server
+        //   .get("/api/comments?num=2")
+        //   .set(getAuthBear(user_1))
+        //   .send({ postID: user_1.publicPostID });
+        // logRes(z);
+        //
         // expect(z.body.length).to.eql(2);
 
         // log(z.body[0);

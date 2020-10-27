@@ -88,10 +88,12 @@ module.exports = class Reactionable {
   // }
 
   async deleteReactions(contentIDs) {
-    // log(reactionModel);
-    // let a =
-    await reactionModel.deleteMany({ contentID: { $in: contentIDs } });
+    // log(contentIDs);
+    let a = await reactionModel.deleteMany({ contentID: { $in: contentIDs } });
+    log(a);
     // log(a);
+    // log(a);
+    return a;
   }
 
   async appendReqReactions(user, contents) {
