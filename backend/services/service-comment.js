@@ -3,7 +3,7 @@ const test = mongoose.model("Comment");
 const Reactionable = require("./reactionable");
 
 let log = (m) => console.log("\n", m, "\n");
-let Comment;
+// let Comment;
 
 // function getUsersIdx (target, other) {
 //     return target._id < other._id ? 0 : 1
@@ -13,7 +13,7 @@ const PAGE_SIZE = 8;
 module.exports = class CommentService extends Reactionable {
   constructor(commentModel, reactionsModel) {
     super(commentModel, reactionsModel);
-    Comment = commentModel;
+    this.Comment = commentModel;
   }
 
   async addComment(user, postID, content, parentCom = null) {
@@ -30,7 +30,7 @@ module.exports = class CommentService extends Reactionable {
       //   }
       //
       //   if (parentCom.numChild == 0) {
-      let parentComment = await Comment.findOneAndUpdate(
+      let parentComment = await this.Comment.findOneAndUpdate(
         { _id: parentCom._id },
         { $inc: { numChild: 1 } },
         { new: true }
@@ -43,7 +43,7 @@ module.exports = class CommentService extends Reactionable {
       comment.parentComID = parentCom._id;
     }
 
-    let newComment = await Comment.create(comment);
+    let newComment = await this.Comment.create(comment);
     // log(newComment);
     return newComment;
   }
@@ -54,8 +54,8 @@ module.exports = class CommentService extends Reactionable {
     if (lastComment) {
       query.createdAt = { $gt: new Date(lastComment.createdAt) };
     }
-
-    let a = await Comment.aggregate([
+    // let a = [];
+    let a = await this.Comment.aggregate([
       { $match: query },
       // { $sort: { createdAt: -1 } },
       { $limit: parseInt(page_size) },
@@ -72,6 +72,7 @@ module.exports = class CommentService extends Reactionable {
         },
       },
     ]);
+
     return a;
   }
 
@@ -80,30 +81,30 @@ module.exports = class CommentService extends Reactionable {
       parentComID: parentCommentID,
       createdAt: { $gt: lastComment.createdAt },
     };
-    let subComments = await Comment.find(query).limit(parseInt(page_size));
+    let subComments = await this.Comment.find(query).limit(parseInt(page_size));
     return subComments;
   }
 
   async removeCommentsOnPost(postID) {
-    log(postID);
-    let commentsToBeRemoved = await Comment.aggregate([
+    let commentsToBeRemoved = await this.Comment.aggregate([
       { $match: { postID: postID } },
       { $project: { _id: "$_id" } },
     ]);
+    // log(commentsToBeRemoved);
     commentsToBeRemoved = commentsToBeRemoved.map((comment) => {
       return comment._id;
     });
-    log(commentsToBeRemoved);
+    // await Comment
+    await this.Comment.deleteMany({ _id: { $in: commentsToBeRemoved } });
     let a = await super.deleteReactions(commentsToBeRemoved);
     // del all comments
     // del all related reactions
-    log("asfasdafasd");
     return a;
   }
   // remove get
 
   async removeComment(user, commentID) {
-    let relatedComments = await Comment.aggregate([
+    let relatedComments = await this.Comment.aggregate([
       { $match: { $or: [{ _id: commentID }, { parentComID: commentID }] } },
       {
         $project: {
@@ -128,7 +129,7 @@ module.exports = class CommentService extends Reactionable {
     if (toBeDeleted.user._id != user._id)
       throw Error(`${user.nickname} does not own comment with ${commentID}`);
 
-    let deleted = await Comment.deleteMany({
+    let deleted = await this.Comment.deleteMany({
       $or: [{ _id: commentID }, { parentComID: commentID }],
     });
 

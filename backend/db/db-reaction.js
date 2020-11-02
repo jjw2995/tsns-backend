@@ -13,7 +13,7 @@ let reactionSchema = new mongoose.Schema(
     },
     contentID: { type: String, index: true, required: true },
   },
-  { typePojoToMixed: false }
+  { typePojoToMixed: false, timestamps: true }
 );
 reactionSchema.index({ contentID: 1, "user._id": 1 }, { unique: true });
 

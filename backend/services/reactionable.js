@@ -1,14 +1,18 @@
-const { update } = require("../db/db-reaction");
+// const { update } = require("../db/db-reaction");
 
-const qwe = require("mongoose").model("Post");
+// const qwe = require("mongoose").model("Post");
 const log = (msg) => console.log("\n", msg);
-let contentModel;
-let reactionModel;
+// let this.Content;
+// let this.Reaction;
 module.exports = class Reactionable {
-  constructor(content_Model, reaction_Model) {
-    contentModel = content_Model;
-    reactionModel = reaction_Model;
-    // log(reactionModel);
+  constructor(contentModel, reactionModel) {
+    this.Content = contentModel;
+    this.Reaction = reactionModel;
+    // this.Content.find({}).then((r) => {
+    // log("HEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHERE");
+    //   log(r);
+    // });
+    // log(this.Reaction);
   }
 
   _checkReaction(reaction) {
@@ -16,18 +20,6 @@ module.exports = class Reactionable {
     if (!["love", "haha", "sad", "angry"].includes(reaction)) {
       throw new Error("reaction is not one of love, haha, sad, and angry");
     }
-  }
-  // inc (add new reaction)
-  async _incrementReaction(contentID, reaction) {
-    // this._checkReaction(reaction);
-    // let a = 'reactions.' + reaction
-    // log(a)
-    let update = { $inc: { ["reactions." + reaction]: 1 } };
-    let options = { new: true };
-    // qwe.findOneAndUpdate(c)
-    let a = await contentModel.findByIdAndUpdate(contentID, update, options);
-    // log(a);
-    return a;
   }
 
   // dec (remove reaction)
@@ -37,8 +29,20 @@ module.exports = class Reactionable {
 
     let update = { $inc: { ["reactions." + reaction]: -1 } };
     let options = { new: true };
-    let a = await contentModel.findByIdAndUpdate(contentID, update, options);
+    let a = await this.Content.findByIdAndUpdate(contentID, update, options);
     return a;
+  }
+
+  // inc (add new reaction)
+  async _incrementReaction(contentID, reaction) {
+    let update = { $inc: { ["reactions." + reaction]: 1 } };
+    let options = { new: true };
+    let incrementedReaction = await this.Content.findByIdAndUpdate(
+      contentID,
+      update,
+      options
+    );
+    return incrementedReaction;
   }
 
   // update dec inc (change existing reation)
@@ -48,22 +52,22 @@ module.exports = class Reactionable {
     let update = { $inc: { [prevReact]: -1 }, $inc: { [newReact]: 1 } };
     let options = { new: true };
 
-    let a = contentModel.findByIdAndUpdate(contentID, update, options);
+    let a = await this.Content.findByIdAndUpdate(contentID, update, options);
     return a;
   }
 
   async postReaction(user, contentID, reaction) {
     this._checkReaction(reaction);
 
-    let reactionDoc = await reactionModel.findOneAndUpdate(
+    let reactionDoc = await this.Reaction.findOneAndUpdate(
       {
         contentID: contentID,
         "user._id": user._id,
       },
       reactionObj(contentID, user, reaction),
-      { upsert: true, new: true }
+      { upsert: true }
     );
-    log(reactionDoc);
+    // log(reactionDoc);
     let newDoc;
     if (reactionDoc) {
       newDoc = await this._updateReaction(
@@ -72,27 +76,17 @@ module.exports = class Reactionable {
         reaction
       );
     } else {
+      // log("herereerer");
       newDoc = await this._incrementReaction(contentID, reaction);
     }
-    return newDoc;
+
+    let reactions = await this.getReactionCounts(contentID);
+    // log(reactions);
+    return reactions;
   }
 
-  // async deleteReactions(user, contentID) {
-  //   let reactionDoc = await reactionModel.findOneAndDelete({
-  //     contentID: contentID,
-  //     "user._id": user._id,
-  //   });
-  //   if (!reactionDoc) throw 0;
-  //   await this._decrementReaction(contentID, reactionDoc.reaction);
-  //   return reactionDoc;
-  // }
-
   async deleteReactions(contentIDs) {
-    // log(contentIDs);
-    let a = await reactionModel.deleteMany({ contentID: { $in: contentIDs } });
-    log(a);
-    // log(a);
-    // log(a);
+    let a = await this.Reaction.deleteMany({ contentID: { $in: contentIDs } });
     return a;
   }
 
@@ -101,7 +95,7 @@ module.exports = class Reactionable {
       content.userReaction = null;
       return content._id;
     });
-    arr = await reactionModel.find({
+    arr = await this.Reaction.find({
       contentID: { $in: arr },
       "user._id": user._id,
     });
@@ -122,81 +116,65 @@ module.exports = class Reactionable {
     contentRef.userReaction = reaction;
   }
 
-  //
-  //   getReactionDoc(){}
+  async getReactionCounts(contentID) {
+    let reactions =
+      //
+      await this.Reaction.aggregate([
+        { $match: { contentID: contentID } },
+        { $project: { user: 1, reaction: 1, _id: 0 } },
+        {
+          $group: {
+            _id: "$reaction",
+            count: { $sum: 1 },
+          },
+        },
+      ]);
 
-  // reactions: {
-  //     love: { type: Number, default: 0 },
-  //     haha: { type: Number, default: 0 },
-  //     sad: { type: Number, default: 0 },
-  //     angry: { type: Number, default: 0 }
+    let reactionsObj = {};
+    reactions.forEach((reaction) => {
+      // log(reaction._id);
+      reactionsObj[reaction._id] = reaction.count;
+    });
+    // log(reactionsObj);
+    // log(reactions);
+    return reactionsObj;
+  }
+
+  async getReactions(contentID, reaction, lastReaction = null) {
+    let reactions =
+      //
+      await this.Reaction.aggregate([
+        { $match: { contentID: contentID } },
+        // { $project: { user: 1, reaction: 1, _id: 0 } },
+        // {
+        //   $group: {
+        //     _id: "$reaction",
+        //     count: { $sum: 1 },
+        //   },
+        // },
+      ]);
+    return reactions;
+  }
+  // // change to paging each emotion, 20
+  // async getReactions(contentID) {
+  //   let reactions =
+  //     //
+  //     await this.Reaction.aggregate([
+  //       { $match: { contentID: contentID } },
+  //       { $project: { user: 1, reaction: 1, _id: 0 } },
+  //       {
+  //         $group: {
+  //           _id: "$reaction",
+  //           count: { $sum: 1 },
+  //           documents: { $push: "$$ROOT" },
+  //         },
+  //       },
+  //     ]);
+
+  //   return reactions;
   // }
 };
 
 function reactionObj(contentID, user, reaction) {
   return { reaction: reaction, user: user, contentID: contentID };
 }
-
-//
-//
-//
-//
-//
-
-// const qwe = require('mongoose').model('Post');
-// const log = (msg) => console.log('\n', msg);
-// let model;
-// module.exports = class Reactionable {
-// 	constructor(reactionableM_odel) {
-// 		model = reactionableM_odel;
-// 	}
-
-// 	_checkReaction(reaction) {
-// 		if (!['love', 'haha', 'sad', 'angry'].includes(reaction)) {
-// 			throw new Error('reaction is not one of love, haha, sad, and angry');
-// 		}
-// 	}
-// 	// inc (add new reaction)
-// 	async _incrementReaction(contentID, reaction) {
-// 		this._checkReaction(reaction);
-// 		// let a = 'reactions.' + reaction
-// 		// log(a)
-// 		let update = { $inc: { ['reactions.' + reaction]: 1 } };
-// 		let options = { new: true };
-// 		let a = await model.findByIdAndUpdate(contentID, update, options);
-// 		return a;
-// 	}
-
-// 	// dec (remove reaction)
-// 	// TODO: maybe ensure no negative values?
-// 	async _decrementReaction(contentID, reaction) {
-// 		this._checkReaction(reaction);
-
-// 		let update = { $inc: { ['reactions.' + reaction]: -1 } };
-// 		let options = { new: true };
-// 		let a = await model.findByIdAndUpdate(contentID, update, options);
-// 		return a;
-// 	}
-
-// 	// update dec inc (change existing reation)
-// 	async _updateReaction(contentID, previousReaction, newReaction) {
-// 		this._checkReaction(previousReaction);
-// 		this._checkReaction(newReaction);
-// 		let prevReact = 'reactions.' + previousReaction;
-// 		let newReact = 'reactions.' + newReaction;
-// 		let update = { $inc: { [prevReact]: -1 }, $inc: { [newReact]: 1 } };
-// 		let options = { new: true };
-
-// 		let a = model.findByIdAndUpdate(contentID, update, options);
-// 		return a;
-// 	}
-
-// 	// _checkNegativeKeepSync
-
-// 	// reactions: {
-// 	//     love: { type: Number, default: 0 },
-// 	//     haha: { type: Number, default: 0 },
-// 	//     sad: { type: Number, default: 0 },
-// 	//     angry: { type: Number, default: 0 }
-// 	// }
-// };

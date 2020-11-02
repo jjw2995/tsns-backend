@@ -1,3 +1,6 @@
+const { post } = require("../../routes/api/route-post");
+const mongoose = require("mongoose");
+
 describe("/posts", () => {
   beforeEach("followers init, u1 -> u2, u1-> pu1", async () => {
     // await usersInit();
@@ -36,22 +39,29 @@ describe("/posts", () => {
         .send(postAppendNick(user_1, postPrivate));
       expect(c.body.level).to.eql(postPrivate.level);
     });
-    it("normal insert with pictures", async () => {
+    it("normal insert and delete with pictures", async () => {
       let a = await server
         .post("/api/posts")
         .set(getAuthBear(user_1))
         .attach("f_1", fs.readFileSync("./z.png"), "z.png")
         .attach("f_2", fs.readFileSync("./test1.png"), "test1.png")
         .field(postPrivate);
-
+      let d = await Post.find({});
+      expect(d.length).to.eql(1);
+      // log(d);
+      // logRes(a);
       expect(a.body.user._id).to.eql(user_1._id);
       expect(a.body.media.length).to.eql(2);
-
+      // console.log(a.body._id);
       let b = await server
         .delete("/api/posts")
         .set(getAuthBear(user_1))
-        .send(a.body);
+        .send({ postID: a.body._id });
+      // logRes(b);
       expect(b.status).to.eql(204);
+
+      let c = await Post.find({});
+      expect(c.length).to.eql(0);
     });
     it("Err, no such level", async () => {
       let p = copy(postPublic);
@@ -169,18 +179,32 @@ describe("/posts", () => {
         expect(a.body.length).eql(0);
       });
     });
-    // TODO
+    // TODO ########################################################################
     describe("POST /reaction", () => {
       it("user_1 react to own post, 3", async () => {
         let a = await server.get("/api/posts/mine").set(getAuthBear(user_1));
+        // log(a.body);
         // log(a.body[0]);
+        //
+        await server
+          .post("/api/posts/react")
+          .set(getAuthBear(user_2))
+          .send({ _id: a.body[0]._id, reaction: "haha" });
+        await server
+          .post("/api/posts/react")
+          .set(getAuthBear(privateUser_1))
+          .send({ _id: a.body[0]._id, reaction: "love" });
+        await server
+          .post("/api/posts/react")
+          .set(getAuthBear(privateUser_2))
+          .send({ _id: a.body[0]._id, reaction: "sad" });
         let b = await server
           .post("/api/posts/react")
           .set(getAuthBear(user_1))
           .send({ _id: a.body[0]._id, reaction: "haha" });
-        log(b.body.reactions.haha);
-        expect(b.body.reactions.haha).to.eql(1);
-        // expect(a.body.length).eql(3);
+        // logRes(b);
+        // log(b.body.reactions.haha);
+        expect(b.body.haha).to.eql(2);
       });
       it("wrong reaction", async () => {
         let a = await server.get("/api/posts/mine").set(getAuthBear(user_1));
@@ -192,7 +216,6 @@ describe("/posts", () => {
         expect(b.status).to.eql(400);
       });
     });
-    // only
     describe("PATCH", () => {
       it("user_1 patch own post", async () => {
         let b = await server.patch("/api/posts").set(getAuthBear(user_1)).send({

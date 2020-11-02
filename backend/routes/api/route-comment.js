@@ -37,7 +37,7 @@ router.post("/", commentController.post);
 router.get("/", commentController.get);
 router.get("/subcomments/", commentController.getSubcomments);
 
-router.delete('/', commentController.delete)
+router.delete("/", commentController.delete);
 
 // router.("/", commentController.);
 // router.("/", commentController.);

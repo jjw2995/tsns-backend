@@ -80,7 +80,7 @@ router.post(
 router.delete(
   "/react",
   validate(Segments.BODY, { _id }),
-  postController.postReact
+  postController.delete
 );
 
 module.exports = router;

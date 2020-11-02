@@ -5,19 +5,6 @@ const ImageProc = require("./image-proc");
 
 let log = (m) => console.log("\n", m, "\n");
 
-// const { v4: uuidv4 } = require("uuid");
-// const { Storage } = require("@google-cloud/storage");
-// const path = require("path");
-// const gc = new Storage({
-//   keyFilename: path.join(__dirname, "../../gcs.json"),
-//   projectId: "clever-spirit-285705",
-// });
-
-// for-tsns@clever-spirit-285705.iam.gserviceaccount.com
-// const gcsBucket = gc.bucket("tsns");
-// const jimp = require("jimp");
-// const gcsUrl = "https://storage.cloud.google.com/tsns/";
-
 let imageProc = new ImageProc();
 const PAGE_SIZE = 8;
 
@@ -50,14 +37,16 @@ module.exports = class PostService extends Reactionable {
   }
 
   async removePost(user, postID) {
-    let postToBeDeleted = await this.Post.findOneAndDelete({
+    // log(Post);
+    let a = await this.Post.findOneAndDelete({
       _id: postID,
       "user._id": user._id,
     });
-    if (!postToBeDeleted) {
+    // log(a);
+    if (!a) {
       throw new Error("user does not own the post or no such post exists");
     } else {
-      await imageProc.removeFiles(postToBeDeleted.media);
+      await imageProc.removeFiles(a.media);
     }
   }
 

@@ -12,41 +12,42 @@ const commentService = new CommentService(Comment, Reaction);
 const followService = new FollowService(Follower);
 
 module.exports = class PostController {
-  // constructor() {
-  //   console.log("\n asd\n");
-  // }
   post(req, res) {
     let files = Object.values(req.files || []);
     postService
       .addPost(req.user, req.body, files)
       .then((r) => res.status(200).json(r))
-      .catch((e) => res.status(e.status).json(e));
+      .catch((e) => {
+        console.log(e);
+        res.status(e.status).json(e);
+      });
   }
 
-  /**
-   * TODO: also delete the REACTiONS and COMMENTS and COMMENTS' REACTIONS
-   */
-  // delete(req, res) {
-  //   postService
-  //     .removePost(req.user, req.body.postID)
-  //     .then((r) => {
-  //       return commentService.removeCommentsOnPost(req.body.postID);
-  //     })
-  //     .then((r) => res.status(204))
-  //     .catch((e) => res.status(400).json(e));
-  // }
-  async delete(req, res) {
-    // await
-    try {
-      let postID = req.body.postID;
-      await postService.removePost(req.user, postID);
-      let a = await commentService.removeCommentsOnPost(postID);
-      console.log(a);
-      res.status(204);
-    } catch (error) {
-      res.status(400).json(error);
-    }
+  delete(req, res) {
+    let postID = req.body.postID;
+    postService
+      .removePost(req.user, postID)
+      .then((r) => {
+        return commentService.removeCommentsOnPost(postID);
+      })
+      .then((r) => res.sendStatus(204))
+      .catch((e) => res.status(400).json(e));
   }
+
+  // async delete(req, res) {
+  //   let postID = req.body.postID;
+  //   await postService.removePost(req.user, postID);
+  //   await commentService.removeCommentsOnPost(postID);
+  //   res.status(204);
+  //   // postService
+  //   //   .removePost(req.user, postID)
+  //   //   .then((r) => {
+  //   //     console.log(r);
+  //   //     return commentService.removeCommentsOnPost(postID);
+  //   //   })
+  //   //   .then((r) => res.status(204))
+  //   //   .catch((e) => res.status(400).json(e));
+  // }
 
   patch(req, res) {
     postService
@@ -92,6 +93,17 @@ module.exports = class PostController {
       .then((r) => res.status(200).json(r))
       .catch((e) => res.status(400).json(e.message));
   }
+  // async postReact(req, res) {
+  //   // let a = await Post.find({});
+  //   // console.log(a);
+  //   let b = await postService.postReaction(
+  //     req.user,
+  //     req.body._id,
+  //     req.body.reaction
+  //   );
+  //   console.log(b);
+  //   res.status(200).json(b);
+  // }
 };
 
 // 	// res.status().send().;

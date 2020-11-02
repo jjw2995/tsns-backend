@@ -23,11 +23,11 @@ global.fs = require("fs");
 
 const mongoose = require("mongoose");
 
-const User = mongoose.model("User");
-const Follower = mongoose.model("Follower");
-const Post = mongoose.model("Post");
-const Comment = mongoose.model("Comment");
-const Reaction = mongoose.model("Reaction");
+global.User = mongoose.model("User");
+global.Follower = mongoose.model("Follower");
+global.Post = mongoose.model("Post");
+global.Comment = mongoose.model("Comment");
+global.Reaction = mongoose.model("Reaction");
 
 function importTest(name, path) {
   describe(name, function () {
