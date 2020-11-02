@@ -8,32 +8,21 @@ module.exports = class Reactionable {
   constructor(contentModel, reactionModel) {
     this.Content = contentModel;
     this.Reaction = reactionModel;
-    // this.Content.find({}).then((r) => {
-    // log("HEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHERE");
-    //   log(r);
-    // });
-    // log(this.Reaction);
   }
 
   _checkReaction(reaction) {
-    // log(!["love", "haha", "sad", "angry"].includes(reaction));
     if (!["love", "haha", "sad", "angry"].includes(reaction)) {
       throw new Error("reaction is not one of love, haha, sad, and angry");
     }
   }
 
-  // dec (remove reaction)
-  // TODO: maybe ensure no negative values?
   async _decrementReaction(contentID, reaction) {
-    // this._checkReaction(reaction);
-
     let update = { $inc: { ["reactions." + reaction]: -1 } };
     let options = { new: true };
     let a = await this.Content.findByIdAndUpdate(contentID, update, options);
     return a;
   }
 
-  // inc (add new reaction)
   async _incrementReaction(contentID, reaction) {
     let update = { $inc: { ["reactions." + reaction]: 1 } };
     let options = { new: true };
@@ -45,7 +34,6 @@ module.exports = class Reactionable {
     return incrementedReaction;
   }
 
-  // update dec inc (change existing reation)
   async _updateReaction(contentID, previousReaction, newReaction) {
     let prevReact = "reactions." + previousReaction;
     let newReact = "reactions." + newReaction;
@@ -67,7 +55,6 @@ module.exports = class Reactionable {
       reactionObj(contentID, user, reaction),
       { upsert: true }
     );
-    // log(reactionDoc);
     let newDoc;
     if (reactionDoc) {
       newDoc = await this._updateReaction(
@@ -76,12 +63,10 @@ module.exports = class Reactionable {
         reaction
       );
     } else {
-      // log("herereerer");
       newDoc = await this._incrementReaction(contentID, reaction);
     }
 
     let reactions = await this.getReactionCounts(contentID);
-    // log(reactions);
     return reactions;
   }
 
@@ -99,18 +84,14 @@ module.exports = class Reactionable {
       contentID: { $in: arr },
       "user._id": user._id,
     });
-    // log("herehereherehereherehere?");
     arr.map((reactionDoc) => {
       let contentRef = contents.find((content) => {
         return content._id === reactionDoc.contentID;
       });
+      // ??????????????
       this.appendReaction(contentRef, reactionDoc.reaction);
     });
-    // erase this
-    // console.log(contents);
     return contents;
-
-    // let a = Promise.all(arr)
   }
   appendReaction(contentRef, reaction = null) {
     contentRef.userReaction = reaction;

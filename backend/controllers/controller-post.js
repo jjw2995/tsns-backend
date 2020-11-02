@@ -18,7 +18,6 @@ module.exports = class PostController {
       .addPost(req.user, req.body, files)
       .then((r) => res.status(200).json(r))
       .catch((e) => {
-        console.log(e);
         res.status(e.status).json(e);
       });
   }
