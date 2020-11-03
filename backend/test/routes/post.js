@@ -1,4 +1,4 @@
-describe("/posts", () => {
+describe.only("/posts", () => {
   beforeEach("followers init, u1 -> u2, u1-> pu1", async () => {
     await postFollow(user_1, user_2);
     await postFollow(user_1, privateUser_1);
@@ -165,7 +165,6 @@ describe("/posts", () => {
         expect(a.body.length).eql(0);
       });
     });
-    // TODO ########################################################################
     describe("POST /reaction", () => {
       it("user_1 react to own post, 3", async () => {
         let a = await server.get("/api/posts/mine").set(getAuthBear(user_1));

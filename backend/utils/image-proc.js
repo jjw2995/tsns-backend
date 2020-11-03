@@ -2,16 +2,15 @@ const { v4: uuidv4 } = require("uuid");
 const { Storage } = require("@google-cloud/storage");
 const path = require("path");
 const gc = new Storage({
-  keyFilename: path.join(__dirname, "../../gcs.json"),
   projectId: "clever-spirit-285705",
+  keyFilename: path.join(__dirname, "../../gcs.json"),
+  // credentials: JSON.parse(process.env.GCS_KEYFILE),
 });
-
+// let a = path.join(__dirname, "../../gcs.json");
+// log(a);
 // for-tsns@clever-spirit-285705.iam.gserviceaccount.com
 const gcsBucket = gc.bucket("tsns");
 const jimp = require("jimp");
-const gcsUrl = "https://storage.cloud.google.com/tsns/";
-
-// const os = require("os");
 
 module.exports = class ImageProc {
   _modifyPictures(files) {

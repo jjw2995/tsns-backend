@@ -16,10 +16,6 @@ global.server = chai.request(app).keepOpen();
 require("./variables");
 require("./common");
 global.fs = require("fs");
-// process.env.NODE_ENV = "test";
-
-// Include common modules from your application that will be used among multiple test suites.
-// global.myModule = require("../app/myModule");
 
 const mongoose = require("mongoose");
 
@@ -29,15 +25,6 @@ global.Post = mongoose.model("Post");
 global.Comment = mongoose.model("Comment");
 global.Reaction = mongoose.model("Reaction");
 
-function importTest(name, path) {
-  describe(name, function () {
-    require(path);
-  });
-}
-
-// // var common = require("./common");
-
-// describe("top", function () {
 beforeEach(async function () {
   await User.deleteMany({});
   await Follower.deleteMany({});
@@ -45,9 +32,6 @@ beforeEach(async function () {
   await Comment.deleteMany({});
   await Reaction.deleteMany({});
 });
-
-//
-// importTest("auth", "./routes/auth");
 
 describe("/api", () => {
   require("./routes/auth");
@@ -59,8 +43,5 @@ describe("/api", () => {
     require("./routes/follower");
     require("./routes/post");
     require("./routes/comment");
-
-    // importTest("/followers /followees", "./routes/follower");
-    // importTest("/posts", "./routes/post");
   });
 });

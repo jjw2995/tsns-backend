@@ -1,4 +1,4 @@
-const { formatError } = require("./helper");
+const { formatError } = require("../utils/helper");
 const { PostService, FollowService, CommentService } = require("../services");
 const mongoose = require("mongoose");
 
@@ -33,21 +33,6 @@ module.exports = class PostController {
       .catch((e) => res.status(400).json(e));
   }
 
-  // async delete(req, res) {
-  //   let postID = req.body.postID;
-  //   await postService.removePost(req.user, postID);
-  //   await commentService.removeCommentsOnPost(postID);
-  //   res.status(204);
-  //   // postService
-  //   //   .removePost(req.user, postID)
-  //   //   .then((r) => {
-  //   //     console.log(r);
-  //   //     return commentService.removeCommentsOnPost(postID);
-  //   //   })
-  //   //   .then((r) => res.status(204))
-  //   //   .catch((e) => res.status(400).json(e));
-  // }
-
   patch(req, res) {
     postService
       .updatePost(req.user, req.body)
@@ -55,8 +40,8 @@ module.exports = class PostController {
       .catch((e) => res.status(400).json(formatError(e)));
   }
   get(req, res) {
-    // let limit = req.query.limit;
-    let limit;
+    let limit = req.query.num;
+    // let limit;
 
     let user = req.user;
     followService
@@ -82,7 +67,9 @@ module.exports = class PostController {
     postService
       .getPublicPosts(req.user, limit)
       .then((r) => res.status(200).json(r))
-      .catch((e) => res.status(500).json(formatError(e)));
+      .catch((e) => {
+        res.status(500).json(formatError(e));
+      });
   }
 
   postReact(req, res) {

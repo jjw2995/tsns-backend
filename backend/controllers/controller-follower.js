@@ -1,4 +1,4 @@
-const { formatError } = require("./helper");
+const { formatError } = require("../utils/helper");
 const { FollowService, UserService } = require("../services");
 const mongoose = require("mongoose");
 
@@ -8,12 +8,6 @@ let followService = new FollowService(Follower);
 let userService = new UserService(User);
 
 module.exports = class FollowController {
-  // _confirmUserExists(user) {
-  // 	return new Promise((resolve, reject) => {
-  // 		userService.getUser;
-  // 	});
-  // }
-
   postFollowee(req, res) {
     userService
       .getUser(req.body)

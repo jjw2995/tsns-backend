@@ -4,7 +4,7 @@
   "description": "tiny sns",
   "main": "app.ts",
   "scripts": {
-    "test": "kill-port --port 5000 && mocha ./backend/test/top.js --exit --timeout 6000",
+    "test": "kill-port --port 5000 && TEST=true mocha ./backend/test/top.js --exit --timeout 6000",
     "dev": "kill-port --port 5000 && nodemon ./backend/app"
   },
   "author": "",

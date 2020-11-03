@@ -11,11 +11,13 @@ const PORT = process.env.PORT || 5000;
 
 global.log = (msg) => console.log("\n", msg);
 
-// =================== SWAGGER DOC =========================
-const swaggerUI = require("swagger-ui-express");
-const swaggerDoc = require("./swagger.json");
-app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDoc));
-// =================== SWAGGER DOC =========================
+// console.log(process.env.GCS_KEYFILE);
+// log(process.env.GCS_KEYFILE);
+// // =================== SWAGGER DOC =========================
+// const swaggerUI = require("swagger-ui-express");
+// const swaggerDoc = require("./swagger.json");
+// app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDoc));
+// // =================== SWAGGER DOC =========================
 
 app.use(express.json());
 app.use(urlencoded({ extended: true }));
@@ -24,15 +26,6 @@ app.use(urlencoded({ extended: true }));
 app.use(formData.parse({ extended: true, autoClean: true }));
 // delete from the request all empty files (size == 0)
 app.use(formData.format());
-// // change the file objects to fs.ReadStream
-// app.use(formData.stream());
-// // union the body and the files
-// app.use(formData.union());
-
-// app.use((req, res, next) => {
-// 	console.log('\n\n', req.method, ' ', req.path /* , req.headers */);
-// 	next();
-// });
 
 require("./db");
 
@@ -47,38 +40,46 @@ require("./db");
 
 //  Connect all our routes to our application
 app.use("/api", require("./routes/api"));
+app.get("", (req, res) => {
+  res.status(200).json("check");
+});
 
 // celebrate error handler middleware
 app.use(errors());
 
-let dbp = "mongodb://localhost:27017";
+let dbURI = process.env.TEST_DB_URI;
+if (!process.env.TEST) {
+  dbURI = process.env.DB_URI;
+}
+
 let p1 = new Promise((resolve, reject) => {
-  mongoose.connect(
-    dbp,
-    {
+  mongoose
+    .connect(dbURI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       useCreateIndex: true,
       useFindAndModify: false,
-    },
-    (e) => {
-      if (e) reject();
-      // console.log(` mongoDB connected on - ${dbp}`);
-      resolve();
-    }
-  );
+    })
+    .then((r) => {
+      resolve(r);
+    })
+    .catch((e) => {
+      console.log(e);
+      reject(e);
+    });
 });
 
 let p2 = new Promise((resolve, reject) => {
   app.listen(PORT, () => {
-    // console.log(`\n BACKEND ON PORT - http://localhost:${PORT}`);
     resolve();
   });
 });
 
 Promise.all([p1, p2])
   .then(() => {
-    // console.log('\n app and db running...');
+    console.log(`\n mongoDB connected on - ${dbURI}`);
+    console.log(` BACKEND ON PORT - http://localhost:${PORT}`);
+    console.log("\n app and db running...");
   })
   .catch((e) => console.log(e));
 

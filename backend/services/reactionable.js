@@ -1,9 +1,5 @@
 // const { update } = require("../db/db-reaction");
 
-// const qwe = require("mongoose").model("Post");
-const log = (msg) => console.log("\n", msg);
-// let this.Content;
-// let this.Reaction;
 module.exports = class Reactionable {
   constructor(contentModel, reactionModel) {
     this.Content = contentModel;

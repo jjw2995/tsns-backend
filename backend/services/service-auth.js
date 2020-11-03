@@ -2,49 +2,46 @@ const bcrypt = require("bcryptjs");
 const { filterObjPropsBy } = require("../utils/sanatizor");
 const jwt = require("jsonwebtoken");
 
-const test = require("mongoose").model("User");
-
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 
-const submitFilter = ["nickname", "password", "email", "salt", "isPrivate"];
-
-const returnFilter = ["_id", "nickname"];
-
-function log(msg) {
-  console.log("\n\n", msg);
-}
-let User;
+// let this.User;
 module.exports = class AuthService {
   constructor(userModel) {
-    User = userModel;
+    this.User = userModel;
   }
 
+  /**
+   * TODO:
+   *  do email verification
+   *    - TTL on user collection
+   *    - have verifing endpoint
+   */
   registerUser(user) {
-    // log(user);
     user.salt = bcrypt.genSaltSync(10);
     user.password = bcrypt.hashSync(user.password, user.salt);
     delete user.isPrivate;
     return new Promise((resolve, reject) => {
-      User.create(user)
+      this.User.create(user)
         .then((r) => {
           let res = r.toJSON();
           res.email = user.email;
           resolve(res);
         })
         .catch((e) => {
-          reject({ errors: [{ email: e.errors.email.properties.message }] });
+          reject({ errors: [{ email: "this email already exists" }] });
+          // reject({ errors: [{ email: e.errors.email.properties.message }] });
         });
     });
   }
 
   async loginUser(loginfo) {
-    let user = await User.findOne({ email: loginfo.email });
+    let user = await this.User.findOne({ email: loginfo.email });
     if (!user) throw { error: `no user with email "${loginfo.email}"` };
     let passwordMatch = bcrypt.compareSync(loginfo.password, user.password);
 
     if (!passwordMatch) throw { error: "wrong password or email" };
-    // console.log(user.toJSON());
+
     let userJson = user.toJSON();
     attachAccRefTokenGivenUser(userJson);
 
@@ -54,7 +51,7 @@ module.exports = class AuthService {
 
   logoutUser(user) {
     return new Promise((resolve, reject) => {
-      User.findOneAndUpdate(
+      this.User.findOneAndUpdate(
         { _id: user._id, refreshToken: user.refreshToken },
         { refreshToken: undefined },
         { new: true }
@@ -70,10 +67,10 @@ module.exports = class AuthService {
 
   newAccTokenUser(user) {
     return new Promise((resolve, reject) => {
-      User.findById(user._id)
+      this.User.findById(user._id)
         .then((doc) => {
-          let doctok = doc.refreshToken;
-          if (!doctok || doctok != user.refreshToken) {
+          let docRefreshToken = doc.refreshToken;
+          if (!docRefreshToken || docRefreshToken != user.refreshToken) {
             reject({
               error:
                 "not a valid refreshToken OR a logged out user, try logging in again",

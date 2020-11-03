@@ -62,13 +62,10 @@ router.patch(
   postController.patch
 );
 
-// TODO ?
-// let limit = req.query.limit ???
 router.get("/", postController.get);
 
 router.get("/mine", postController.getMine);
 
-// let limit = req.query.limit ???
 router.get("/explore", postController.getExplore);
 
 router.post(
