@@ -33,7 +33,6 @@ describe("/auths", () => {
     it("email already taken", async () => {
       await server.post("/api/auth/register").send(user_1);
       let a = await server.post("/api/auth/register").send(user_1);
-      logRes(a);
       expect(a.status).to.eql(400);
     });
   });

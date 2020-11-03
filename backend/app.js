@@ -1,6 +1,9 @@
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
+const morgan = require("morgan");
+const helmet = require("helmet");
 const app = express();
 
 const { errors } = require("celebrate");
@@ -21,6 +24,9 @@ global.log = (msg) => console.log("\n", msg);
 
 app.use(express.json());
 app.use(urlencoded({ extended: true }));
+
+app.use(cors());
+app.use(helmet());
 
 // parse data with connect-multiparty.
 app.use(formData.parse({ extended: true, autoClean: true }));
@@ -49,6 +55,8 @@ app.use(errors());
 
 let dbURI = process.env.TEST_DB_URI;
 if (!process.env.TEST) {
+  app.use(morgan("combined"));
+
   dbURI = process.env.DB_URI;
 }
 

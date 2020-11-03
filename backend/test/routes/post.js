@@ -1,4 +1,4 @@
-describe.only("/posts", () => {
+describe("/posts", () => {
   beforeEach("followers init, u1 -> u2, u1-> pu1", async () => {
     await postFollow(user_1, user_2);
     await postFollow(user_1, privateUser_1);
