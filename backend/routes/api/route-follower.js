@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { FollowController } = require("../../controllers/index");
-const { validate, Segments, Joi } = require("./validations");
+const { validate, Segments, Joi } = require("../../utils/validations");
 
 let followController = new FollowController();
 

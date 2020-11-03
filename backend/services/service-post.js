@@ -1,22 +1,6 @@
 const Reactionable = require("./reactionable");
 const mongoose = require("mongoose");
-// const qwe = require('mongoose');.model('Post');
-const ImageProc = require("./image-proc");
-
-let log = (m) => console.log("\n", m, "\n");
-
-// const { v4: uuidv4 } = require("uuid");
-// const { Storage } = require("@google-cloud/storage");
-// const path = require("path");
-// const gc = new Storage({
-//   keyFilename: path.join(__dirname, "../../gcs.json"),
-//   projectId: "clever-spirit-285705",
-// });
-
-// for-tsns@clever-spirit-285705.iam.gserviceaccount.com
-// const gcsBucket = gc.bucket("tsns");
-// const jimp = require("jimp");
-// const gcsUrl = "https://storage.cloud.google.com/tsns/";
+const ImageProc = require("../utils/image-proc");
 
 let imageProc = new ImageProc();
 const PAGE_SIZE = 8;
@@ -24,10 +8,6 @@ const PAGE_SIZE = 8;
 module.exports = class PostService extends Reactionable {
   constructor(postModel, reactionModel) {
     super(postModel, reactionModel);
-    // postModel.find({}).then((r) => {
-    //   log("HEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHEREHERE");
-    //   log(r);
-    // });
     this.Post = postModel;
   }
 
@@ -45,7 +25,6 @@ module.exports = class PostService extends Reactionable {
     let res = a.toJSON();
     res.media = await imageProc.getImgUrls(media);
     super.appendReaction(res);
-    // log(res);
     return res;
   }
 
@@ -69,17 +48,14 @@ module.exports = class PostService extends Reactionable {
       },
       {
         description: post.description,
-        // media: post.media,
         level: post.level,
       },
       { new: true }
     );
-    // console.log(updatedPost);
     if (!updatedPost) {
       throw new Error("user does not own the post or no such post exists");
     }
     updatedPost = await super.appendReqReactions(user, [updatedPost]);
-    // console.log(updatedPost);
     return updatedPost[0];
   }
 
@@ -149,7 +125,6 @@ module.exports = class PostService extends Reactionable {
     posts = await super.appendReqReactions(user, posts);
     return posts;
   }
-  // appendReqReactions() {}
 
   async postReaction(user, postID, reaction) {
     let reactDoc = await super.postReaction(user, postID, reaction);

@@ -3,7 +3,7 @@ const router = express.Router();
 const { PostController } = require("../../controllers/index");
 const { verifyAccessToken } = require("../../middlewares");
 // const { Joi, celebrate, Segments } = require("celebrate");
-const { validate, Segments, Joi } = require("./validations");
+const { validate, Segments, Joi } = require("../../utils/validations");
 
 router.use(verifyAccessToken);
 

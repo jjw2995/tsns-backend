@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { CommentController } = require("../../controllers/index");
 
-const { validate, Segments, Joi } = require("./validations");
+const { validate, Segments, Joi } = require("../../utils/validations");
 
 let commentController = new CommentController();
 

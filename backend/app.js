@@ -9,11 +9,13 @@ const { urlencoded } = require("express");
 const formData = require("express-form-data");
 const PORT = process.env.PORT || 5000;
 
-// // =================== SWAGGER DOC =========================
-// const swaggerUI = require('swagger-ui-express');
-// const swaggerDoc = require('./swagger.json');
-// app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDoc));
-// // =================== SWAGGER DOC =========================
+global.log = (msg) => console.log("\n", msg);
+
+// =================== SWAGGER DOC =========================
+const swaggerUI = require("swagger-ui-express");
+const swaggerDoc = require("./swagger.json");
+app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDoc));
+// =================== SWAGGER DOC =========================
 
 app.use(express.json());
 app.use(urlencoded({ extended: true }));

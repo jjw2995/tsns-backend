@@ -1,22 +1,8 @@
-const { post } = require("../../routes/api/route-post");
-const mongoose = require("mongoose");
-
 describe("/posts", () => {
   beforeEach("followers init, u1 -> u2, u1-> pu1", async () => {
-    // await usersInit();
-    let a = await postFollow(user_1, user_2);
-    let b = await postFollow(user_1, privateUser_1);
-    // logRes(a);
-    // logRes(b);
+    await postFollow(user_1, user_2);
+    await postFollow(user_1, privateUser_1);
   });
-
-  // user_1
-  // user_2,
-  // privateUser_1,
-  // privateUser_2,
-  // postFollowers,
-  // postPrivate,
-  // postPublic,
 
   describe("POST", () => {
     it("normal insert without pictures", async () => {
