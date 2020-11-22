@@ -24,7 +24,8 @@ module.exports = class PostService extends Reactionable {
     });
     let res = a.toJSON();
     res.media = await imageProc.getImgUrls(media);
-    super.appendReaction(res);
+    await super.appendReactionsGivenContents(user, [res]);
+    // log(res);
     return res;
   }
 
@@ -36,8 +37,11 @@ module.exports = class PostService extends Reactionable {
     if (!postToBeDeleted) {
       throw new Error("user does not own the post or no such post exists");
     } else {
+      // log(postToBeDeleted);
       await imageProc.removeFiles(postToBeDeleted.media);
     }
+    // log(postToBeDeleted);
+    await super.deleteReactionsGivenContentIDs([postToBeDeleted]);
   }
 
   async updatePost(user, post) {
@@ -55,24 +59,34 @@ module.exports = class PostService extends Reactionable {
     if (!updatedPost) {
       throw new Error("user does not own the post or no such post exists");
     }
-    updatedPost = await super.appendReqReactions(user, [updatedPost]);
+    updatedPost = await super.appendReactionsGivenContents(user, [updatedPost]);
     return updatedPost[0];
   }
 
+  async getPostByID(postID) {
+    let postDoc = await this.Post.findOne({ _id: postID });
+    return postDoc;
+  }
   async getPosts(user, followers, pageSize = PAGE_SIZE) {
     let ids = followers.map((x) => {
       return x._id;
     });
-    let q1 = { "user._id": { $in: ids } };
-    let q2 = { level: { $ne: "private" } };
+    // let q1 = { "user._id": { $in: ids } };
+    // let q2 = { level: { $ne: "private" } };
 
     let posts = await this.Post.find({
-      $or: [{ $and: [q1, q2] }, { "user._id": user._id }],
+      $or: [
+        { $and: [{ "user._id": { $in: ids } }, { level: { $ne: "private" } }] },
+        { "user._id": user._id },
+      ],
     })
       .sort({ createdAt: -1 })
       .limit(pageSize)
       .lean();
-    posts = await super.appendReqReactions(user, posts);
+    // log("here");
+    // log(posts);
+    posts = await super.appendReactionsGivenContents(user, posts);
+    // log(posts);
     return posts;
   }
 
@@ -81,7 +95,8 @@ module.exports = class PostService extends Reactionable {
       .sort({ createdAt: -1 })
       .limit(pageSize)
       .lean();
-    posts = await super.appendReqReactions(user, posts);
+    // log(posts);
+    posts = await super.appendReactionsGivenContents(user, posts);
 
     return posts;
   }
@@ -122,13 +137,13 @@ module.exports = class PostService extends Reactionable {
       { $limit: pageSize },
     ]);
 
-    posts = await super.appendReqReactions(user, posts);
+    posts = await super.appendReactionsGivenContents(user, posts);
     return posts;
   }
 
   async postReaction(user, postID, reaction) {
     let reactDoc = await super.postReaction(user, postID, reaction);
 
-    return reactDoc;
+    return reactDoc[0];
   }
 };

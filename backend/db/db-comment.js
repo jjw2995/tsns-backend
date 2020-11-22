@@ -19,12 +19,12 @@ let commentSchema = new mongoose.Schema(
       required: true,
     },
     // emotion: { type: String, enum: ['love', 'haha', 'sad', 'angry'], required: true },
-    reactions: {
-      love: { type: Number, default: 0 },
-      haha: { type: Number, default: 0 },
-      sad: { type: Number, default: 0 },
-      angry: { type: Number, default: 0 },
-    },
+    // reactions: {
+    //   love: { type: Number, default: 0 },
+    //   haha: { type: Number, default: 0 },
+    //   sad: { type: Number, default: 0 },
+    //   angry: { type: Number, default: 0 },
+    // },
   },
   {
     autoIndex: false,

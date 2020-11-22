@@ -18,20 +18,23 @@ module.exports = class Reactionable {
   async postReaction(user, contentID, reaction) {
     this._checkReaction(reaction);
 
-    await this.Reaction.findOneAndUpdate(
+    let reactionDoc = await this.Reaction.findOneAndUpdate(
       {
         contentID: contentID,
         "user._id": user._id,
       },
-      // reactionObj(contentID, user, reaction),
-      { reaction: reaction, user: user, contentID: contentID },
+      reactionObj(contentID, user, reaction),
       { upsert: true }
     );
-
     let content = { _id: contentID };
     let contents = [content];
 
-    let reactions = this.appendReactionsGivenContents(user, contents);
+    log(contents);
+    log("HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH");
+    let reactions = await this.appendReactionsGivenContents(user, contents);
+    // return reactions;
+    // log(content);
+    // log(contents);
 
     return reactions;
   }
@@ -44,7 +47,7 @@ module.exports = class Reactionable {
       reactionsObj[content._id] = this.reactionObjInit();
       return content._id;
     });
-    // log(reactionsObj);
+    log(reactionsObj);
 
     let docsAggregatedByCIDandReaction = await this.Reaction.aggregate([
       { $match: { contentID: { $in: contentIDs } } },
@@ -65,34 +68,32 @@ module.exports = class Reactionable {
         },
       },
     ]);
+    // log("HEREHEREHEREHEREHEREHEREHEREHEREHEREHERE");
 
-    docsAggregatedByCIDandReaction.forEach((uniqueCIDandReaction) => {
-      let contentID = uniqueCIDandReaction._id.contentID;
-      let reaction = uniqueCIDandReaction._id.reaction;
-      let reactionCount = uniqueCIDandReaction.count;
-      let userReaction = uniqueCIDandReaction.userReaction[0];
-      // log(reactionsObj[contentID].reactions[`${reaction}`]);
-      reactionsObj[contentID].reactions[`${reaction}`] = reactionCount;
+    log(docsAggregatedByCIDandReaction);
+    docsAggregatedByCIDandReaction.forEach((elem) => {
+      log(elem);
+      let contentID = elem._id.contentID;
+      let reaction = elem._id.reaction;
 
-      if (userReaction) {
-        reactionsObj[contentID].userReaction = userReaction;
-      }
+      log("herer");
+      log(contentID);
+      // reactionsObj[]
+
+      // reactionsObj[contentID].reactionCounts[`${reaction}`] = elem.count;
+      // if (elem.userReaction.length) {
+      //   reactionsObj[contentID].userReaction = elem.userReaction[0];
+      // }
     });
-    // contents;
-    // contents =
+    log(reactionsObj);
+
     contents.forEach((content) => {
-      content.reactions = reactionsObj[content._id].reactions;
-      content.userReaction = reactionsObj[content._id].userReaction;
-      // return content;
+      // content.reactionCounts = reactionsObj[`${content._id}`].reactionCounts;
+      // content.userReaction = reactionsObj[`${content._id}`].userReaction;
     });
+    // log(contents);
 
-    return contents;
-  }
-
-  async deleteReactionsGivenContentIDs(contentIDs) {
-    // log(contentIDs);
-    let a = await this.Reaction.deleteMany({ contentID: { $in: contentIDs } });
-    // log(a);
+    return reactionsObj;
   }
 
   reactionObjInit() {

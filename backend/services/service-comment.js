@@ -65,15 +65,16 @@ module.exports = class CommentService extends Reactionable {
   }
 
   async removeCommentsOnPost(postID) {
-    let commentsToBeRemoved = await this.Comment.aggregate([
+    let commentIDsToBeRemoved = await this.Comment.aggregate([
       { $match: { postID: postID } },
       { $project: { _id: "$_id" } },
     ]);
-    commentsToBeRemoved = commentsToBeRemoved.map((comment) => {
+    commentIDsToBeRemoved = commentIDsToBeRemoved.map((comment) => {
       return comment._id;
     });
-    await this.Comment.deleteMany({ _id: { $in: commentsToBeRemoved } });
-    let a = await super.deleteReactions(commentsToBeRemoved);
+    // log(commentIDsToBeRemoved);
+    await this.Comment.deleteMany({ _id: { $in: commentIDsToBeRemoved } });
+    let a = await super.deleteReactionsGivenContentIDs(commentIDsToBeRemoved);
     return a;
   }
 
@@ -104,7 +105,7 @@ module.exports = class CommentService extends Reactionable {
       $or: [{ _id: commentID }, { parentComID: commentID }],
     });
 
-    await super.deleteReactions(relatedComments);
+    await super.deleteReactionsGivenContentIDs(relatedComments);
 
     return deleted;
   }

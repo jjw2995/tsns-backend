@@ -1,4 +1,4 @@
-describe("/posts", () => {
+describe.only("/posts", () => {
   beforeEach("followers init, u1 -> u2, u1-> pu1", async () => {
     await postFollow(user_1, user_2);
     await postFollow(user_1, privateUser_1);
@@ -168,9 +168,7 @@ describe("/posts", () => {
     describe("POST /reaction", () => {
       it("user_1 react to own post, 3", async () => {
         let a = await server.get("/api/posts/mine").set(getAuthBear(user_1));
-        // log(a.body);
-        // log(a.body[0]);
-        //
+        // logRes(a);
         await server
           .post("/api/posts/react")
           .set(getAuthBear(user_2))
@@ -189,8 +187,10 @@ describe("/posts", () => {
           .send({ _id: a.body[0]._id, reaction: "haha" });
         // logRes(b);
         // log(b.body.reactions.haha);
-        expect(b.body.haha).to.eql(2);
+        expect(b.body.reactions.haha).to.eql(2);
+        expect(b.body.userReaction).to.eql("haha");
       });
+
       it("wrong reaction", async () => {
         let a = await server.get("/api/posts/mine").set(getAuthBear(user_1));
         // log(a.body[0]);
@@ -223,13 +223,52 @@ describe("/posts", () => {
     });
     //
     // NEED TO POPULATE COMMENTS B4 DELETING
-    // describe("DELETE", () => {
-    //   it("fetch user_1's own posts", async () => {
-    //     let a = await server.delete("/api/posts").set(getAuthBear(user_1));
-    //     logRes(a);
-    //     // expect(a.body.length).eql(3);
-    //   });
-    // });
+    describe("DELETE /reaction", () => {
+      it.only("user_1 react to own post, 3", async () => {
+        let a = await server.get("/api/posts/mine").set(getAuthBear(user_1));
+        // logRes(a);
+        await server
+          .post("/api/posts/react")
+          .set(getAuthBear(user_2))
+          .send({ _id: a.body[0]._id, reaction: "haha" });
+        await server
+          .post("/api/posts/react")
+          .set(getAuthBear(privateUser_1))
+          .send({ _id: a.body[0]._id, reaction: "love" });
+        await server
+          .post("/api/posts/react")
+          .set(getAuthBear(privateUser_2))
+          .send({ _id: a.body[0]._id, reaction: "sad" });
+        let b = await server
+          .post("/api/posts/react")
+          .set(getAuthBear(user_1))
+          .send({ _id: a.body[0]._id, reaction: "haha" });
+        // logRes(b);
+        // log(b.body.reactions.haha);
+        expect(b.body.reactions.haha).to.eql(2);
+        expect(b.body.userReaction).to.eql("haha");
+
+        let d = await Reaction.find({});
+        expect(d.length).to.eql(4);
+        // log(d.length);
+
+        let c = await server
+          .delete("/api/posts")
+          .set(getAuthBear(user_1))
+          .send({ postID: a.body[0]._id });
+        // logRes(c);
+        expect(c.status).to.eql(204);
+
+        d = await Reaction.find({});
+        expect(d.length).to.eql(0);
+        // log(d);
+      });
+      // it("fetch user_1's own posts", async () => {
+      //   let a = await server.delete("/api/posts").set(getAuthBear(user_1));
+      //   logRes(a);
+      //   // expect(a.body.length).eql(3);
+      // });
+    });
     //
     //
     //

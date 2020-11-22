@@ -18,7 +18,7 @@ module.exports = class PostController {
       .addPost(req.user, req.body, files)
       .then((r) => res.status(200).json(r))
       .catch((e) => {
-        res.status(e.status).json(e);
+        res.status(400).json(e);
       });
   }
 
@@ -30,7 +30,10 @@ module.exports = class PostController {
         return commentService.removeCommentsOnPost(postID);
       })
       .then((r) => res.sendStatus(204))
-      .catch((e) => res.status(400).json(e));
+      .catch((e) => {
+        log(e);
+        res.status(400).json(e);
+      });
   }
 
   patch(req, res) {
@@ -54,6 +57,7 @@ module.exports = class PostController {
   }
 
   getMine(req, res) {
+    // log("here");
     let limit;
     postService
       .getMyPosts(req.user, limit)

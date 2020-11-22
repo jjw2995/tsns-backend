@@ -52,6 +52,7 @@ module.exports = class ImageProc {
         return gcsBucket.file(id).delete();
       });
       Promise.all(media).then(() => {
+        // log("helolololol");
         resolve();
       });
     });
