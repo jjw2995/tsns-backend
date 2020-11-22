@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const test = mongoose.model("Comment");
+// const test = mongoose.model("Comment");
 const Reactionable = require("./reactionable");
 
 const PAGE_SIZE = 8;
@@ -31,18 +31,23 @@ module.exports = class CommentService extends Reactionable {
     return newComment;
   }
 
-  async getPostComments(postID, lastComment = null, page_size = PAGE_SIZE) {
+  async getPostComments(
+    user,
+    postID,
+    lastComment = null,
+    page_size = PAGE_SIZE
+  ) {
     let query = { postID: postID, parentComID: null };
     if (lastComment) {
       query.createdAt = { $gt: new Date(lastComment.createdAt) };
     }
-    let a = await this.Comment.aggregate([
+    let comments = await this.Comment.aggregate([
       { $match: query },
       { $limit: parseInt(page_size) },
       {
         $lookup: {
           from: "Comment",
-          as: "subcomments",
+          as: "subComments",
           let: { parentID: "$_id" },
           pipeline: [
             { $match: { $expr: { $eq: ["$parentComID", "$$parentID"] } } },
@@ -52,7 +57,48 @@ module.exports = class CommentService extends Reactionable {
       },
     ]);
 
-    return a;
+    let commentIDs = [];
+    comments.forEach((comment) => {
+      commentIDs.push(comment._id);
+      comment.subComments.forEach((subComment) => {
+        commentIDs.push(subComment._id);
+      });
+    });
+    // log(commentIDs);
+    // log(commentIDs.length);
+    let reactionDocs = await super.getReactionsGivenContentIDs(
+      user,
+      commentIDs
+    );
+    // try {
+    // } catch (e) {
+    //   log(e);
+    // }
+    // log(reactionDocs);
+    comments.forEach((comment) => {
+      // commentIDs.push(comment._id);
+      let reactionDoc = reactionDocs[comment._id];
+      let reactions = reactionDoc.reactions;
+      let userReaction = reactionDoc.userReaction;
+      // comment.reactions = reactionDoc.reactions;
+      // comment.userReaction = reactionDoc.userReaction;
+      super.appendReaction(comment, reactions, userReaction);
+
+      comment.subComments.forEach((subComment) => {
+        let subReactionDoc = reactionDocs[subComment._id];
+        // let reactionDoc = reactionDocs[comment._id];
+        let subReactions = subReactionDoc.reactions;
+        let subUserReaction = subReactionDoc.userReaction;
+        // comment.reactions = reactionDoc.reactions;
+        // comment.userReaction = reactionDoc.userReaction;
+        super.appendReaction(subComment, subReactions, subUserReaction);
+        // subComment.reactions = subReactionDoc.reactions;
+        // subComment.userReaction = subReactionDoc.userReaction;
+
+        // commentIDs.push(subComment._id);
+      });
+    });
+    return comments;
   }
 
   async getSubComments(parentCommentID, lastComment, page_size = PAGE_SIZE) {

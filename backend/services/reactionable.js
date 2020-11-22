@@ -89,6 +89,52 @@ module.exports = class Reactionable {
     return contents;
   }
 
+  async getReactionsGivenContentIDs(user, contentIDs = []) {
+    // log(contents);
+    // log(user);
+    // log(contentIDs);
+    let reactionsObj = {};
+    contentIDs.forEach((contentID) => {
+      reactionsObj[contentID] = this.reactionObjInit();
+    });
+    // log(reactionsObj);
+
+    let docsAggregatedByCIDandReaction = await this.Reaction.aggregate([
+      { $match: { contentID: { $in: contentIDs } } },
+      {
+        $group: {
+          _id: { contentID: "$contentID", reaction: "$reaction" },
+          count: { $sum: 1 },
+          userReaction: {
+            $push: {
+              $cond: [
+                { $eq: ["$user._id", user._id] },
+                "$reaction",
+                "$$REMOVE",
+                // null,
+              ],
+            },
+          },
+        },
+      },
+    ]);
+
+    docsAggregatedByCIDandReaction.forEach((uniqueCIDandReaction) => {
+      let contentID = uniqueCIDandReaction._id.contentID;
+      let reaction = uniqueCIDandReaction._id.reaction;
+      let reactionCount = uniqueCIDandReaction.count;
+      let userReaction = uniqueCIDandReaction.userReaction[0];
+      // log(reactionsObj[contentID].reactions[`${reaction}`]);
+      reactionsObj[contentID].reactions[`${reaction}`] = reactionCount;
+
+      if (userReaction) {
+        reactionsObj[contentID].userReaction = userReaction;
+      }
+    });
+    // log(reactionsObj);
+    return reactionsObj;
+  }
+
   async deleteReactionsGivenContentIDs(contentIDs) {
     // log(contentIDs);
     let a = await this.Reaction.deleteMany({ contentID: { $in: contentIDs } });
@@ -99,11 +145,12 @@ module.exports = class Reactionable {
     return { reactions: REACTIONSINIT, userReaction: null };
   }
 
-  appendReaction(contentRef, reaction = null) {
-    contentRef.userReaction = reaction;
+  appendReaction(contentRef, reactions, userReaction = null) {
+    contentRef.userReaction = userReaction;
+    contentRef.reactions = reactions;
   }
-};
 
-// function reactionObj(contentID, user, reaction) {
-//   return { reaction: reaction, user: user, contentID: contentID };
-// }
+  // let reactionDoc = reactionDocs[comment._id];
+  // comment.reactions = reactionDoc.reactions;
+  // comment.userReaction = reactionDoc.userReaction;
+};

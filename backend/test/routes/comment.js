@@ -1,4 +1,4 @@
-const { expect } = require("chai");
+// const { expect } = require("chai");
 
 async function comment(user, postID, content, parentCom = null) {
   let payload = { postID: postID, content: user.nickname + "-" + content };
@@ -32,7 +32,7 @@ async function nSubcomComment(user, postID, content, parentCom, n = 1) {
   return;
 }
 
-describe("/comments", () => {
+describe.only("/comments", () => {
   beforeEach(async () => {
     await userPrivPubFolPost(user_1);
     await userPrivPubFolPost(user_2);
@@ -40,7 +40,7 @@ describe("/comments", () => {
   });
 
   describe("POST", () => {
-    it("comment subcomments", async () => {
+    it.only("comment subcomments", async () => {
       // log(user_1);
       let a = await comment(
         user_1,
@@ -48,6 +48,9 @@ describe("/comments", () => {
         "main thread content 1"
       );
       // logRes(a);
+      // log(user_1);
+      expect(a.body.user._id).to.eql(user_1._id);
+      expect(a.body.postID).to.eql(user_1.publicPostID);
 
       let b = await comment(
         user_2,
@@ -77,8 +80,8 @@ describe("/comments", () => {
         .get("/api/comments")
         .set(getAuthBear(user_1))
         .send({ postID: user_1.publicPostID });
-      // logRes(z);
-      // log(z.body[0]);
+      logRes(z);
+      log(z.body[0].subComments);
     });
 
     // 코멘트 생성
@@ -148,7 +151,7 @@ describe("/comments", () => {
           .set(getAuthBear(user_1))
           .send({
             parentCommentID: z.body[0]._id,
-            lastComment: z.body[0].subcomments[2],
+            lastComment: z.body[0].subComments[2],
           });
         // logRes(x);
         expect(x.body.length).to.eql(2);
@@ -195,7 +198,7 @@ describe("/comments", () => {
           .set(getAuthBear(user_1))
           .send({
             parentCommentID: z.body[0]._id,
-            lastComment: z.body[0].subcomments[2],
+            lastComment: z.body[0].subComments[2],
           });
         // logRes(x);
 
@@ -216,7 +219,7 @@ describe("/comments", () => {
           .set(getAuthBear(user_1))
           .send({
             parentCommentID: z.body[0]._id,
-            lastComment: z.body[0].subcomments[2],
+            lastComment: z.body[0].subComments[2],
           });
         let a = x.body.map((e) => {
           return e._id;

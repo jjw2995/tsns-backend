@@ -24,7 +24,12 @@ module.exports = class CommentController {
   get(req, res) {
     // console.log(req.body.lastComment);
     commentService
-      .getPostComments(req.body.postID, req.body.lastComment, req.query.num)
+      .getPostComments(
+        req.user,
+        req.body.postID,
+        req.body.lastComment,
+        req.query.num
+      )
       .then((r) => res.status(200).json(r))
       .catch((e) => res.status(400).json(formatError(e)));
   }

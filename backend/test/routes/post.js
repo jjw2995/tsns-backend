@@ -1,4 +1,4 @@
-describe.only("/posts", () => {
+describe("/posts", () => {
   beforeEach("followers init, u1 -> u2, u1-> pu1", async () => {
     await postFollow(user_1, user_2);
     await postFollow(user_1, privateUser_1);
@@ -224,7 +224,7 @@ describe.only("/posts", () => {
     //
     // NEED TO POPULATE COMMENTS B4 DELETING
     describe("DELETE /reaction", () => {
-      it.only("user_1 react to own post, 3", async () => {
+      it("user_1 react to own post, 3", async () => {
         let a = await server.get("/api/posts/mine").set(getAuthBear(user_1));
         // logRes(a);
         await server
