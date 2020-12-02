@@ -11,7 +11,7 @@ let reactionSchema = new mongoose.Schema(
       _id: { type: String, /* index: true, */ required: true },
       nickname: { type: String, required: true },
     },
-    contentID: { type: String, index: true, required: true },
+    contentID: { type: String, /* index: true, */ required: true },
   },
   { typePojoToMixed: false, timestamps: true }
 );

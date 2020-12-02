@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   version: 1.0.0
   title: tSNS API
-  description: "**tiny-SNS API** is a backend providing basic instagram alike functionalities such as registering, following, posting, commenting and expressing how one feels about posts and comments"
+  description: "**tiny-SNS API** is a node-JS express backend providing basic instagram alike functionalities such as registering, following, posting, commenting and expressing how one feels about posts and comments"
   contact:
     name: Jiwoo Jeon
   license:
@@ -11,49 +11,48 @@ info:
 paths:
   /api/auth/register:
     post:
-      summary: register new users
+      # summary: register new users
       tags:
-        - Auth
-      description: register new users
+        - auth
+      description: register new user
       requestBody:
-        description: "password must contain least one special char, lower and upper char, and a number"
+        # description: 'password must contain least one special char, lower and upper char, and a number'
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/register"
+              $ref: "#/components/schemas/registerBody"
             example:
               nickname: user1
               email: example@gmail.com
               password: UPlow123!
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/registerRes"
               example:
-                _id: a1froas2314adf
+                _id: 2a114froa2s2314adf
                 nickname: user1
         "400":
           description: "Bad Request, reason in body"
 
   /api/auth/login:
     post:
-      summary: login users
+      # summary: login users
       tags:
-        - Auth
-      description: login users
+        - auth
+      description: login user
       requestBody:
-        description: "password must contain least one special char, lower and upper char, and a number"
+        # description: 'password must contain least one special char, lower and upper char, and a number'
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/register"
+              $ref: "#/components/schemas/loginBody"
             example:
-              nickname: user1
               email: example@gmail.com
               password: UPlow123!
       responses:
@@ -62,50 +61,1278 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/registerRes"
+                $ref: "#/components/schemas/loginRes"
               example:
                 _id: a1froas2314adf
                 nickname: user1
+                accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6...
+                refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9w...
         "400":
           description: "Bad Request, reason in body"
 
   /api/auth/logout:
     post:
       tags:
-        - Auth
-      description: test
-      parameters: []
+        - auth
+      # security:
+      #   - bearerAuth: []
+      description: logout user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                refreshToken:
+                  type: string
+              example:
+                refreshToken: eyJhbGciOiJIUzI1NiIsInR5...
+
+      responses:
+        "204":
+          description: OK
+
+        "401":
+          description: Unauthorized
+
+  /api/auth/getNewAccToken:
+    post:
+      description: get new accessToken
+      tags:
+        - auth
+      # security:
+      #   - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                refreshToken:
+                  type: string
+              example:
+                refreshToken: eyJhbGciOiJIUzI1NiIsInR5...
+
       responses:
         "200":
           description: OK
-  /api/auth/token:
+          content:
+            application/json:
+              schema:
+                properties:
+                  accessToken:
+                    type: string
+                example:
+                  accessToken: eyJhbGciOiJIUzI1NiIsInR5...
+
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                example:
+                  error: not a valid refreshToken OR a logged out user, try logging in again
+
+  ##################################################################
+
+  /api/followees:
+    post:
+      summary: follow another user
+      description: create a new followee, requester follows someone
+      tags:
+        - followees
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                _id:
+                  type: string
+              example:
+                _id: 5fa53f99ab999d06f32575e9
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                properties:
+                  isPending:
+                    type: boolean
+                  _id:
+                    type: string
+                  follower:
+                    $ref: "#/components/schemas/userObj"
+
+                  followee:
+                    $ref: "#/components/schemas/userObj"
+                  createdAt:
+                    type: string
+                  updatedAt:
+                    type: string
+
+                example:
+                  isPending: false
+                  _id: "5fa53f9aab999d06f32575ec"
+                  follower:
+                    { _id: "5fa53f98ab999d06f32575e8", nickname: "user1" }
+                  followee:
+                    { _id: "5fa53f99ab999d06f32575e9", nickname: "user2" }
+                  createdAt: "2020-11-06T12:20:42.744Z"
+                  updatedAt: "2020-11-06T12:20:42.744Z"
+
+        "400":
+          description: Bad Request, reason in body
+
+    get:
+      summary: get list of following users
+      description: get list of accepted followees, those that requester follows
+      tags:
+        - followees
+      security:
+        - bearerAuth: []
+      # requestBody:
+      # content:
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                properties:
+                  followees:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/userObj"
+              example:
+                followees:
+                  [
+                    { _id: "5fa53f99ab999d06f32575e9", nickname: "user2" },
+                    { _id: "5fa53f99ab999d06f32575e9", nickname: "user4" },
+                  ]
+
+        "500":
+          description: internal error
+
+  /api/followees/pending:
+    get:
+      summary: get pending followee requests
+      description: get list of followees pending, those that requester is waiting apporval
+      tags:
+        - followees
+      security:
+        - bearerAuth: []
+      # requestBody:
+      # content:
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                properties:
+                  pendingFollowees:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/userObj"
+              example:
+                pendingFollowees:
+                  [
+                    {
+                      _id: "5fa53f99ab999d06f32575e9",
+                      nickname: "privateUser2",
+                    },
+                    {
+                      _id: "5fa53f99ab999d06f32575e9",
+                      nickname: "privateUser4",
+                    },
+                  ]
+
+        "500":
+          description: internal error
+
+  /api/followees/{followeeID}:
+    delete:
+      summary: stop following a user
+      description: stop following a followee
+      tags:
+        - followees
+      parameters:
+        - in: path
+          name: followeeID
+          schema:
+            type: string
+          required: true
+          description: ID of the user to stop following
+      security:
+        - bearerAuth: []
+      # requestBody:
+      # content:
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                properties:
+                  removedFollowee:
+                    $ref: "#/components/schemas/userObj"
+              example:
+                removedFollowee:
+                  { _id: "5fa53f99ab999d06f32575e9", nickname: "user2" }
+
+        "400":
+          description: Bad Request, reason in body
+
+  ##################################################################
+
+  /api/followers:
+    get:
+      summary: get list of users following the requester
+      description: get list of accepted followers, those that follow the requester
+      tags:
+        - followers
+      security:
+        - bearerAuth: []
+      # requestBody:
+      # content:
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                properties:
+                  followers:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/userObj"
+              example:
+                followers:
+                  [
+                    { _id: "5fa53f99ab999d06f32575e9", nickname: "user2" },
+                    { _id: "5fa53f99ab999d06f32575e9", nickname: "user4" },
+                  ]
+
+        "500":
+          description: internal error
+
+  /api/followers/pending:
+    get:
+      summary: get pending follower requests
+      description: get list of followers pending, those waiting requester's apporval
+      tags:
+        - followers
+      security:
+        - bearerAuth: []
+      # requestBody:
+      # content:
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                properties:
+                  pendingFollowers:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/userObj"
+              example:
+                pendingFollowers:
+                  [
+                    {
+                      _id: "5fa53f99ab999d06f32575e9",
+                      nickname: "privateUser2",
+                    },
+                    {
+                      _id: "5fa53f99ab999d06f32575e9",
+                      nickname: "privateUser4",
+                    },
+                  ]
+        "500":
+          description: internal error
+
+  /api/followers/accept:
+    post:
+      summary: accept follower request
+      description: accept follower's follow request
+      tags:
+        - followers
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                _id:
+                  type: string
+              example:
+                _id: eyJhbGciOiJIUzI1NiIsInR5...
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                properties:
+                  isPending:
+                    type: boolean
+                  _id:
+                    type: string
+                  follower:
+                    $ref: "#/components/schemas/userObj"
+
+                  followee:
+                    $ref: "#/components/schemas/userObj"
+                  createdAt:
+                    type: string
+                  updatedAt:
+                    type: string
+
+                example:
+                  acceptedFollower:
+                    { _id: "5fa53f98ab999d06f32575e8", nickname: "user1" }
+
+        "400":
+          description: Bad Request, reason in body
+
+  /api/followers/{followerID}:
+    delete:
+      parameters:
+        - in: path
+          name: followerID
+          schema:
+            type: string
+          required: true
+          description: ID of the user to make stop following the requester
+          example: "5fa53f99ab999d06f32575e9"
+      summary: remove a follower
+      description: stop other user from following the requester
+      tags:
+        - followers
+      security:
+        - bearerAuth: []
+      # requestBody:
+      # content:
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                properties:
+                  removedFollower:
+                    $ref: "#/components/schemas/userObj"
+              example:
+                removedFollower:
+                  { _id: "5fa53f99ab999d06f32575e9", nickname: "user2" }
+
+        "400":
+          description: Bad Request, reason in body
+
+  ##################################################################
+
+  /api/posts:
     post:
       tags:
-        - Auth
-      description: Get token
-      parameters: []
+        - posts
+      security:
+        - bearerAuth: []
+      summary: create a post
+      description: append image files (png) to a request
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                level:
+                  type: string
+                images:
+                  # type: array
+                  # items:
+                  type: string
+                  format: binary
       responses:
         "200":
           description: OK
-  /api/users:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/postObj"
+
+              example:
+                reactions: { love: 0, haha: 0, sad: 0, angry: 0 }
+                description: "PrivatePost"
+                media:
+                  [
+                    "https://storage.googleapis.com...",
+                    "https://storage.googleapis.com...%3D",
+                  ]
+                level: "private"
+                _id: "p5faaacd4ec3c410589fef8c6"
+                user: { _id: "5faaacd0ec3c410589fef8c0", nickname: "user1" }
+                createdAt: "2020-11-10T15:08:04.316Z"
+                updatedAt: "2020-11-10T15:08:04.316Z"
+                userReaction: null
+
+        "400":
+          description: Bad Request, reason in body
+        "500":
+          description: Internal Error
+    # /api/posts:
+    patch:
+      tags:
+        - posts
+      security:
+        - bearerAuth: []
+      summary: update post description and view level
+      requestBody:
+        content:
+          # multipart/form-data:
+          application/json:
+            schema:
+              type: object
+              properties:
+                _id:
+                  type: string
+                description:
+                  type: string
+                level:
+                  type: string
+            example:
+              _id: "p5faaacd4ec3c410589fef8c6"
+              description: "new description"
+              level: "followers"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/postObj"
+
+              example:
+                reactions: { love: 0, haha: 0, sad: 0, angry: 0 }
+                description: "new description"
+                media:
+                  [
+                    "https://storage.googleapis.com...",
+                    "https://storage.googleapis.com...%3D",
+                  ]
+                level: "followers"
+                _id: "p5faaacd4ec3c410589fef8c6"
+                user: { _id: "5faaacd0ec3c410589fef8c0", nickname: "user1" }
+                createdAt: "2020-11-10T15:08:04.316Z"
+                updatedAt: "2020-11-10T15:11:04.316Z"
+                userReaction: null
+
+        "400":
+          description: Bad Request, reason in body
+        # "500":
+        #   description: Internal Error
+
     get:
       tags:
-        - User
-      summary: ""
-      description: ""
-      parameters: []
+        - posts
+      security:
+        - bearerAuth: []
+      summary: get posts on user's home
+      parameters:
+        - in: query
+          name: last-created-at
+          schema:
+            type: string
+          description: createdAt time of the last content for paging purposes
+        - in: query
+          name: num
+          schema:
+            type: number
+          description: number of contents to get
+      description: get "public"/ "follower" level posts of following people and all level ("public"/ "follower"/ "private") posts of the user
       responses:
         "200":
           description: OK
-  /api/:
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/postObj"
+              example:
+                [
+                  {
+                    _id: "p5fab9973bc99520da2f88967",
+                    reactions: { love: 0, haha: 0, sad: 0, angry: 0 },
+                    description: "user2_FollowersPost",
+                    media: [],
+                    level: "followers",
+                    user:
+                      { _id: "5fab9972bc99520da2f8895e", nickname: "user2" },
+                    createdAt: "2020-11-11T07:57:39.013Z",
+                    updatedAt: "2020-11-11T07:57:39.013Z",
+                    __v: 0,
+                    userReaction: null,
+                  },
+                  {
+                    _id: "p5fab9972bc99520da2f88966",
+                    reactions: { love: 0, haha: 0, sad: 0, angry: 0 },
+                    description: "user2_PublicPost",
+                    media: [],
+                    level: "public",
+                    user:
+                      { _id: "5fab9972bc99520da2f8895e", nickname: "user2" },
+                    createdAt: "2020-11-11T07:57:38.984Z",
+                    updatedAt: "2020-11-11T07:57:38.984Z",
+                    __v: 0,
+                    userReaction: null,
+                  },
+                  {
+                    _id: "p5fab9972bc99520da2f88965",
+                    reactions: { love: 0, haha: 0, sad: 0, angry: 0 },
+                    description: "user1_PrivatePost",
+                    media: [],
+                    level: "private",
+                    user:
+                      { _id: "5fab9971bc99520da2f8895d", nickname: "user1" },
+                    createdAt: "2020-11-11T07:57:38.954Z",
+                    updatedAt: "2020-11-11T07:57:38.954Z",
+                    __v: 0,
+                    userReaction: null,
+                  },
+                ]
+
+        "400":
+          description: Bad Request, reason in body
+
+  # /api/posts/{postID}:
+  #   get:
+  #     tags:
+  #       - posts
+  #     security:
+  #       - bearerAuth: []
+  #     summary: get posts on user's home
+  #     parameters:
+  #       - in: path
+  #         name: postID
+  #         schema:
+  #           type: string
+  #         required: true
+  #         description: ID of post to delete
+  #     description: get "public"/ "follower" level posts of following people and all level ("public"/ "follower"/ "private") posts of the user
+  #     responses:
+  #       "200":
+  #         description: OK
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: "#/components/schemas/postObj"
+  #             example:
+
+  #               {
+  #                 _id: "p5fab9973bc99520da2f88967",
+  #                 reactions: { love: 0, haha: 0, sad: 0, angry: 0 },
+  #                 description: "user2_FollowersPost",
+  #                 media: [],
+  #                 level: "followers",
+  #                 user:
+  #                   { _id: "5fab9972bc99520da2f8895e", nickname: "user2" },
+  #                 createdAt: "2020-11-11T07:57:39.013Z",
+  #                 updatedAt: "2020-11-11T07:57:39.013Z",
+  #                 __v: 0,
+  #                 userReaction: null,
+  #               }
+
+  #       "400":
+  #         description: Bad Request, reason in body
+  #   delete:
+  #     tags:
+  #       - posts
+  #     security:
+  #       - bearerAuth: []
+  #     summary: remove post
+  #     parameters:
+  #       - in: path
+  #         name: postID
+  #         schema:
+  #           type: string
+  #         required: true
+  #         description: ID of post to delete
+  #     responses:
+  #       "204":
+  #         description: No Content
+
+  #       "400":
+  #         description: Bad Request, reason in body
+
+  /api/posts/mine:
     get:
-      tags: []
-      summary: ""
-      description: ""
-      parameters: []
+      tags:
+        - posts
+      security:
+        - bearerAuth: []
+      summary: remove post
+      parameters:
+        - in: query
+          name: last-created-at
+          schema:
+            type: string
+          description: createdAt time of the last content for paging purposes
+        - in: query
+          name: num
+          schema:
+            type: number
+          description: number of contents to get
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/postObj"
+              example:
+                [
+                  {
+                    _id: "p5fabef54a7325615d0d5c373",
+                    reactions: { love: 0, haha: 0, sad: 0, angry: 0 },
+                    description: "user1_PrivatePost",
+                    media: [],
+                    level: "private",
+                    user:
+                      { _id: "5fabef53a7325615d0d5c36b", nickname: "user1" },
+                    createdAt: "2020-11-11T14:04:04.207Z",
+                    updatedAt: "2020-11-11T14:04:04.207Z",
+                    __v: 0,
+                    userReaction: null,
+                  },
+                  {
+                    _id: "p5fabef54a7325615d0d5c372",
+                    reactions: { love: 0, haha: 0, sad: 0, angry: 0 },
+                    description: "user1_FollowersPost",
+                    media: [],
+                    level: "followers",
+                    user:
+                      { _id: "5fabef53a7325615d0d5c36b", nickname: "user1" },
+                    createdAt: "2020-11-11T14:04:04.174Z",
+                    updatedAt: "2020-11-11T14:04:04.174Z",
+                    __v: 0,
+                    userReaction: null,
+                  },
+                  {
+                    _id: "p5fabef54a7325615d0d5c371",
+                    reactions: { love: 0, haha: 0, sad: 0, angry: 0 },
+                    description: "user1_PublicPost",
+                    media: [],
+                    level: "public",
+                    user:
+                      { _id: "5fabef53a7325615d0d5c36b", nickname: "user1" },
+                    createdAt: "2020-11-11T14:04:04.141Z",
+                    updatedAt: "2020-11-11T14:04:04.141Z",
+                    __v: 0,
+                    userReaction: null,
+                  },
+                ]
+
+        "400":
+          description: Bad Request, reason in body
+
+  /api/posts/explore:
+    get:
+      tags:
+        - posts
+      summary: remove post
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: last-created-at
+          schema:
+            type: string
+          description: createdAt time of the last content for paging purposes
+        - in: query
+          name: num
+          schema:
+            type: number
+          description: number of contents to get
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/postObj"
+              example:
+                [
+                  {
+                    _id: "p5fabf0904541191693481597",
+                    reactions: { love: 0, haha: 0, sad: 0, angry: 0 },
+                    description: "user1_PublicPost",
+                    media: [],
+                    level: "public",
+                    user:
+                      { _id: "5fabf08f4541191693481591", nickname: "user1" },
+                    createdAt: "2020-11-11T14:09:20.231Z",
+                    updatedAt: "2020-11-11T14:09:20.231Z",
+                    userReaction: null,
+                  },
+                  {
+                    _id: "p5fabf090454119169348159a",
+                    reactions: { love: 0, haha: 0, sad: 0, angry: 0 },
+                    description: "user2_PublicPost",
+                    media: [],
+                    level: "public",
+                    user:
+                      { _id: "5fabf08f4541191693481592", nickname: "user2" },
+                    createdAt: "2020-11-11T14:09:20.325Z",
+                    updatedAt: "2020-11-11T14:09:20.325Z",
+                    userReaction: null,
+                  },
+                  {
+                    _id: "p5fabf090454119169348159d",
+                    reactions: { love: 0, haha: 0, sad: 0, angry: 0 },
+                    description: "privateUser1_PublicPost",
+                    media: [],
+                    level: "public",
+                    user:
+                      {
+                        _id: "5fabf08f4541191693481593",
+                        nickname: "privateUser1",
+                      },
+                    createdAt: "2020-11-11T14:09:20.411Z",
+                    updatedAt: "2020-11-11T14:09:20.411Z",
+                    userReaction: null,
+                  },
+                ]
+
+        "400":
+          description: Bad Request, reason in body
+
+  /api/posts/user/{userID}:
+    get:
+      parameters:
+        - in: path
+          name: userID
+          schema:
+            type: string
+          required: true
+          description: ID of the user to get posts from
+          example: "5fabf08f4541191693481591"
+        - in: query
+          name: last-created-at
+          schema:
+            type: string
+          description: createdAt time of the last content for paging purposes
+        - in: query
+          name: num
+          schema:
+            type: number
+          description: number of contents to get
+      tags:
+        - posts
+      summary: get certain user's post
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/postObj"
+              example:
+                [
+                  {
+                    _id: "p5fabf0904541191693481597",
+                    reactions: { love: 0, haha: 0, sad: 0, angry: 0 },
+                    description: "user1_PublicPost",
+                    media: [],
+                    level: "public",
+                    user:
+                      { _id: "5fabf08f4541191693481591", nickname: "user1" },
+                    createdAt: "2020-11-11T14:09:20.231Z",
+                    updatedAt: "2020-11-11T14:09:20.231Z",
+                    userReaction: null,
+                  },
+                  {
+                    _id: "p5fabf090454119169348159a",
+                    reactions: { love: 0, haha: 0, sad: 0, angry: 0 },
+                    description: "user1_PublicPost",
+                    media: [],
+                    level: "public",
+                    user:
+                      { _id: "5fabf08f4541191693481591", nickname: "user1" },
+                    createdAt: "2020-11-11T14:09:20.325Z",
+                    updatedAt: "2020-11-11T14:09:20.325Z",
+                    userReaction: null,
+                  },
+                ]
+
+        "400":
+          description: Bad Request, reason in body
+
+  /api/posts/react:
+    post:
+      tags:
+        - posts
+        - react
+      security:
+        - bearerAuth: []
+      summary: "react to a post"
+      description: "show one of love, haha, sad, angry emotions"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                _id:
+                  $ref: "#/components/schemas/_id"
+                reaction:
+                  $ref: "#/components/schemas/reaction"
+              example:
+                _id: p5fabef54a7325615d0d5c373
+                reaction: haha
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/postObj"
+
+              example:
+                _id: p5fc4987c1d541067ba6d3c99,
+                reactions: { love: 0, haha: 1, sad: 0, angry: 0 }
+                userReaction: "haha"
+
+        "400":
+          description: Bad Request, reason in body
+        "500":
+          description: Internal Error
+
+  /api/posts/react/{postID}:
+    delete:
+      tags:
+        - posts
+        - react
+      security:
+        - bearerAuth: []
+      summary: undo reaction
+      description: delete user's reaction
+      parameters:
+        - in: path
+          name: postID
+          schema:
+            type: string
+          required: true
+          description: ID of the post to remove user's reaction
+          example: "p5fa53f99ab999d06f32575e9"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/postObj"
+
+              example:
+                _id: p5fa53f99ab999d06f32575e9,
+                reactions: { love: 0, haha: 0, sad: 0, angry: 0 }
+                userReaction: null
+
+        "400":
+          description: Bad Request, reason in body
+        # "500":
+        #   description: Internal Error
+
+  ##################################################################
+  ##################################################################
+
+  /api/comments:
+    post:
+      tags:
+        - comments
+      security:
+        - bearerAuth: []
+      summary: create a post
+      description: append image files (png) to a request
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                postID:
+                  type: string
+                content:
+                  type: string
+
+            example:
+              postID: p5faf8980f1199903d7e1eff1
+              content: user1-main thread content 1
+
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/commentObj"
+
+              example:
+                reactions: { love: 0, haha: 0, sad: 0, angry: 0 }
+                parentComID: null
+                numChild: 0
+                _id: "c5fae7ca6e76c622ea41cde6f"
+                postID: "p5fae7ca5e76c622ea41cde66"
+                user: { _id: "5fae7ca4e76c622ea41cde62", nickname: "user1" }
+                content: "user1-main thread content 1"
+                createdAt: "2020-11-13T12:31:34.239Z"
+                updatedAt: "2020-11-13T12:31:34.239Z"
+                __v: 0
+
+        "400":
+          description: Bad Request, reason in body
+        # "500":
+        #   description: Internal Error
+
+  /api/comments/{postID}:
+    get:
+      tags:
+        - comments
+      security:
+        - bearerAuth: []
+      summary: get posts on user's home
+      description: get "public"/ "follower" level posts of following people and all level ("public"/ "follower"/ "private") posts of the user
+      parameters:
+        - in: path
+          name: postID
+          schema:
+            type: string
+          required: true
+          description: ID of the post to remove user's reaction
+          example: "p5fa53f99ab999d06f32575e9"
+        - in: query
+          name: last-created-at
+          schema:
+            type: string
+          description: createdAt time of the last content for paging purposes
+        - in: query
+          name: num
+          schema:
+            type: number
+          description: number of contents to get
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/postObj"
+              example:
+                [
+                  {
+                    _id: "p5fab9973bc99520da2f88967",
+                    reactions: { love: 0, haha: 0, sad: 0, angry: 0 },
+                    description: "user2_FollowersPost",
+                    media: [],
+                    level: "followers",
+                    user:
+                      { _id: "5fab9972bc99520da2f8895e", nickname: "user2" },
+                    createdAt: "2020-11-11T07:57:39.013Z",
+                    updatedAt: "2020-11-11T07:57:39.013Z",
+                    __v: 0,
+                    userReaction: null,
+                  },
+                  {
+                    _id: "p5fab9972bc99520da2f88966",
+                    reactions: { love: 0, haha: 0, sad: 0, angry: 0 },
+                    description: "user2_PublicPost",
+                    media: [],
+                    level: "public",
+                    user:
+                      { _id: "5fab9972bc99520da2f8895e", nickname: "user2" },
+                    createdAt: "2020-11-11T07:57:38.984Z",
+                    updatedAt: "2020-11-11T07:57:38.984Z",
+                    __v: 0,
+                    userReaction: null,
+                  },
+                  {
+                    _id: "p5fab9972bc99520da2f88965",
+                    reactions: { love: 0, haha: 0, sad: 0, angry: 0 },
+                    description: "user1_PrivatePost",
+                    media: [],
+                    level: "private",
+                    user:
+                      { _id: "5fab9971bc99520da2f8895d", nickname: "user1" },
+                    createdAt: "2020-11-11T07:57:38.954Z",
+                    updatedAt: "2020-11-11T07:57:38.954Z",
+                    __v: 0,
+                    userReaction: null,
+                  },
+                ]
+
+        "400":
+          description: Bad Request, reason in body
+  # /api/comments/mine:
+  #   get:
+  #     tags:
+  #       - comments
+  #     security:
+  #       - bearerAuth: []
+  #     summary: remove post
+  #     parameters:
+  #       - in: query
+  #         name: last-created-at
+  #         schema:
+  #           type: string
+  #         description: createdAt time of the last content for paging purposes
+  #       - in: query
+  #         name: num
+  #         schema:
+  #           type: number
+  #         description: number of contents to get
+  #     responses:
+  #       "200":
+  #         description: OK
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: array
+  #               items:
+  #                 $ref: "#/components/schemas/postObj"
+  #             example:
+  #               [
+  #                 {
+  #                   _id: "p5fabef54a7325615d0d5c373",
+  #                   reactions: { love: 0, haha: 0, sad: 0, angry: 0 },
+  #                   description: "user1_PrivatePost",
+  #                   media: [],
+  #                   level: "private",
+  #                   user:
+  #                     { _id: "5fabef53a7325615d0d5c36b", nickname: "user1" },
+  #                   createdAt: "2020-11-11T14:04:04.207Z",
+  #                   updatedAt: "2020-11-11T14:04:04.207Z",
+  #                   __v: 0,
+  #                   userReaction: null,
+  #                 },
+  #                 {
+  #                   _id: "p5fabef54a7325615d0d5c372",
+  #                   reactions: { love: 0, haha: 0, sad: 0, angry: 0 },
+  #                   description: "user1_FollowersPost",
+  #                   media: [],
+  #                   level: "followers",
+  #                   user:
+  #                     { _id: "5fabef53a7325615d0d5c36b", nickname: "user1" },
+  #                   createdAt: "2020-11-11T14:04:04.174Z",
+  #                   updatedAt: "2020-11-11T14:04:04.174Z",
+  #                   __v: 0,
+  #                   userReaction: null,
+  #                 },
+  #                 {
+  #                   _id: "p5fabef54a7325615d0d5c371",
+  #                   reactions: { love: 0, haha: 0, sad: 0, angry: 0 },
+  #                   description: "user1_PublicPost",
+  #                   media: [],
+  #                   level: "public",
+  #                   user:
+  #                     { _id: "5fabef53a7325615d0d5c36b", nickname: "user1" },
+  #                   createdAt: "2020-11-11T14:04:04.141Z",
+  #                   updatedAt: "2020-11-11T14:04:04.141Z",
+  #                   __v: 0,
+  #                   userReaction: null,
+  #                 },
+  #               ]
+
+  #       "400":
+  #         description: Bad Request, reason in body
+  /api/comments/subcomments:
+    get:
+      tags:
+        - comments
+      security:
+        - bearerAuth: []
+      summary: get posts on user's home
+      description: get "public"/ "follower" level posts of following people and all level ("public"/ "follower"/ "private") posts of the user
+      parameters:
+        - in: query
+          name: last-created-at
+          schema:
+            type: string
+          description: createdAt time of the last content for paging purposes
+        - in: query
+          name: num
+          schema:
+            type: number
+          description: number of contents to get
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/postObj"
+              example:
+                [
+                  {
+                    _id: "p5fab9973bc99520da2f88967",
+                    reactions: { love: 0, haha: 0, sad: 0, angry: 0 },
+                    description: "user2_FollowersPost",
+                    media: [],
+                    level: "followers",
+                    user:
+                      { _id: "5fab9972bc99520da2f8895e", nickname: "user2" },
+                    createdAt: "2020-11-11T07:57:39.013Z",
+                    updatedAt: "2020-11-11T07:57:39.013Z",
+                    __v: 0,
+                    userReaction: null,
+                  },
+                  {
+                    _id: "p5fab9972bc99520da2f88966",
+                    reactions: { love: 0, haha: 0, sad: 0, angry: 0 },
+                    description: "user2_PublicPost",
+                    media: [],
+                    level: "public",
+                    user:
+                      { _id: "5fab9972bc99520da2f8895e", nickname: "user2" },
+                    createdAt: "2020-11-11T07:57:38.984Z",
+                    updatedAt: "2020-11-11T07:57:38.984Z",
+                    __v: 0,
+                    userReaction: null,
+                  },
+                  {
+                    _id: "p5fab9972bc99520da2f88965",
+                    reactions: { love: 0, haha: 0, sad: 0, angry: 0 },
+                    description: "user1_PrivatePost",
+                    media: [],
+                    level: "private",
+                    user:
+                      { _id: "5fab9971bc99520da2f8895d", nickname: "user1" },
+                    createdAt: "2020-11-11T07:57:38.954Z",
+                    updatedAt: "2020-11-11T07:57:38.954Z",
+                    __v: 0,
+                    userReaction: null,
+                  },
+                ]
+
+        "400":
+          description: Bad Request, reason in body
+
+  /api/comments/{(sub)commentID}:
+    delete:
+      tags:
+        - comments
+      security:
+        - bearerAuth: []
+      summary: remove post
+      parameters:
+        - in: path
+          name: (sub)commentID
+          schema:
+            type: string
+          required: true
+          description: ID of comment to delete
+      responses:
+        "204":
+          description: No Content
+
+        "400":
+          description: Bad Request, reason in body
+
+  /api/comments/react:
+    post:
+      tags:
+        - comments
+        - react
+      security:
+        - bearerAuth: []
+      summary: "react to a post"
+      description: "show one of love, haha, sad, angry emotions"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                _id:
+                  $ref: "#/components/schemas/_id"
+                reaction:
+                  $ref: "#/components/schemas/reaction"
+              example:
+                _id: p5fabef54a7325615d0d5c373
+                reaction: haha
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/postObj"
+
+              example:
+                reactions: { love: 0, haha: 1, sad: 0, angry: 0 }
+                userReaction: "haha"
+
+        "400":
+          description: Bad Request, reason in body
+        "500":
+          description: Internal Error
+
+  /api/comments/react/{(sub)commentID}:
+    delete:
+      tags:
+        - comments
+        - react
+      security:
+        - bearerAuth: []
+      summary: undo reaction
+      description: delete user's reaction
+      parameters:
+        - in: path
+          name: (sub)commentID
+          schema:
+            type: string
+          required: true
+          description: ID of the post to remove user's reaction
+          example: "p5fa53f99ab999d06f32575e9"
+      responses:
+        "200":
+          description: No Content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/postObj"
+
+              example:
+                reactions: { love: 0, haha: 0, sad: 0, angry: 0 }
+                userReaction: null
+
+        "400":
+          description: Bad Request, reason in body
+        # "500":
+        #   description: Internal Error
+
+##################################################################
+##################################################################
+##################################################################
+##################################################################
+##################################################################
+##################################################################
+
 components:
   securitySchemes:
     bearerAuth:
@@ -113,58 +1340,145 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
-    register:
-      required:
-        - email
-        - nickname
-        - password
+    nickname:
+      type: string
+      minimum: 3
+
+    email:
+      type: string
+      uniqueItems: true
+
+    password:
+      type: string
+      minimum: 8
+      maximum: 15
+      description: "must contain least one special char, lower and upper char, and a number"
+
+    _id:
+      type: string
+      uniqueItems: true
+      description: generated by the API
+
+    reaction:
+      type: string
+      enum:
+        - love
+        - haha
+        - sad
+        - angry
+
+    level:
+      type: string
+      enum:
+        - public
+        - followers
+        - private
+      description: view level for posts
+
+    registerBody:
       properties:
         nickname:
-          type: string
-          minimum: 3
+          $ref: "#/components/schemas/nickname"
         email:
-          type: string
-          uniqueItems: true
+          $ref: "#/components/schemas/email"
         password:
-          type: string
-          minimum: 8
-          maximum: 15
-          description: "must contain least one special char, lower and upper char, and a number"
+          $ref: "#/components/schemas/password"
+
     registerRes:
       properties:
         _id:
-          type: string
+          $ref: "#/components/schemas/_id"
         nickname:
-          type: string
-    login:
-      required:
-        - email
-        - password
+          $ref: "#/components/schemas/nickname"
+
+    loginBody:
       properties:
         email:
-          type: string
-          uniqueItems: true
+          $ref: "#/components/schemas/email"
         password:
-          type: string
-          minimum: 8
-          maximum: 15
-          description: "must contain least one special char, lower and upper char, and a number"
-    user_id:
+          $ref: "#/components/schemas/password"
+
+    userObj:
       properties:
-        user_id:
-          type: string
-    User:
-      required:
-        - _id
-        - nickname
+        _id:
+          $ref: "#/components/schemas/_id"
+        nickname:
+          $ref: "#/components/schemas/nickname"
+
+    loginRes:
       properties:
         _id:
           type: string
-          uniqueItems: true
-        email:
+        nickname:
           type: string
-          uniqueItems: true
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+    # loginBody:
+    reactionsObj:
+      properties:
+        love:
+          type: integer
+        haha:
+          type: integer
+        sad:
+          type: integer
+        angry:
+          type: integer
+
+    postObj:
+      properties:
+        description:
+          type: string
+          maximum: 200
+        media:
+          type: array
+          items:
+            type: string
+        level:
+          $ref: "#/components/schemas/level"
+        _id:
+          $ref: "#/components/schemas/_id"
+        user:
+          $ref: "#/components/schemas/userObj"
+        reactions:
+          $ref: "#/components/schemas/reactionsObj"
+        userReaction:
+          $ref: "#/components/schemas/reaction"
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    commentObj:
+      properties:
+        reactions:
+          $ref: "#/components/schemas/reactionsObj"
+        userReaction:
+          $ref: "#/components/schemas/reaction"
+        parentComID:
+          $ref: "#/components/schemas/_id"
+        numChild:
+          type: number
+        _id:
+          $ref: "#/components/schemas/_id"
+        postID:
+          $ref: "#/components/schemas/_id"
+        user:
+          $ref: "#/components/schemas/userObj"
+        content:
+          type: string
+          minimum: 1
+          maximum: 150
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        "__v":
+          type: number
+
 servers:
   # Added by API Auto Mocking Plugin
   - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/jjw2995/tsns1/1.0.0
+    url: https://virtserver.swaggerhub.com/jjw2995/tSNS_API/1.0.0

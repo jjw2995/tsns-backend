@@ -33,8 +33,9 @@ module.exports = class FollowController {
   }
 
   deleteFollowee(req, res) {
+    // log(req.params);
     followService
-      .deleteFollowee(req.user, req.body)
+      .deleteFollowee(req.user._id, req.params.followeeID)
       .then((r) => res.status(200).json(r))
       .catch((e) => {
         res.status(400).json(formatError(e));
@@ -69,7 +70,7 @@ module.exports = class FollowController {
 
   deleteFollower(req, res) {
     followService
-      .deleteFollower(req.user, req.body)
+      .deleteFollower(req.user._id, req.params.followerID)
       .then((r) => res.status(200).json(r))
       .catch((e) => {
         res.status(400).json(formatError(e));

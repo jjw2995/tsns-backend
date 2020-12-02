@@ -1,5 +1,5 @@
 global.user_1 = {
-  nickname: "user1",
+  nickname: "user_1",
   email: "user_1@qwerty.com",
   password: "dD1@dasdf",
 };

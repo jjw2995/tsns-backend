@@ -3,13 +3,19 @@ const router = express.Router();
 const { AuthController } = require("../../controllers/index");
 const { verifyRefreshToken } = require("../../middlewares");
 
-const { Joi, celebrate, Segments } = require("celebrate");
-
+// const { Joi, celebrate, Segments } = require("celebrate");
+const {
+  validate,
+  Joi,
+  Segments,
+  celebrate,
+} = require("../../utils/validations");
 const nickname = Joi.string()
   .max(16)
-  .pattern(/^[a-zA-Z0-9 ]{3,16}$/)
+  // .alphanum()
+  .pattern(/^[a-zA-Z0-9\_]{3,16}$/)
   .message(
-    '"nickname" must be 3~16 characters long and not contain special characters'
+    '"nickname" must be 3~16 alphanumeric characters and not contain special characters including whitespace'
   )
   .required();
 const email = Joi.string().max(30).email().required();
@@ -21,13 +27,9 @@ const password = Joi.string()
   )
   .required();
 
-// TODO: add email verification
+// TODO: change tests to incorporate email verification
 router.post(
   "/register",
-  // (req, res, next) => {
-  // 	console.log(req.body);
-  // 	next();
-  // },
   celebrate(
     {
       [Segments.BODY]: Joi.object().keys({
@@ -35,7 +37,6 @@ router.post(
         email,
         password,
       }),
-      // .unknown(true),
     },
     { abortEarly: false }
   ),
@@ -51,18 +52,33 @@ router.post(
         email,
         password,
       }),
-      // .unknown(true),
     },
     { abortEarly: false }
   ),
   AuthController.postLogin
 );
+router.post(
+  "/resend-verification-email",
+  celebrate({ [Segments.BODY]: Joi.object().keys({ email }) }),
+  AuthController.postResendEmail
+);
 
-router.use(verifyRefreshToken);
+// http://host/api/auth/verify/:verifyingHash
+router.get(
+  "/verify-account/:userID/:verifyingHash",
+  // celebrate({ [Segments.BODY]: Joi.object().keys({}) }),
+  validate(Segments.PARAMS, {
+    userID: Joi.string().alphanum().required(),
+    verifyingHash: Joi.string().hex().required(),
+  }),
+  AuthController.getVerify
+);
+
+// router.use(verifyRefreshToken);
 // refreshToken
-router.post("/logout", AuthController.postLogout);
+router.post("/logout", verifyRefreshToken, AuthController.postLogout);
 
 // refreshToken
-router.post("/token", AuthController.postToken);
+router.post("/token", verifyRefreshToken, AuthController.postToken);
 
 module.exports = router;

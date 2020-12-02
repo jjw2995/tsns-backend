@@ -3,12 +3,11 @@ const { verifyAccessToken } = require("../../middlewares");
 
 router.use("/auth", require("./route-auth"));
 
-router.use(verifyAccessToken);
-router.use("/", require("./route-follower"));
-// router.use("/followers", require("./route-follower")); ???
-// router.use("/followees", require("./route-followee")); ???
-router.use("/posts", require("./route-post"));
-router.use("/comments", require("./route-comment"));
-router.use("/users", require("./route-user"));
+// router.use(verifyAccessToken);
+
+router.use("/posts", verifyAccessToken, require("./route-post"));
+router.use("/comments", verifyAccessToken, require("./route-comment"));
+router.use("/users", verifyAccessToken, require("./route-user"));
+router.use("/", verifyAccessToken, require("./route-follower"));
 
 module.exports = router;

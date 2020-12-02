@@ -1,12 +1,19 @@
 const { formatError } = require("../utils/helper");
-const { PostService, FollowService, CommentService } = require("../services");
+const {
+  PostService,
+  FollowService,
+  CommentService,
+  UserService,
+} = require("../services");
 const mongoose = require("mongoose");
 
 const Post = mongoose.model("Post");
 const Reaction = mongoose.model("Reaction");
 const Follower = mongoose.model("Follower");
 const Comment = mongoose.model("Comment");
+const User = mongoose.model("User");
 
+let userService = new UserService(User);
 const postService = new PostService(Post, Reaction);
 const commentService = new CommentService(Comment, Reaction);
 const followService = new FollowService(Follower);
@@ -23,7 +30,7 @@ module.exports = class PostController {
   }
 
   delete(req, res) {
-    let postID = req.body.postID;
+    let postID = req.params.postID;
     postService
       .removePost(req.user, postID)
       .then((r) => {
@@ -38,38 +45,66 @@ module.exports = class PostController {
 
   patch(req, res) {
     postService
-      .updatePost(req.user, req.body)
+      .updatePost(
+        req.user,
+        req.body.postID,
+        req.body.description,
+        req.body.level
+      )
       .then((r) => res.status(200).json(r))
       .catch((e) => res.status(400).json(formatError(e)));
   }
   get(req, res) {
-    let limit = req.query.num;
-    // let limit;
+    let num = req.query.num;
+    // let num;
 
     let user = req.user;
     followService
       .getFollowees(user)
       .then((followees) => {
-        return postService.getPosts(user, followees, limit);
+        return postService.getPosts(user, followees, num);
       })
       .then((r) => res.status(200).json(r))
       .catch((e) => res.status(500).json(formatError(e)));
   }
+  async getByUID(req, res) {
+    let userID_toGetFrom = req.params.userID;
+    let num;
+    try {
+      if (req.user._id === userID_toGetFrom) {
+        throw {
+          status: 400,
+          message: "use GET api/posts/mine for getting own posts",
+        };
+      }
+      let isFollowing = await followService.checkFollowing(
+        req.user._id,
+        userID_toGetFrom
+      );
+      let posts = await postService.getPostsByUserID(
+        req.user,
+        userID_toGetFrom,
+        isFollowing,
+        req.params["last-created-at"],
+        req.params.num
+      );
+      res.status(200).json(posts);
+    } catch (e) {
+      // log(e);
+      res.status(e.status).json(e.message);
+    }
+  }
 
   getMine(req, res) {
-    // log("here");
-    let limit;
     postService
-      .getMyPosts(req.user, limit)
+      .getMyPosts(req.user, req.query.num)
       .then((r) => res.status(200).json(r))
       .catch((e) => res.status(500).json(formatError(e)));
   }
 
   getExplore(req, res) {
-    // let limit = req.query.limit;
-    let limit;
     postService
-      .getPublicPosts(req.user, limit)
+      .getExplorePosts(req.user, req.params["last-created-at"], req.params.num)
       .then((r) => res.status(200).json(r))
       .catch((e) => {
         res.status(500).json(formatError(e));
@@ -77,23 +112,19 @@ module.exports = class PostController {
   }
 
   postReact(req, res) {
-    // console.log(req.body);
+    // FIX TO req.body.postID
     postService
-      .postReaction(req.user, req.body._id, req.body.reaction)
+      .postReaction(req.user, req.body.postID, req.body.reaction)
       .then((r) => res.status(200).json(r))
       .catch((e) => res.status(400).json(e.message));
   }
-  // async postReact(req, res) {
-  //   // let a = await Post.find({});
-  //   // console.log(a);
-  //   let b = await postService.postReaction(
-  //     req.user,
-  //     req.body._id,
-  //     req.body.reaction
-  //   );
-  //   console.log(b);
-  //   res.status(200).json(b);
-  // }
+  deleteReact(req, res) {
+    // let postID = req.params.postID;
+    postService
+      .deleteReaction(req.user, req.params.postID)
+      .then((r) => res.status(200).json(r))
+      .catch((e) => res.status(400).json(e));
+  }
 };
 
 // 	// res.status().send().;

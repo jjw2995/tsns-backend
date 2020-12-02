@@ -11,6 +11,7 @@ const gc = new Storage({
 // for-tsns@clever-spirit-285705.iam.gserviceaccount.com
 const gcsBucket = gc.bucket("tsns");
 const jimp = require("jimp");
+const { promises } = require("fs");
 
 module.exports = class ImageProc {
   _modifyPictures(files) {
@@ -85,12 +86,23 @@ module.exports = class ImageProc {
     });
   }
 
+  // getImgUrlsForMedium(medium = []) {
+  //   return new Promise((resolve, reject) => {
+  //     let promArr = [];
+  //     medium.forEach((media) => {
+  //       this.getImgUrls(media);
+  //     });
+  //     Promise.all(promArr)
+  //       .then((r) => resolve(r))
+  //       .catch((e) => reject(e));
+  //   });
+  // }
   getImgUrls(media) {
     return new Promise((resolve, reject) => {
       let temp = media.map((id) => {
         return gcsBucket
           .file(id)
-          .getSignedUrl({ expires: Date.now() + 7200000, action: "read" });
+          .getSignedUrl({ expires: Date.now() + 720000, action: "read" });
       });
       Promise.all(temp)
         .then((r) => {

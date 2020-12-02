@@ -31,6 +31,14 @@ beforeEach(async function () {
   await Post.deleteMany({});
   await Comment.deleteMany({});
   await Reaction.deleteMany({});
+
+  // await mongoose.connection.db.dropDatabase();
+
+  // await User.drop();
+  // await Follower.drop();
+  // await Post.drop();
+  // await Comment.drop();
+  // await Reaction.drop();
 });
 
 describe("/api", () => {
@@ -43,5 +51,6 @@ describe("/api", () => {
     require("./routes/follower");
     require("./routes/post");
     require("./routes/comment");
+    require("./routes/user");
   });
 });

@@ -31,9 +31,8 @@ router.get(followees + "/pending", followController.getPendingFollowees);
 // delete
 // /followees
 router.delete(
-  followees,
-  // celebrate({ [Segments.BODY]: Joi.object().keys({ _id }).unknown }),
-  validate(Segments.BODY, { _id }),
+  followees + "/:followeeID",
+  validate(Segments.PARAMS, { followeeID: _id }),
   followController.deleteFollowee
 );
 
@@ -57,9 +56,12 @@ router.post(
   followController.postFollowersAccept
 );
 
+// "/:userID",
+//   // celebrate({ [Segments.BODY]: Joi.object().keys({ _id }).unknown }),
+//   validate(Segments.PARAMS, { userID: _id }),
 router.delete(
-  followers,
-  validate(Segments.BODY, { _id }),
+  followers + "/:followerID",
+  validate(Segments.PARAMS, { followerID: _id }),
   followController.deleteFollower
 );
 

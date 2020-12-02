@@ -14,12 +14,12 @@ let postSchema = new mongoose.Schema(
       enum: ["private", "followers", "public"],
       default: "public",
     },
-    // reactions: {
-    // 	love: { type: Number, default: 0 },
-    // 	haha: { type: Number, default: 0 },
-    // 	sad: { type: Number, default: 0 },
-    // 	angry: { type: Number, default: 0 },
-    // },
+    reactions: {
+      love: { type: Number, default: 0 },
+      haha: { type: Number, default: 0 },
+      sad: { type: Number, default: 0 },
+      angry: { type: Number, default: 0 },
+    },
   },
   { autoIndex: false, typePojoToMixed: false, timestamps: true }
 );

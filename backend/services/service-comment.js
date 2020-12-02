@@ -3,46 +3,72 @@ const mongoose = require("mongoose");
 const Reactionable = require("./reactionable");
 
 const PAGE_SIZE = 8;
-module.exports = class CommentService extends Reactionable {
+module.exports = class CommentService extends (
+  Reactionable
+) {
   constructor(commentModel, reactionsModel) {
     super(commentModel, reactionsModel);
     this.Comment = commentModel;
   }
 
-  async addComment(user, postID, content, parentCom = null) {
+  async addComment(user, postID, content, parentComID = null) {
+    // log(parentComID)
     let _id = "c" + mongoose.Types.ObjectId();
     let comment = { _id: _id, postID: postID, user: user, content: content };
-    if (parentCom) {
-      if (parentCom.parentComID) {
-        parentCom._id = parentCom.parentComID;
-      }
+    if (parentComID) {
+      // if (parentCom.parentComID) {
+      //   parentCom._id = parentCom.parentComID;
+      // }
       let parentComment = await this.Comment.findOneAndUpdate(
-        { _id: parentCom._id },
+        { _id: parentComID },
         { $inc: { numChild: 1 } },
         { new: true }
       ).lean();
       if (!parentComment) {
-        throw new Error(`comment ${parentCom._id} has been removed`);
+        throw new Error(`comment ${parentComID} has been removed`);
       }
-      comment.parentComID = parentCom._id;
+      comment.parentComID = parentComID;
     }
 
     let newComment = await this.Comment.create(comment);
     return newComment;
   }
 
+  async postReaction(user, commentID, reaction) {
+    let reactDoc = await super.postReaction(user, commentID, reaction);
+    // if (kFaceDiceEqlOne(HIT_SIZE)) {
+    //   // let a =
+    //   await this.Post.findOneAndUpdate(
+    //     { _id: commentID },
+    //     { reactions: reactDoc[0].reactions },
+    //     { new: true }
+    //   );
+    //   // log(a);
+    // }
+    // log(reactDoc);
+
+    return reactDoc[0];
+  }
+
+  async deleteReaction(user, commentID) {
+    let reactDoc = await super.deleteReaction(user, commentID);
+
+    return reactDoc[0];
+  }
+
   async getPostComments(
     user,
     postID,
-    lastComment = null,
+    lastCreatedAt = null,
     page_size = PAGE_SIZE
   ) {
     let query = { postID: postID, parentComID: null };
-    if (lastComment) {
-      query.createdAt = { $gt: new Date(lastComment.createdAt) };
+    if (lastCreatedAt) {
+      query.createdAt = { $gt: new Date(lastCreatedAt) };
     }
     let comments = await this.Comment.aggregate([
       { $match: query },
+      // { $sort: { createdAt: -1 } },
       { $limit: parseInt(page_size) },
       {
         $lookup: {
@@ -56,58 +82,68 @@ module.exports = class CommentService extends Reactionable {
         },
       },
     ]);
+    comments = await this.commentsAppendReaction(user, comments);
 
+    return comments;
+  }
+
+  async getSubComments(
+    user,
+    parentCommentID,
+    lastCreatedAt,
+    page_size = PAGE_SIZE
+  ) {
+    let query = {
+      parentComID: parentCommentID,
+      createdAt: { $gt: lastCreatedAt },
+    };
+    let subComments = await this.Comment.find(query)
+      .limit(parseInt(page_size))
+      .lean();
+
+    subComments = await this.commentsAppendReaction(user, subComments);
+    // log(reactionDocs);
+    return subComments;
+  }
+
+  async commentsAppendReaction(user, comments) {
     let commentIDs = [];
+
     comments.forEach((comment) => {
       commentIDs.push(comment._id);
-      comment.subComments.forEach((subComment) => {
-        commentIDs.push(subComment._id);
-      });
+      if (comment.subComments) {
+        comment.subComments.forEach((subComment) => {
+          commentIDs.push(subComment._id);
+        });
+      }
     });
-    // log(commentIDs);
-    // log(commentIDs.length);
+
     let reactionDocs = await super.getReactionsGivenContentIDs(
       user,
       commentIDs
     );
-    // try {
-    // } catch (e) {
-    //   log(e);
-    // }
-    // log(reactionDocs);
+
     comments.forEach((comment) => {
-      // commentIDs.push(comment._id);
       let reactionDoc = reactionDocs[comment._id];
-      let reactions = reactionDoc.reactions;
-      let userReaction = reactionDoc.userReaction;
-      // comment.reactions = reactionDoc.reactions;
-      // comment.userReaction = reactionDoc.userReaction;
-      super.appendReaction(comment, reactions, userReaction);
 
-      comment.subComments.forEach((subComment) => {
-        let subReactionDoc = reactionDocs[subComment._id];
-        // let reactionDoc = reactionDocs[comment._id];
-        let subReactions = subReactionDoc.reactions;
-        let subUserReaction = subReactionDoc.userReaction;
-        // comment.reactions = reactionDoc.reactions;
-        // comment.userReaction = reactionDoc.userReaction;
-        super.appendReaction(subComment, subReactions, subUserReaction);
-        // subComment.reactions = subReactionDoc.reactions;
-        // subComment.userReaction = subReactionDoc.userReaction;
+      super.appendReaction(
+        comment,
+        reactionDoc.reactions,
+        reactionDoc.userReaction
+      );
+      if (comment.subComments) {
+        comment.subComments.forEach((subComment) => {
+          let subCommentReactionDoc = reactionDocs[subComment._id];
 
-        // commentIDs.push(subComment._id);
-      });
+          super.appendReaction(
+            subComment,
+            subCommentReactionDoc.reactions,
+            subCommentReactionDoc.userReaction
+          );
+        });
+      }
     });
     return comments;
-  }
-
-  async getSubComments(parentCommentID, lastComment, page_size = PAGE_SIZE) {
-    let query = {
-      parentComID: parentCommentID,
-      createdAt: { $gt: lastComment.createdAt },
-    };
-    let subComments = await this.Comment.find(query).limit(parseInt(page_size));
-    return subComments;
   }
 
   async removeCommentsOnPost(postID) {

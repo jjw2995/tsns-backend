@@ -152,17 +152,18 @@ describe("/followers /followees", () => {
     describe("DELETE /followees", () => {
       it("user_1 deletes user_2", async () => {
         let a = await server
-          .delete("/api/followees")
-          .set(getAuthBear(user_1))
-          .send(user_2);
+          .delete("/api/followees" + `/${user_2._id}`)
+          .set(getAuthBear(user_1));
+        // .send(user_2);
         // logRes(a);
         expect(a.body.followee._id).to.eql(user_2._id);
       });
       it("user_1 deletes privateUser_1", async () => {
+        // log(privateUser_1);
         let a = await server
-          .delete("/api/followees")
-          .set(getAuthBear(user_1))
-          .send(privateUser_1);
+          .delete("/api/followees" + `/${privateUser_1._id}`)
+          .set(getAuthBear(user_1));
+        // .send(privateUser_1);
         // logRes(a);
         // expect(a.body.isPending).to.eql(false);
         expect(a.body.followee._id).to.eql(privateUser_1._id);
@@ -172,18 +173,18 @@ describe("/followers /followees", () => {
     describe("DELETE /followers", () => {
       it("user_2 deletes user_1", async () => {
         let a = await server
-          .delete("/api/followers")
-          .set(getAuthBear(user_2))
-          .send(user_1);
+          .delete("/api/followers" + `/${user_1._id}`)
+          .set(getAuthBear(user_2));
+        // .send(user_1);
         // logRes(a);
         expect(a.body.follower._id).to.eql(user_1._id);
       });
 
       it("privateUser_1 deletes user_1, error", async () => {
         let a = await server
-          .delete("/api/followers")
-          .set(getAuthBear(privateUser_1))
-          .send(user_1);
+          .delete("/api/followers" + `/${user_1._id}`)
+          .set(getAuthBear(privateUser_1));
+        // .send(user_1);
         // logRes(a);
         expect(a.status).to.eql(400);
       });

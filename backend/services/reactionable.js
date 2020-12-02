@@ -18,7 +18,7 @@ module.exports = class Reactionable {
   async postReaction(user, contentID, reaction) {
     this._checkReaction(reaction);
 
-    await this.Reaction.findOneAndUpdate(
+    let a = await this.Reaction.findOneAndUpdate(
       {
         contentID: contentID,
         "user._id": user._id,
@@ -27,6 +27,19 @@ module.exports = class Reactionable {
       { reaction: reaction, user: user, contentID: contentID },
       { upsert: true }
     );
+    let content = { _id: contentID };
+    let contents = [content];
+
+    let reactions = this.appendReactionsGivenContents(user, contents);
+
+    return reactions;
+  }
+
+  async deleteReaction(user, contentID) {
+    let a = await this.Reaction.findOneAndDelete({
+      contentID: contentID,
+      "user._id": user._id,
+    });
 
     let content = { _id: contentID };
     let contents = [content];
@@ -37,69 +50,58 @@ module.exports = class Reactionable {
   }
 
   async appendReactionsGivenContents(user, contents = []) {
-    // log(contents);
-    let reactionsObj = {};
+    let CIDsToReactions = {};
     let contentIDs = contents.map((content) => {
-      // content.userReaction = null;
-      reactionsObj[content._id] = this.reactionObjInit();
+      CIDsToReactions[content._id] = this.reactionObjInit();
       return content._id;
     });
-    // log(reactionsObj);
+    // log(CIDsToReactions);
+    // log(user);
 
-    let docsAggregatedByCIDandReaction = await this.Reaction.aggregate([
-      { $match: { contentID: { $in: contentIDs } } },
-      {
-        $group: {
-          _id: { contentID: "$contentID", reaction: "$reaction" },
-          count: { $sum: 1 },
-          userReaction: {
-            $push: {
-              $cond: [
-                { $eq: ["$user._id", user._id] },
-                "$reaction",
-                "$$REMOVE",
-                // null,
-              ],
-            },
-          },
-        },
-      },
-    ]);
+    let aggredByCIDandReaction = await this.aggregateCountByCidAndReaction(
+      user,
+      contentIDs
+    );
+    // log(aggredByCIDandReaction);
 
-    docsAggregatedByCIDandReaction.forEach((uniqueCIDandReaction) => {
-      let contentID = uniqueCIDandReaction._id.contentID;
-      let reaction = uniqueCIDandReaction._id.reaction;
-      let reactionCount = uniqueCIDandReaction.count;
-      let userReaction = uniqueCIDandReaction.userReaction[0];
-      // log(reactionsObj[contentID].reactions[`${reaction}`]);
-      reactionsObj[contentID].reactions[`${reaction}`] = reactionCount;
+    CIDsToReactions = this.mapReactionsToContentIDs(
+      aggredByCIDandReaction,
+      CIDsToReactions
+    );
 
-      if (userReaction) {
-        reactionsObj[contentID].userReaction = userReaction;
-      }
-    });
-    // contents;
-    // contents =
     contents.forEach((content) => {
-      content.reactions = reactionsObj[content._id].reactions;
-      content.userReaction = reactionsObj[content._id].userReaction;
-      // return content;
+      content.reactions = CIDsToReactions[content._id].reactions;
+      // log(CIDsToReactions[content._id].userReaction);
+      content.userReaction = CIDsToReactions[content._id].userReaction;
+      // content.d = 1;
+      // log(content);
     });
+    // log(contents);
 
     return contents;
   }
 
   async getReactionsGivenContentIDs(user, contentIDs = []) {
-    // log(contents);
-    // log(user);
-    // log(contentIDs);
-    let reactionsObj = {};
+    let CIDsToReactions = {};
     contentIDs.forEach((contentID) => {
-      reactionsObj[contentID] = this.reactionObjInit();
+      CIDsToReactions[contentID] = this.reactionObjInit();
     });
-    // log(reactionsObj);
 
-    let docsAggregatedByCIDandReaction = await this.Reaction.aggregate([
+    let aggredByCIDandReaction = await this.aggregateCountByCidAndReaction(
+      user,
+      contentIDs
+    );
+
+    CIDsToReactions = this.mapReactionsToContentIDs(
+      aggredByCIDandReaction,
+      CIDsToReactions
+    );
+
+    return CIDsToReactions;
+  }
+
+  aggregateCountByCidAndReaction(user, contentIDs) {
+    return this.Reaction.aggregate([
       { $match: { contentID: { $in: contentIDs } } },
       {
         $group: {
@@ -118,21 +120,21 @@ module.exports = class Reactionable {
         },
       },
     ]);
+  }
 
-    docsAggregatedByCIDandReaction.forEach((uniqueCIDandReaction) => {
+  mapReactionsToContentIDs(aggredByCIDandReaction, CIDsToReactions) {
+    aggredByCIDandReaction.forEach((uniqueCIDandReaction) => {
       let contentID = uniqueCIDandReaction._id.contentID;
       let reaction = uniqueCIDandReaction._id.reaction;
       let reactionCount = uniqueCIDandReaction.count;
       let userReaction = uniqueCIDandReaction.userReaction[0];
-      // log(reactionsObj[contentID].reactions[`${reaction}`]);
-      reactionsObj[contentID].reactions[`${reaction}`] = reactionCount;
 
+      CIDsToReactions[contentID].reactions[`${reaction}`] = reactionCount;
       if (userReaction) {
-        reactionsObj[contentID].userReaction = userReaction;
+        CIDsToReactions[contentID].userReaction = userReaction;
       }
     });
-    // log(reactionsObj);
-    return reactionsObj;
+    return CIDsToReactions;
   }
 
   async deleteReactionsGivenContentIDs(contentIDs) {
@@ -142,7 +144,9 @@ module.exports = class Reactionable {
   }
 
   reactionObjInit() {
-    return { reactions: REACTIONSINIT, userReaction: null };
+    return JSON.parse(
+      JSON.stringify({ reactions: REACTIONSINIT, userReaction: null })
+    );
   }
 
   appendReaction(contentRef, reactions, userReaction = null) {

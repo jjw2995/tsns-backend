@@ -1,45 +1,46 @@
-const test = require('mongoose').model('User');
-const bcrypt = require('bcryptjs');
-const { Mongoose } = require('mongoose');
-const { body } = require('express-validator');
-
-let log = (m) => console.log('\n', m, '\n');
-let User;
-
-// function getUsersIdx (target, other) {
-//     return target._id < other._id ? 0 : 1
-// }
+const test = require("mongoose").model("User");
+const bcrypt = require("bcryptjs");
 
 module.exports = class UserService {
-	constructor(user) {
-		User = user;
-	}
-	getUser(user) {
-		return new Promise((resolve, reject) => {
-			User.findById(user._id)
-				.then((r) => {
-					if (!r) return reject(Error('such user does not exist'));
-					resolve(r.toJSON());
-				})
-				.catch((e) => reject(e));
-		});
-	}
-	setIsPrivate(user, body) {
-		return new Promise((resolve, reject) => {
-			// log(body);
-			test
-				.findOneAndUpdate(
-					{ _id: user._id },
-					{ isPrivate: body.isPrivate },
-					{ new: true }
-				)
-				.then((r) => resolve(r))
-				.catch((e) => reject(e));
-		});
-	}
+  constructor(user) {
+    this.User = user;
+  }
+  getUser(userID) {
+    // log(userID);
+    return new Promise((resolve, reject) => {
+      // log(userID);
+      this.User.findById(userID)
+        .then((r) => {
+          if (!r) return reject(Error("such user does not exist"));
+          resolve(r.toJSON());
+        })
+        .catch((e) => reject(e));
+    });
+  }
+  async searchUserByString(q) {
+    // let a = await this.User.find({ $text: { $search: /q/ } });
+    let a = await this.User.find({
+      nickname: { $regex: q /* , $options: "i" */ },
+    }).limit(10);
+    // log(a);
+    return a;
+  }
+  setIsPrivate(user, body) {
+    return new Promise((resolve, reject) => {
+      // log(body);
+      test
+        .findOneAndUpdate(
+          { _id: user._id },
+          { isPrivate: body.isPrivate },
+          { new: true }
+        )
+        .then((r) => resolve(r))
+        .catch((e) => reject(e));
+    });
+  }
 
-	// async checkUser(id) {
-	// 	let user = await User.findById(id);
-	// 	return user;
-	// }
+  // async checkUser(id) {
+  // 	let user = await this.User.findById(id);
+  // 	return user;
+  // }
 };

@@ -1,6 +1,6 @@
 const model = require("mongoose").model("Follower");
 
-let Follower;
+// let Follower;
 
 let filterUser = (u) => {
   return { _id: u._id, nickname: u.nickname };
@@ -9,7 +9,7 @@ let filterUser = (u) => {
 const log = (msg) => console.log("\n", msg);
 module.exports = class FollowerService {
   constructor(followerModel) {
-    Follower = followerModel;
+    this.Follower = followerModel;
   }
 
   // checked
@@ -26,7 +26,7 @@ module.exports = class FollowerService {
         doc.isPending = true;
       }
 
-      Follower.create(doc)
+      this.Follower.create(doc)
         .then((r) => {
           resolve(r.toJSON());
         })
@@ -37,7 +37,7 @@ module.exports = class FollowerService {
   // get people that user is following (user=follower, others=followees)
   getFollowees(user) {
     return new Promise((resolve, reject) => {
-      Follower.aggregate([
+      this.Follower.aggregate([
         { $match: { "follower._id": user._id, isPending: false } },
         {
           $project: {
@@ -54,7 +54,7 @@ module.exports = class FollowerService {
   // get people that are following the user
   getFollowers(user) {
     return new Promise((resolve, reject) => {
-      Follower.aggregate([
+      this.Follower.aggregate([
         { $match: { "followee._id": user._id, isPending: false } },
         {
           $project: {
@@ -71,7 +71,7 @@ module.exports = class FollowerService {
   // get user pending followees
   getPendingFollowees(user) {
     return new Promise((resolve, reject) => {
-      Follower.aggregate([
+      this.Follower.aggregate([
         { $match: { "follower._id": user._id, isPending: true } },
         {
           $project: {
@@ -88,7 +88,7 @@ module.exports = class FollowerService {
   // get user pending followers
   getPendingFollowers(user) {
     return new Promise((resolve, reject) => {
-      Follower.aggregate([
+      this.Follower.aggregate([
         { $match: { "followee._id": user._id, isPending: true } },
         {
           $project: {
@@ -104,7 +104,7 @@ module.exports = class FollowerService {
 
   acceptPendingFollower(followee, follower) {
     return new Promise((resolve, reject) => {
-      Follower.findOneAndUpdate(
+      this.Follower.findOneAndUpdate(
         {
           "follower._id": follower._id,
           "followee._id": followee._id,
@@ -126,11 +126,11 @@ module.exports = class FollowerService {
     });
   }
 
-  deleteFollower(followee, follower) {
+  deleteFollower(followeeID, followerID) {
     return new Promise((resolve, reject) => {
-      Follower.findOneAndDelete({
-        "follower._id": follower._id,
-        "followee._id": followee._id,
+      this.Follower.findOneAndDelete({
+        "follower._id": followerID,
+        "followee._id": followeeID,
         isPending: false,
       })
         .then((r) => {
@@ -144,50 +144,41 @@ module.exports = class FollowerService {
     });
   }
 
-  deleteFollowee(follower, followee) {
+  deleteFollowee(followerID, followeeID) {
     return new Promise((resolve, reject) => {
-      Follower.findOneAndDelete({
-        "follower._id": follower._id,
-        "followee._id": followee._id,
+      this.Follower.findOneAndDelete({
+        "follower._id": followerID,
+        "followee._id": followeeID,
         // isPending: false,
       })
-        .then((r) => resolve(r))
+        .then((r) => {
+          if (r == null)
+            reject(
+              new Error(
+                "Already removed or cannot remove not following followee"
+              )
+            );
+          resolve(r);
+        })
         .catch((e) => reject(e));
     });
   }
-
-  // getUpdatedDocs() {
-  // 	// new follower
-  // 	// {followee: user,isPending: false, hasViewed:false} new follow
-  // 	// new follower pending for acceptance
-  // 	// {followee: user,isPending: true, hasViewed:false} new pending follow i'm private
-  // 	// follow accepted
-  // 	// {follower: user,isPending: false, hasViewed:false}		new accepted follow, i'm the follower
-  // }
-
-  // {followee: user,isPending: true, hasViewed:true}
-  // {followee: user,isPending: true, hasViewed:false} 이때
-  // {followee: user,isPending: false, hasViewed:true}
-  // {followee: user,isPending: false, hasViewed:false} 이때
-  //
-  // {follower: user,isPending: true, hasViewed:true}
-  // {follower: user,isPending: true, hasViewed:false}
-  // {follower: user,isPending: false, hasViewed:true}
-  // {follower: user,isPending: false, hasViewed:false} 이때
-
-  // setPendingViewed(followee, follower) {
-  // 	return new Promise((resolve, reject) => {
-  // 		Follower.updateOne(
-  // 			{
-  // 				'follower._id': follower._id,
-  // 				'followee._id': followee._id,
-  // 				isPending: true,
-  // 			},
-  // 			{ hasViewed: true },
-  // 			{ new: true }
-  // 		)
-  // 			.then((r) => resolve(r))
-  // 			.catch((e) => reject(e));
-  // 	});
-  // }
+  // check following
+  checkFollowing(followerID, followeeID) {
+    return new Promise((resolve, reject) => {
+      this.Follower.findOne({
+        "follower._id": followerID,
+        "followee._id": followeeID,
+        isPending: false,
+      })
+        .then((r) => {
+          if (r) {
+            resolve(!r.isPending);
+          } else {
+            resolve(false);
+          }
+        })
+        .catch((e) => reject(e));
+    });
+  }
 };

@@ -1,12 +1,14 @@
 const mongoose = require("mongoose");
-// const filterObjPropsBy = require('../utils/sanatizor');
-// const uniqueValidator = require("mongoose-unique-validator");
-// const bcrypt = require('bcryptjs');
 
 let userSchema = new mongoose.Schema(
   {
     // _id
-    nickname: { type: String, required: [true, "cannot be blank"], trim: true },
+    nickname: {
+      type: String,
+      unique: true,
+      required: [true, "cannot be blank"],
+      trim: true,
+    },
     isPrivate: { type: Boolean, default: false },
     email: {
       type: String,
@@ -16,7 +18,9 @@ let userSchema = new mongoose.Schema(
       lowercase: true,
       index: true,
     },
-    birthday: Date,
+    // birthday: Date,
+    verifyingHash: { type: String, index: true },
+
     //
     refreshToken: { type: String },
     //
@@ -28,9 +32,14 @@ let userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
-// userSchema.plugin(uniqueValidator, { type: "mongoose-unique-validator" });
-
+userSchema.index(
+  { createdAt: 1 },
+  // { expireAfterSeconds: 1, partialFilterExpression: { verifyingHash: false } }
+  {
+    expireAfterSeconds: 3600,
+    partialFilterExpression: { verifyingHash: { $exists: true } },
+  }
+);
 userSchema.set("toJSON", {
   transform: function (doc, ret, options) {
     delete ret.password;
@@ -40,23 +49,9 @@ userSchema.set("toJSON", {
     delete ret.updatedAt;
     delete ret.__v;
     delete ret.refreshToken;
-    // delete ret.isPrivate;
-    // return ret;
+    delete ret.verifyingHash;
   },
 });
-
-// userSchema.set('toJSON', {
-// 	transform: function (doc, ret, options) {
-// 		ret.id = ret._id;
-// 		delete ret.password;
-// 		delete ret._id;
-// 		delete ret.__v;
-// 		delete ret.updatedAt;
-// 		delete ret.email;
-// 		delete ret.salt;
-// 		// delete
-// 	},
-// });
 
 userSchema.methods.toFilteredJSON = function (filters = []) {
   var json = {};
