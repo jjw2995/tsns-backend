@@ -22,7 +22,7 @@ function sendMail(address, subject = "", text = "") {
       if (err) {
         console.log(err);
       } else {
-        //   console.log(data);
+        console.log(data);
       }
     });
   }
