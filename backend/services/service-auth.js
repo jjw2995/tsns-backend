@@ -42,7 +42,6 @@ module.exports = class AuthService {
 
   async resendEmail(email) {
     let user = await this.User.findOne({ email: email });
-    log(user);
     if (!user) {
       throw {
         status: 404,
@@ -63,7 +62,6 @@ module.exports = class AuthService {
       { new: true }
     );
     if (!user) {
-      log(user);
       throw Error(
         "account already verified or 1 hour passed and has been removed, try resending verification email or creating account again"
       );
@@ -151,6 +149,6 @@ function sendVerificationEmail(uemail, uid, vhash) {
   mailer.sendMail(
     uemail,
     "TSNS - click the link below to verify your user account",
-    `http://localhost:5000/api/auth/verify-account/${uid}/${vhash}`
+    `${process.env.BASE_URL}/api/auth/verify-account/${uid}/${vhash}`
   );
 }

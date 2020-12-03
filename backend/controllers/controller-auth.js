@@ -7,7 +7,6 @@ const User = require("mongoose").model("User");
 let authService = new AuthService(User);
 
 const postRegister = (req, res) => {
-  // log(req.get("host"));
   authService
     .registerUser(req.body)
     .then((newUser) => res.status(200).json(newUser))
@@ -29,8 +28,6 @@ const postLogin = (req, res) => {
 
 const getVerify = (req, res) => {
   const { userID, verifyingHash } = req.params;
-  log(userID);
-  log(verifyingHash);
   authService
     .verifyUser(userID, verifyingHash)
     .then((r) => {
