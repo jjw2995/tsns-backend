@@ -10,6 +10,7 @@ let transporter = nodemailer.createTransport({
 });
 
 function sendMail(address, subject = "", text = "") {
+  log(process.env.TEST);
   if (!process.env.TEST) {
     let mailOptions = {
       from: "tsns",
