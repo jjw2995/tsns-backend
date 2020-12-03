@@ -26,6 +26,7 @@ const postLogin = (req, res) => {
       res.status(400).json(e);
     });
 };
+
 const getVerify = (req, res) => {
   const { userID, verifyingHash } = req.params;
   log(userID);
@@ -40,12 +41,6 @@ const getVerify = (req, res) => {
       res.status(400).json(e.message);
     });
 };
-const postLogout = (req, res) => {
-  authService
-    .logoutUser(req.user)
-    .then((msg) => res.status(204).json(msg))
-    .catch((e) => res.status(401).json(e));
-};
 
 const postResendEmail = (req, res) => {
   authService
@@ -57,6 +52,14 @@ const postResendEmail = (req, res) => {
       res.status(e.status).json(e.message);
     });
 };
+
+const postLogout = (req, res) => {
+  authService
+    .logoutUser(req.user)
+    .then((msg) => res.status(204).json(msg))
+    .catch((e) => res.status(401).json(e));
+};
+
 const postToken = (req, res) => {
   authService
     .newAccTokenUser(req.user)

@@ -57,16 +57,18 @@ router.post(
   ),
   AuthController.postLogin
 );
+
+// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 router.post(
   "/resend-verification-email",
   celebrate({ [Segments.BODY]: Joi.object().keys({ email }) }),
   AuthController.postResendEmail
 );
 
-// http://host/api/auth/verify/:verifyingHash
 router.get(
   "/verify-account/:userID/:verifyingHash",
-  // celebrate({ [Segments.BODY]: Joi.object().keys({}) }),
   validate(Segments.PARAMS, {
     userID: Joi.string().alphanum().required(),
     verifyingHash: Joi.string().hex().required(),
@@ -74,11 +76,17 @@ router.get(
   AuthController.getVerify
 );
 
-// router.use(verifyRefreshToken);
+// router.post("/reset-password");
+// router.post("/new-password/:uid")
+// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+router.use(verifyRefreshToken);
 // refreshToken
-router.post("/logout", verifyRefreshToken, AuthController.postLogout);
+router.post("/logout", AuthController.postLogout);
 
 // refreshToken
-router.post("/token", verifyRefreshToken, AuthController.postToken);
+router.post("/token", AuthController.postToken);
 
 module.exports = router;

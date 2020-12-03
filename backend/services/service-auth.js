@@ -22,8 +22,10 @@ module.exports = class AuthService {
     user.password = bcrypt.hashSync(user.password, user.salt);
     user.verifyingHash = require("crypto")
       .createHash("sha256")
-      .update(user.nickname, "utf8")
+      .update(user.nickname + Date(), "utf8")
       .digest("hex");
+    // log(user);
+    // log(Date());
 
     delete user.isPrivate;
     return new Promise((resolve, reject) => {

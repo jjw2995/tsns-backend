@@ -4,7 +4,7 @@ npm-debug.log
 .env
 .DS_Store
 .vscode
+gcs.json
+
 *.rest
 *.png
-gcs.json
-s.json
