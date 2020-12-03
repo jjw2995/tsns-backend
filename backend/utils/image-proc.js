@@ -2,13 +2,10 @@ const { v4: uuidv4 } = require("uuid");
 const { Storage } = require("@google-cloud/storage");
 const path = require("path");
 const gc = new Storage({
-  projectId: "clever-spirit-285705",
-  keyFilename: path.join(__dirname, "../../gcs.json"),
-  // credentials: JSON.parse(process.env.GCS_KEYFILE),
+  // projectId: "clever-spirit-285705",
+  keyFilename: path.join(__dirname, "../../google-credentials.json"),
 });
 // let a = path.join(__dirname, "../../gcs.json");
-// log(a);
-// for-tsns@clever-spirit-285705.iam.gserviceaccount.com
 const gcsBucket = gc.bucket("tsns");
 const jimp = require("jimp");
 const { promises } = require("fs");
@@ -86,17 +83,6 @@ module.exports = class ImageProc {
     });
   }
 
-  // getImgUrlsForMedium(medium = []) {
-  //   return new Promise((resolve, reject) => {
-  //     let promArr = [];
-  //     medium.forEach((media) => {
-  //       this.getImgUrls(media);
-  //     });
-  //     Promise.all(promArr)
-  //       .then((r) => resolve(r))
-  //       .catch((e) => reject(e));
-  //   });
-  // }
   getImgUrls(media) {
     return new Promise((resolve, reject) => {
       let temp = media.map((id) => {
