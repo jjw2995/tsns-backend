@@ -20,6 +20,7 @@ const followService = new FollowService(Follower);
 
 module.exports = class PostController {
   post(req, res) {
+    log("posting a post");
     let files = Object.values(req.files || []);
     postService
       .addPost(req.user, req.body, files)
