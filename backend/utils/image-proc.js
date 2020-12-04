@@ -59,6 +59,8 @@ module.exports = class ImageProc {
 
   uploadFiles(files) {
     log("uploadFiles");
+    log(files);
+    log(files[0]);
     return new Promise((resolve, reject) => {
       if (files.length > 4) {
         return reject(this._error(400, "4 images max"));
