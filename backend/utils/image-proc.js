@@ -59,6 +59,7 @@ module.exports = class ImageProc {
 
   uploadFiles(files) {
     log("uploadFiles");
+    log(gc);
     log(files);
     log(files[0]);
     return new Promise((resolve, reject) => {
