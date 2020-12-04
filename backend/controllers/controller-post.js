@@ -23,6 +23,7 @@ module.exports = class PostController {
     log("posting a post");
     let files = Object.values(req.files || []);
     log(req.body);
+    log(req.body.image);
     log("req.files below");
     log(files);
 
