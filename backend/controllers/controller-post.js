@@ -23,12 +23,9 @@ module.exports = class PostController {
     log("posting a post");
     let files = Object.values(req.files || []);
     log(req.body);
-    log(req.body.description);
-    log(req.body.level);
-    log(req.files);
-    // log(req.body);
-    // log();
+    log("req.files below");
     log(files);
+
     postService
       .addPost(req.user, req.body, files)
       .then((r) => res.status(200).json(r))

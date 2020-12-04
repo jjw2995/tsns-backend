@@ -45,7 +45,6 @@ global.expToHaveProps = function (value, propsArr) {
 };
 
 global.regAndLogin = async function (user, is_private = false) {
-  console.log(user);
   user = {
     nickname: user.nickname,
     email: user.email,

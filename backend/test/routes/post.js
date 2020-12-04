@@ -33,8 +33,10 @@ describe("/posts", () => {
       let a = await server
         .post("/api/posts")
         .set(getAuthBear(user_1))
-        .attach("f_1", fs.readFileSync("./z.png"), "z.png")
-        .attach("f_2", fs.readFileSync("./test1.png"), "test1.png")
+        .attach("img1", "./z.png", "z.png")
+        .attach("img2", "./test1.png", "test1.png")
+        // .attach("f_1", fs.readFileSync("./z.png"), "z.png")
+        // .attach("f_2", fs.readFileSync("./test1.png"), "test1.png")
         .field(postPrivate);
       let d = await Post.find({});
       expect(d.length).to.eql(1);
