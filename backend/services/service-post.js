@@ -163,17 +163,9 @@ module.exports = class PostService extends (
       .sort({ createdAt: -1 })
       .limit(pageSize)
       .lean();
-    // log(a);
-    // posts.forEach((post) => {
-    //   post.media = imageProc.
-    // });
+
     await this._appendImagesToPosts(posts);
 
-    // let promArr = [];
-    // posts.forEach((post) => {
-    //   promArr.push();
-    // });
-    // imageProc.getImgUrlsForMedium();
     return posts;
   }
 

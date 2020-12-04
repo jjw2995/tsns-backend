@@ -22,6 +22,8 @@ module.exports = class PostController {
   post(req, res) {
     log("posting a post");
     let files = Object.values(req.files || []);
+    log(req);
+    log(files);
     postService
       .addPost(req.user, req.body, files)
       .then((r) => res.status(200).json(r))
