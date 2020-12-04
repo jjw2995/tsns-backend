@@ -45,12 +45,20 @@ global.expToHaveProps = function (value, propsArr) {
 };
 
 global.regAndLogin = async function (user, is_private = false) {
+  console.log(user);
   user = {
     nickname: user.nickname,
     email: user.email,
     password: user.password,
   };
-  let asd = await server.post("/api/auth/register").send(user);
+  let regiRes = await server.post("/api/auth/register").send(user);
+
+  // SKIP EMAIL VERIFICATION
+  await User.findOneAndUpdate(
+    { _id: regiRes.body._id },
+    { $unset: { verifyingHash: "" } }
+  );
+
   // logRes(asd);
   let temp = JSON.parse(JSON.stringify(user));
   delete temp.nickname;

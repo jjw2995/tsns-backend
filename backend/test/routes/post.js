@@ -28,7 +28,8 @@ describe("/posts", () => {
         .send(postAppendNick(user_1, postPrivate));
       expect(c.body.level).to.eql(postPrivate.level);
     });
-    it("normal insert and delete with pictures", async () => {
+    it.only("normal insert and delete with pictures", async () => {
+      console.log(user_1);
       let a = await server
         .post("/api/posts")
         .set(getAuthBear(user_1))

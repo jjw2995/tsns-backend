@@ -26,6 +26,7 @@ app.use(helmet());
 app.use(formData.parse({ extended: true, autoClean: true }));
 // delete from the request all empty files (size == 0)
 app.use(formData.format());
+app.use(formData.union());
 
 require("./db");
 
