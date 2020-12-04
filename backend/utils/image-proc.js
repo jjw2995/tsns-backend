@@ -60,7 +60,8 @@ module.exports = class ImageProc {
   uploadFiles(files) {
     log("uploadFiles");
     log(gc);
-    log(files);
+    log(gc == null);
+    log("gc above");
     log(files[0]);
     return new Promise((resolve, reject) => {
       if (files.length > 4) {
