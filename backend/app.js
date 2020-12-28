@@ -80,8 +80,8 @@ let p2 = new Promise((resolve, reject) => {
 
 Promise.all([p1, p2])
   .then(async () => {
-    console.log(`\n mongoDB connected on - ${dbURI}`);
-    console.log(` BACKEND ON PORT - http://localhost:${PORT}`);
+    // console.log(`\n mongoDB connected on - ${dbURI}`);
+    // console.log(` BACKEND ON PORT - http://localhost:${PORT}`);
     console.log("\n app and db running...");
     // await mongoose.connection.db.dropDatabase();
   })
