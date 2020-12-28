@@ -7,7 +7,12 @@ let postSchema = new mongoose.Schema(
       _id: { type: String, index: true, required: true },
       nickname: { type: String, required: true },
     },
-    description: { type: String, maxlength: 200, trim: true, default: "" },
+    description: {
+      required: true,
+      type: String,
+      maxlength: 200,
+      trim: true,
+    },
     media: [{ type: String, trim: true }], // resource address
     level: {
       type: String,

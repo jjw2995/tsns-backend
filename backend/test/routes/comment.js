@@ -152,7 +152,7 @@ describe("/comments", () => {
         let x = await server
           // !!!!!!
           .get(
-            `/api/comments/subcomments/${z.body[0]._id}?num=2&last-created-at=${date}`
+            `/api/comments/${z.body[0]._id}/subcomments?num=2&last-created-at=${date}`
           )
           .set(getAuthBear(user_1));
         // logRes(x);
@@ -162,7 +162,7 @@ describe("/comments", () => {
         let y = await server
           // !!!!!!
           .get(
-            `/api/comments/subcomments/${z.body[0]._id}?num=2&last-created-at=${date}`
+            `/api/comments/${z.body[0]._id}/subcomments?num=2&last-created-at=${date}`
           )
           .set(getAuthBear(user_1));
         // logRes(y);
@@ -201,7 +201,7 @@ describe("/comments", () => {
         // logRes(z);
         let x = await server
           .get(
-            `/api/comments/subcomments/${z.body[0]._id}?num=5&last-created-at=${z.body[0].subComments[2].createdAt}`
+            `/api/comments/${z.body[0]._id}/subcomments?num=5&last-created-at=${z.body[0].subComments[2].createdAt}`
           )
           .set(getAuthBear(user_1))
           .send({
@@ -227,7 +227,7 @@ describe("/comments", () => {
 
         x = await server
           .get(
-            `/api/comments/subcomments/${z.body[0]._id}?num=5&last-created-at=${z.body[0].subComments[2].createdAt}`
+            `/api/comments/${z.body[0]._id}/subcomments?num=5&last-created-at=${z.body[0].subComments[2].createdAt}`
           )
           .set(getAuthBear(user_1))
           .send({

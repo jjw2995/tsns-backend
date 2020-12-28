@@ -5,7 +5,7 @@ const ImageProc = require("../utils/image-proc");
 
 let imageProc = new ImageProc();
 const PAGE_SIZE = 8;
-const HIT_SIZE = 1;
+const HIT_SIZE = 0;
 
 module.exports = class PostService extends (
   Reactionable
@@ -94,35 +94,49 @@ module.exports = class PostService extends (
     return postDoc;
   }
 
-  // FIX
+  //
+  //
+  //
+
   async getPosts(user, followers, lastCreatedAt = null, pageSize = PAGE_SIZE) {
     let ids = followers.map((x) => {
-      return x._id;
+      // return mongoose.Types.ObjectId(x.user._id);
+      return x.user._id;
     });
+    log(ids);
 
     let query = {
-      $and: [{ "user._id": { $in: ids } }, { level: { $ne: "private" } }],
+      $or: [
+        {
+          $and: [{ "user._id": { $in: ids } }, { level: { $ne: "private" } }],
+        },
+        { "user._id": user._id },
+      ],
     };
     if (lastCreatedAt) {
-      query.createdAt = { $lt: new Date(lastCreatedAt) };
+      query.createdAt = { $lt: lastCreatedAt };
     }
 
-    let posts = await this.Post.find({
-      $or: [query, { "user._id": user._id }],
-    })
-      .sort({ createdAt: -1 })
-      .limit(pageSize)
-      .lean();
-    // log("here");
-    // log(posts);
+    let posts;
+    try {
+      posts = await this.Post.aggregate([
+        { $match: query },
+        { $sort: { createdAt: -1 } },
+        { $limit: pageSize },
+      ]);
+      // log("here");
+      log(posts[0]);
+    } catch (error) {
+      log(error);
+    }
 
     await this._appendImagesToPosts(posts);
     posts = await super.appendReactionsGivenContents(user, posts);
-    // log(posts);
     return posts;
   }
 
   async getMyPosts(user, lastCreatedAt = null, pageSize = PAGE_SIZE) {
+    console.log(lastCreatedAt);
     let query = { "user._id": user._id };
 
     if (lastCreatedAt) {
@@ -170,19 +184,25 @@ module.exports = class PostService extends (
   }
 
   async getExplorePosts(user, lastCreatedAt = null, pageSize = PAGE_SIZE) {
-    let lastHour = new Date();
+    // let lastHour = new Date();
 
-    lastHour.setHours(lastHour.getHours() - 1);
+    // lastHour.setHours(lastHour.getHours() - 9);
+
+    // let query = {
+    //   level: "public",
+    //   createdAt: { $gt: lastHour },
+    // };
+
+    // if (lastCreatedAt) {
+    //   query.createdAt.$lt = new Date(lastCreatedAt);
+    // }
 
     let query = {
       level: "public",
-      createdAt: { $gt: lastHour },
     };
 
     if (lastCreatedAt) {
-      query.createdAt = {
-        $and: [{ $lt: new Date(lastCreatedAt) }, query.createdAt],
-      };
+      query.createdAt = { $lt: new Date(lastCreatedAt) };
     }
 
     let factoring = {
@@ -213,7 +233,6 @@ module.exports = class PostService extends (
       { $limit: pageSize },
       { $project: { factor: 0 } },
     ]);
-
     await this._appendImagesToPosts(posts);
     posts = await super.appendReactionsGivenContents(user, posts);
     return posts;

@@ -100,13 +100,14 @@ describe("/auths", () => {
   describe("POST /token", () => {
     beforeEach(async () => {
       user_1 = await regAndLogin(user_1);
+      log(user_1);
     });
     it("correct request", async () => {
       let temp = JSON.parse(JSON.stringify(user_1));
       // delete temp.nickname;
 
       let a = await server.post("/api/auth/token").send(temp);
-      // logRes(a);
+      logRes(a);
       expect(a.status).to.eql(200);
     });
     it("wrong refreshToken/inputs", async () => {

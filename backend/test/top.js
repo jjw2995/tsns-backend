@@ -42,15 +42,19 @@ beforeEach(async function () {
 });
 
 describe("/api", () => {
-  require("./routes/auth");
-
-  describe("\n * those that require authed users *\n", () => {
-    beforeEach(async () => {
-      await usersInit();
-    });
-    require("./routes/follower");
-    require("./routes/post");
-    require("./routes/comment");
-    require("./routes/user");
+  describe("", async () => {
+    // let a = await Post.find({});
+    // console.log(a);
   });
+
+  // require("./routes/auth");
+  // describe("\n * those that require authed users *\n", () => {
+  //   beforeEach(async () => {
+  //     await usersInit();
+  //   });
+  //   require("./routes/follower");
+  //   require("./routes/post");
+  //   require("./routes/comment");
+  //   require("./routes/user");
+  // });
 });

@@ -22,12 +22,15 @@ module.exports = class CommentController {
       .catch((e) => res.status(400).json(formatError(e)));
   }
   get(req, res) {
+    console.log(req.params.postID);
+    log(req.query);
+    log(req.params);
     // console.log(req.body['last-created-at']);
     commentService
       .getPostComments(
         req.user,
         req.params.postID,
-        req.params["last-created-at"],
+        req.query["last-created-at"],
         req.query.num
       )
       .then((r) => res.status(200).json(r))
@@ -47,7 +50,6 @@ module.exports = class CommentController {
   }
 
   delete(req, res) {
-    // log("asd");
     commentService
       .removeComment(req.user, req.params.commentID)
       .then((r) => res.sendStatus(204))

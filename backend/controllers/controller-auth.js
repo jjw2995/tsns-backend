@@ -11,6 +11,7 @@ const postRegister = (req, res) => {
     .registerUser(req.body)
     .then((newUser) => res.status(200).json(newUser))
     .catch((e) => {
+      // log(e);
       res.status(400).json(e);
     });
 };
@@ -59,7 +60,7 @@ const postLogout = (req, res) => {
 
 const postToken = (req, res) => {
   authService
-    .newAccTokenUser(req.user)
+    .refreshTokens(req.user)
     .then((token) => {
       res.status(200).json(token);
     })

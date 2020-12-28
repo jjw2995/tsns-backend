@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { AuthController } = require("../../controllers/index");
-const { verifyRefreshToken } = require("../../middlewares");
+const { verifyRefreshToken } = require("../../middlewares/token-verify");
 
 // const { Joi, celebrate, Segments } = require("celebrate");
 const {
@@ -9,9 +9,9 @@ const {
   Joi,
   Segments,
   celebrate,
+  val,
 } = require("../../utils/validations");
 const nickname = Joi.string()
-  .max(16)
   // .alphanum()
   .pattern(/^[a-zA-Z0-9\_]{3,16}$/)
   .message(
@@ -20,23 +20,25 @@ const nickname = Joi.string()
   .required();
 const email = Joi.string().max(30).email().required();
 const password = Joi.string()
-  .max(15)
-  .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,15})/)
+  .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,32})/)
   .message(
-    '"password" must contain a number, lowercase, UPPERCASE, special, and be 8~15 characters long'
+    '"password" must contain a number, lowercase, UPPERCASE, special, and be 8~32 characters long'
   )
   .required();
 
 // TODO: change tests to incorporate email verification
 router.post(
   "/register",
+  // val({ nickname, email, password }, Segments.BODY),
   celebrate(
     {
-      [Segments.BODY]: Joi.object().keys({
-        nickname,
-        email,
-        password,
-      }),
+      [Segments.BODY]: Joi.object()
+        .keys({
+          nickname,
+          email,
+          password,
+        })
+        .unknown(true),
     },
     { abortEarly: false }
   ),

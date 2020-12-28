@@ -6,7 +6,7 @@ const { validate, Segments, Joi } = require("../../utils/validations");
 
 let commentController = new CommentController();
 
-const content = Joi.string().min(3).max(200).required();
+const content = Joi.string().min(1).max(150).required();
 const num = Joi.number().optional();
 
 const lastCreatedAt = Joi.date().optional();
@@ -43,6 +43,12 @@ router.post(
 );
 
 // router.patch("/", commentController.patch);
+router.get(
+  "/:parentCommentID/subcomments",
+  validate(Segments.PARAMS, { parentCommentID: commentID }),
+  validate(Segments.QUERY, { "last-created-at": lastCreatedAt, num }),
+  commentController.getSubcomments
+);
 
 router.get(
   "/:postID",
@@ -50,12 +56,9 @@ router.get(
   validate(Segments.QUERY, { "last-created-at": lastCreatedAt, num }),
   commentController.get
 );
-router.get(
-  "/subcomments/:parentCommentID",
-  validate(Segments.PARAMS, { parentCommentID: commentID }),
-  validate(Segments.QUERY, { "last-created-at": lastCreatedAt, num }),
-  commentController.getSubcomments
-);
+
+// .get(`subcomments/${parentComID}?last-created-at=${lastComment.createdAt}`)
+//     .then((r) => {
 // function identReqArgs(req, res, next) {
 //   log(req.params, "\n");
 //   log(req.query, "\n");

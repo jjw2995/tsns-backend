@@ -22,7 +22,7 @@ router.post(
 
 // get
 // /followees
-router.get(followees, followController.getFollowees);
+router.get(followees + `/:uid`, followController.getFollowees);
 
 // get
 // /followees/pending
@@ -32,7 +32,7 @@ router.get(followees + "/pending", followController.getPendingFollowees);
 // /followees
 router.delete(
   followees + "/:followeeID",
-  validate(Segments.PARAMS, { followeeID: _id }),
+  // validate(Segments.PARAMS, { followeeID: _id }),
   followController.deleteFollowee
 );
 
@@ -43,18 +43,28 @@ router.delete(
 //
 
 // get
-// /followers
-router.get(followers, followController.getFollowers);
-
-// get
 // /followers/pending
 router.get(followers + "/pending", followController.getPendingFollowers);
+
+router.get(
+  followers + "/pending/dismissed",
+  followController.getDismissedPendingFollowers
+);
 
 router.post(
   followers + "/accept",
   validate(Segments.BODY, { _id }),
   followController.postFollowersAccept
 );
+
+// get followers and followees list
+router.get("/follows/count/:_id", followController.getFollowsCount);
+// router.get(
+//   "/follows/pending",
+//   followController.getPendingFollowersAndFollowees
+// );
+
+router.post(followers + "/seen", followController.setFollowingPendingSeen);
 
 // "/:userID",
 //   // celebrate({ [Segments.BODY]: Joi.object().keys({ _id }).unknown }),
@@ -64,5 +74,9 @@ router.delete(
   validate(Segments.PARAMS, { followerID: _id }),
   followController.deleteFollower
 );
+
+// get
+// /followers
+router.get(followers + `/:uid`, followController.getFollowers);
 
 module.exports = router;

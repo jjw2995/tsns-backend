@@ -12,13 +12,16 @@ const query = Joi.string()
   .pattern(/^[a-zA-Z0-9\_]{0,16}$/)
   .required();
 //   Joi.string().disallow(" ").alphanum().required();
+const uid = Joi.string().alphanum().required();
 
 router.post("/private", userController.postPrivate);
 
-router.post(
+router.get(
   "/search",
-  validate(Segments.BODY, { q: query }),
+  validate(Segments.QUERY, { query }),
   userController.getSearch
 );
+
+router.get("/:uid", validate(Segments.PARAMS, { uid }), userController.get);
 
 module.exports = router;

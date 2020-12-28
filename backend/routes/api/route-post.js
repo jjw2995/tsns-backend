@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { PostController } = require("../../controllers/index");
-const { verifyAccessToken } = require("../../middlewares");
+const { verifyAccessToken } = require("../../middlewares/token-verify");
 
 const { validate, Segments, Joi } = require("../../utils/validations");
 
@@ -18,7 +18,6 @@ let postController = new PostController();
 const description = Joi.string().min(3).max(200).required();
 const level = Joi.string().valid("public", "followers", "private").required();
 const _id = Joi.string().alphanum().required();
-const lastCreatedAt = Joi.date().optional();
 
 const postID = Joi.string()
   .alphanum()
@@ -31,7 +30,14 @@ const postID = Joi.string()
   })
   .required();
 const reaction = Joi.string().valid("love", "haha", "sad", "angry").required();
+//
+//
+const lastCreatedAt = Joi.date().optional();
 const num = Joi.number().optional();
+
+// @@@@@@@@@@@@@@@@@@@@@@@@@@@@
+// @@@@@@@@@@@@@@@@@@@@@@@@@@@@
+// @@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 router.post(
   "/",

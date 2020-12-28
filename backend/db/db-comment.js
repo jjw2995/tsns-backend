@@ -13,7 +13,6 @@ let commentSchema = new mongoose.Schema(
     numChild: { type: Number, default: 0 },
     content: {
       type: String,
-      minlength: 1,
       maxlength: 150,
       trim: true,
       required: true,

@@ -18,14 +18,22 @@ const postService = new PostService(Post, Reaction);
 const commentService = new CommentService(Comment, Reaction);
 const followService = new FollowService(Follower);
 
+function getLastCreatedAt(req) {
+  // console.log(req.query["last-created-at"]);
+  return (
+    req.query["last-created-at"] ||
+    req.params["last-created-at"] ||
+    req.body.lastCreatedAt
+  );
+}
+
+function getNum(req) {
+  // console.log(req.query["last-created-at"]);
+  return req.query["num"] || req.params["num"] || req.body.num;
+}
 module.exports = class PostController {
   post(req, res) {
-    log("posting a post");
     let files = Object.values(req.files || []);
-    log(req.body);
-    log(req.body.image);
-    log("req.files below");
-    log(files);
 
     postService
       .addPost(req.user, req.body, files)
@@ -61,21 +69,25 @@ module.exports = class PostController {
       .catch((e) => res.status(400).json(formatError(e)));
   }
   get(req, res) {
-    let num = req.query.num;
-    // let num;
-
     let user = req.user;
+    // log(req);
     followService
-      .getFollowees(user)
+      .getFollowees(user._id, null, true)
       .then((followees) => {
-        return postService.getPosts(user, followees, num);
+        log(followees);
+        return postService.getPosts(
+          user,
+          followees,
+          getLastCreatedAt(req),
+          getNum(req)
+        );
       })
       .then((r) => res.status(200).json(r))
       .catch((e) => res.status(500).json(formatError(e)));
   }
   async getByUID(req, res) {
+    // log(req);
     let userID_toGetFrom = req.params.userID;
-    let num;
     try {
       if (req.user._id === userID_toGetFrom) {
         throw {
@@ -83,16 +95,16 @@ module.exports = class PostController {
           message: "use GET api/posts/mine for getting own posts",
         };
       }
-      let isFollowing = await followService.checkFollowing(
+      let folPend = await followService.checkFollowingPending(
         req.user._id,
         userID_toGetFrom
       );
       let posts = await postService.getPostsByUserID(
         req.user,
         userID_toGetFrom,
-        isFollowing,
-        req.params["last-created-at"],
-        req.params.num
+        !folPend.isPending,
+        getLastCreatedAt(req),
+        getNum(req)
       );
       res.status(200).json(posts);
     } catch (e) {
@@ -102,15 +114,17 @@ module.exports = class PostController {
   }
 
   getMine(req, res) {
+    // log(req.params);
+    // log(req.)
     postService
-      .getMyPosts(req.user, req.query.num)
+      .getMyPosts(req.user, getLastCreatedAt(req), getNum(req))
       .then((r) => res.status(200).json(r))
       .catch((e) => res.status(500).json(formatError(e)));
   }
 
   getExplore(req, res) {
     postService
-      .getExplorePosts(req.user, req.params["last-created-at"], req.params.num)
+      .getExplorePosts(req.user, getLastCreatedAt(req), getNum(req))
       .then((r) => res.status(200).json(r))
       .catch((e) => {
         res.status(500).json(formatError(e));

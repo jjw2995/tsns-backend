@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const { verifyAccessToken } = require("../../middlewares");
+const { verifyAccessToken } = require("../../middlewares/token-verify");
 
 router.use("/auth", require("./route-auth"));
 

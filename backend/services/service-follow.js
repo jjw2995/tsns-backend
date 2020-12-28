@@ -1,18 +1,15 @@
-const model = require("mongoose").model("Follower");
-
-// let Follower;
+const mongoose = require("mongoose");
 
 let filterUser = (u) => {
   return { _id: u._id, nickname: u.nickname };
 };
 
-const log = (msg) => console.log("\n", msg);
+PAGE_USER = 8;
+
 module.exports = class FollowerService {
   constructor(followerModel) {
     this.Follower = followerModel;
   }
-
-  // checked
   createFollow(follower, followee) {
     return new Promise((resolve, reject) => {
       if (follower._id == followee._id) {
@@ -21,6 +18,7 @@ module.exports = class FollowerService {
       let doc = {
         follower: filterUser(follower),
         followee: filterUser(followee),
+        hasViewed: false,
       };
       if (followee.isPrivate) {
         doc.isPending = true;
@@ -28,40 +26,67 @@ module.exports = class FollowerService {
 
       this.Follower.create(doc)
         .then((r) => {
+          log(r);
           resolve(r.toJSON());
         })
         .catch((e) => reject(e));
     });
   }
 
-  // get people that user is following (user=follower, others=followees)
-  getFollowees(user) {
+  getFollowees(uid, lastDocID = null, getAll = false) {
     return new Promise((resolve, reject) => {
-      this.Follower.aggregate([
-        { $match: { "follower._id": user._id, isPending: false } },
+      let query = { "follower._id": uid, isPending: false };
+      if (lastDocID) {
+        query._id = { $lt: mongoose.Types.ObjectId(lastDocID) };
+      }
+      let aggre = [
+        // { $match: { "followee._id": user._id, isPending: false } },
+        { $match: query },
+        { $sort: { _id: -1 } },
         {
           $project: {
-            _id: "$followee._id",
-            nickname: "$followee.nickname",
+            user: {
+              _id: "$followee._id",
+              nickname: "$followee.nickname",
+            },
           },
         },
-      ])
+        // getAll ? { $limit: PAGE_USER } : {},
+        // getAll ? null : { $limit: PAGE_USER },
+
+        // { $match: { "follower._id": user._id, isPending: false } },
+      ];
+      if (!getAll) {
+        aggre.push({ $limit: PAGE_USER });
+      }
+      log(aggre);
+      this.Follower.aggregate(aggre)
         .then((r) => resolve(r))
         .catch((e) => reject(e));
     });
   }
 
   // get people that are following the user
-  getFollowers(user) {
+  getFollowers(uid, lastDocID = null, getAll = false) {
     return new Promise((resolve, reject) => {
+      let query = { "followee._id": uid, isPending: false };
+      if (lastDocID) {
+        query._id = { $lt: mongoose.Types.ObjectId(lastDocID) };
+      }
       this.Follower.aggregate([
-        { $match: { "followee._id": user._id, isPending: false } },
+        // { $match: { "followee._id": user._id, isPending: false } },
+        { $match: query },
+        { $sort: { _id: -1 } },
         {
           $project: {
-            _id: "$follower._id",
-            nickname: "$follower.nickname",
+            user: {
+              _id: "$follower._id",
+              nickname: "$follower.nickname",
+            },
           },
         },
+        getAll ? null : { $limit: PAGE_USER },
+        // { $match: { "follower._id": user._id, isPending: false } },
       ])
         .then((r) => resolve(r))
         .catch((e) => reject(e));
@@ -69,33 +94,66 @@ module.exports = class FollowerService {
   }
 
   // get user pending followees
-  getPendingFollowees(user) {
+  // TODO: PAGE THE RESPONSE
+  getPendingFollowees(user, lastDocID = null, hasViewed = false) {
     return new Promise((resolve, reject) => {
+      let query = {
+        "follower._id": user._id,
+        isPending: true,
+        hasViewed: hasViewed,
+      };
+      if (lastDocID) {
+        query._id = { $lt: mongoose.Types.ObjectId(lastDocID) };
+      }
       this.Follower.aggregate([
-        { $match: { "follower._id": user._id, isPending: true } },
+        // { $match: { "followee._id": user._id, isPending: false } },
+        { $match: query },
+        { $sort: { _id: -1 } },
         {
           $project: {
-            _id: "$followee._id",
-            nickname: "$followee.nickname",
+            user: {
+              _id: "$followee._id",
+              nickname: "$followee.nickname",
+            },
           },
         },
+        { $limit: PAGE_USER },
+        // { $match: { "follower._id": user._id, isPending: false } },
       ])
-        .then((r) => resolve(r))
+        .then((r) => {
+          resolve(r);
+        })
         .catch((e) => reject(e));
     });
   }
 
   // get user pending followers
-  getPendingFollowers(user) {
+  // TODO: PAGE THE RESPONSE
+  getPendingFollowers(user, lastDocID = null, hasViewed = false) {
+    log(hasViewed);
     return new Promise((resolve, reject) => {
+      let query = {
+        "followee._id": user._id,
+        isPending: true,
+        hasViewed: hasViewed,
+      };
+      if (lastDocID) {
+        query._id = { $lt: mongoose.Types.ObjectId(lastDocID) };
+      }
       this.Follower.aggregate([
-        { $match: { "followee._id": user._id, isPending: true } },
+        // { $match: { "followee._id": user._id, isPending: false } },
+        { $match: query },
+        { $sort: { _id: -1 } },
         {
           $project: {
-            _id: "$follower._id",
-            nickname: "$follower.nickname",
+            user: {
+              _id: "$follower._id",
+              nickname: "$follower.nickname",
+            },
           },
         },
+        { $limit: PAGE_USER },
+        // { $match: { "follower._id": user._id, isPending: false } },
       ])
         .then((r) => resolve(r))
         .catch((e) => reject(e));
@@ -131,7 +189,7 @@ module.exports = class FollowerService {
       this.Follower.findOneAndDelete({
         "follower._id": followerID,
         "followee._id": followeeID,
-        isPending: false,
+        // isPending: false,
       })
         .then((r) => {
           if (r == null)
@@ -152,6 +210,7 @@ module.exports = class FollowerService {
         // isPending: false,
       })
         .then((r) => {
+          log(r);
           if (r == null)
             reject(
               new Error(
@@ -163,22 +222,87 @@ module.exports = class FollowerService {
         .catch((e) => reject(e));
     });
   }
+  //
+  //
   // check following
-  checkFollowing(followerID, followeeID) {
+  checkFollowingPending(followerID, followeeID) {
     return new Promise((resolve, reject) => {
       this.Follower.findOne({
         "follower._id": followerID,
         "followee._id": followeeID,
-        isPending: false,
+        // isPending: false,
       })
         .then((r) => {
+          let rv = { isFollowing: false, isPending: false };
+
           if (r) {
-            resolve(!r.isPending);
-          } else {
-            resolve(false);
+            rv.isFollowing = true;
+            rv.isPending = r.isPending;
           }
+          resolve(rv);
         })
         .catch((e) => reject(e));
+    });
+  }
+
+  setFollowingPendingSeen(userID, followerID) {
+    return new Promise((resolve, reject) => {
+      this.Follower.findOneAndUpdate(
+        {
+          "follower._id": followerID,
+          "followee._id": userID,
+          hasViewed: false,
+        },
+        { hasViewed: true },
+        { new: true }
+      )
+        .then((r) => {
+          // let rv = { isFollowing: false, isPending: false };
+
+          // if (r) {
+          //   rv.isFollowing = true;
+          //   rv.isPending = r.isPending;
+          // }
+          resolve(r);
+        })
+        .catch((e) => reject(e));
+    });
+  }
+
+  getFollowsCounts(uid) {
+    return new Promise((resolve, reject) => {
+      this.Follower.aggregate([
+        {
+          $facet: {
+            followersCount: [
+              {
+                $match: {
+                  "follower._id": uid,
+                  isPending: false,
+                },
+              },
+              { $count: "followeesCount" },
+            ],
+            followeesCount: [
+              {
+                $match: {
+                  "followee._id": uid,
+                  isPending: false,
+                },
+              },
+
+              { $count: "followersCount" },
+            ],
+          },
+        },
+      ])
+        .then((r) => {
+          resolve({ ...r[0].followeesCount[0], ...r[0].followersCount[0] });
+        })
+        .catch((e) => {
+          log(e);
+          reject(e);
+        });
     });
   }
 };

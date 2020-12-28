@@ -63,8 +63,12 @@ userSchema.methods.toFilteredJSON = function (filters = []) {
 
 userSchema.post("save", function (error, doc, next) {
   if (error.name === "MongoError" && error.code === 11000) {
-    // console.log("duplicate");
-    next(new Error("There was a duplicate key error"));
+    let err = new Error();
+    err.message = "duplicate part";
+    // err.name = Object.keys(error.keyValue);
+    err.part = Object.keys(error.keyValue)[0];
+    next(err);
+    // next(new Error(`${Object.keys(error.keyValue)} already exists`));
   } else {
     next();
   }

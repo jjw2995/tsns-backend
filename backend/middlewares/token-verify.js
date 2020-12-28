@@ -1,6 +1,9 @@
 const jwt = require("jsonwebtoken");
 
 const verifyAccessToken = function (req, res, next) {
+  // log(req.headers);
+  // log(req.originalUrl);
+
   let msg = "invalid access token, refresh token";
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
@@ -13,10 +16,7 @@ const verifyAccessToken = function (req, res, next) {
       console.log("accessTok verify fail");
       return res.status(401).json({ error: msg });
     }
-    delete user.iat;
-    delete user.exp;
-    // console.log(user);
-    req.user = user;
+    req.user = { _id: user._id, nickname: user.nickname };
     next();
   });
 };

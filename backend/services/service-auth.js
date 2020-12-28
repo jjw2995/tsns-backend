@@ -34,7 +34,12 @@ module.exports = class AuthService {
         })
         .catch((e) => {
           log(e);
-          reject({ errors: [{ email: "this email already exists" }] });
+          reject({
+            error: "Bad Request",
+            message: e.message,
+            part: e.part,
+            statusCode: 400,
+          });
           // reject({ errors: [{ email: e.errors.email.properties.message }] });
         });
     });
@@ -88,6 +93,7 @@ module.exports = class AuthService {
   }
 
   logoutUser(user) {
+    console.log(user);
     return new Promise((resolve, reject) => {
       this.User.findOneAndUpdate(
         { _id: user._id, refreshToken: user.refreshToken },
@@ -103,21 +109,32 @@ module.exports = class AuthService {
     });
   }
 
-  newAccTokenUser(user) {
+  // also bundle new refreshToken too
+  refreshTokens(user) {
     return new Promise((resolve, reject) => {
       this.User.findById(user._id)
         .then((doc) => {
-          let docRefreshToken = doc.refreshToken;
-          if (!docRefreshToken || docRefreshToken != user.refreshToken) {
+          if (!doc.refreshToken || doc.refreshToken != user.refreshToken) {
             reject({
               error:
                 "not a valid refreshToken OR a logged out user, try logging in again",
             });
           } else {
-            resolve({ accessToken: genAccessToken(doc.toJSON()) });
+            doc.refreshToken = genRefreshToken(doc);
+            return doc.save();
           }
         })
-        .catch((e) => reject(e));
+        .then((r) => {
+          log(genAccessToken(r.toJSON()));
+          resolve({
+            accessToken: genAccessToken(r.toJSON()),
+            refreshToken: r.refreshToken,
+          });
+        })
+        .catch((e) => {
+          log(e);
+          reject(e);
+        });
     });
   }
 };
@@ -134,13 +151,17 @@ function getIdNick(user) {
 }
 
 function genAccessToken(user) {
-  return jwt.sign(user, ACCESS_TOKEN_SECRET, {
+  let uIdNick = getIdNick(user);
+
+  return jwt.sign(uIdNick, ACCESS_TOKEN_SECRET, {
     expiresIn: "30m",
   });
 }
 
 function genRefreshToken(user) {
-  return jwt.sign(user, REFRESH_TOKEN_SECRET, {
+  let uIdNick = getIdNick(user);
+
+  return jwt.sign(uIdNick, REFRESH_TOKEN_SECRET, {
     expiresIn: "7d",
   });
 }

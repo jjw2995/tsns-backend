@@ -19,21 +19,23 @@ module.exports = class FollowController {
   }
 
   getFollowees(req, res) {
+    // log("HEREHHHHHHHHHHHHHE");
     followService
-      .getFollowees(req.user)
+      .getFollowees(req.params.uid, req.query["last-doc-id"])
       .then((r) => res.status(200).json(r))
       .catch((e) => res.status(500));
   }
 
   getPendingFollowees(req, res) {
     followService
-      .getPendingFollowees(req.user)
+      .getPendingFollowees(req.user, req.query["last-doc-id"])
       .then((r) => res.status(200).json(r))
       .catch((e) => res.status(500));
   }
 
   deleteFollowee(req, res) {
     // log(req.params);
+    log("HERE");
     followService
       .deleteFollowee(req.user._id, req.params.followeeID)
       .then((r) => res.status(200).json(r))
@@ -47,15 +49,25 @@ module.exports = class FollowController {
   //
 
   getFollowers(req, res) {
+    log("in get followers/uid");
     followService
-      .getFollowers(req.user)
+      .getFollowers(req.params.uid, req.query["last-doc-id"])
+      .then((r) => res.status(200).json(r))
+      .catch((e) => res.status(500));
+  }
+
+  getDismissedPendingFollowers(req, res) {
+    followService
+      .getPendingFollowers(req.user, req.query["last-doc-id"], true)
       .then((r) => res.status(200).json(r))
       .catch((e) => res.status(500));
   }
 
   getPendingFollowers(req, res) {
+    log("in get followers/pending");
+
     followService
-      .getPendingFollowers(req.user)
+      .getPendingFollowers(req.user, req.query["last-doc-id"], false)
       .then((r) => res.status(200).json(r))
       .catch((e) => res.status(500));
   }
@@ -76,6 +88,40 @@ module.exports = class FollowController {
         res.status(400).json(formatError(e));
       });
   }
+
+  getFollowsCount(req, res) {
+    followService
+      .getFollowsCounts(req.user._id)
+      .then((r) => res.status(200).json(r))
+      .catch((e) => res.status(500).json(e));
+    // try {
+    //   res.status(200).json({ followers, followees });
+    // } catch (error) {
+    //   log("@ @ @ @ @ @ @ @ @ @ @");
+    //   res.status(500).json(error);
+    // }
+  }
+
+  setFollowingPendingSeen(req, res) {
+    followService
+      .setFollowingPendingSeen(req.user._id, req.body._id)
+      .then((r) => {
+        res.status(200).json(r);
+      })
+      .catch((e) => {
+        res.status(500).json(e);
+      });
+  }
+
+  // async getPendingFollowersAndFollowees(req, res) {
+  //   try {
+  //     let pendingFollowers = await followService.getPendingFollowers(req.user);
+  //     let pendingFollowees = await followService.getPendingFollowees(req.user);
+  //     res.status(200).json({ pendingFollowers, pendingFollowees });
+  //   } catch (error) {
+  //     res.status(404).json(e);
+  //   }
+  // }
 
   // res.status().send().;
   // res.status().json()
