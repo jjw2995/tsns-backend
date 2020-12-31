@@ -63,10 +63,9 @@ module.exports = class CommentController {
       .catch((e) => res.status(400).json(formatError(e)));
   }
   deleteReact(req, res) {
-    // log("asd");
     commentService
       .deleteReaction(req.user, req.params.commentID)
-      .then((r) => res.sendStatus(204))
+      .then((r) => res.status(200).json(r))
       .catch((e) => res.status(400).json(e));
   }
 };

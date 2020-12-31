@@ -21,12 +21,13 @@ router.post(
 );
 
 // get
-// /followees
-router.get(followees + `/:uid`, followController.getFollowees);
-
-// get
 // /followees/pending
 router.get(followees + "/pending", followController.getPendingFollowees);
+
+// get
+// /followees
+router.get(followees + `/:uid`, followController.getFollowees);
+// router.route(followees).get(`/:uid`, followController.getFollowees);
 
 // delete
 // /followees

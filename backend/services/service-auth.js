@@ -154,8 +154,12 @@ function genAccessToken(user) {
   let uIdNick = getIdNick(user);
 
   return jwt.sign(uIdNick, ACCESS_TOKEN_SECRET, {
+    // expiresIn: "1m",
     expiresIn: "30m",
+    // expiresIn: "10000",
   });
+
+  // Eg: 60, "2 days", "10h", "7d". A numeric value is interpreted as a seconds count. If you use a string be sure you provide the time units (days, hours, etc), otherwise milliseconds unit is used by default ("120" is equal to "120ms").
 }
 
 function genRefreshToken(user) {
@@ -163,6 +167,7 @@ function genRefreshToken(user) {
 
   return jwt.sign(uIdNick, REFRESH_TOKEN_SECRET, {
     expiresIn: "7d",
+    // expiresIn: "10000",
   });
 }
 

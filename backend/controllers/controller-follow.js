@@ -34,8 +34,6 @@ module.exports = class FollowController {
   }
 
   deleteFollowee(req, res) {
-    // log(req.params);
-    log("HERE");
     followService
       .deleteFollowee(req.user._id, req.params.followeeID)
       .then((r) => res.status(200).json(r))
@@ -49,7 +47,6 @@ module.exports = class FollowController {
   //
 
   getFollowers(req, res) {
-    log("in get followers/uid");
     followService
       .getFollowers(req.params.uid, req.query["last-doc-id"])
       .then((r) => res.status(200).json(r))
@@ -64,8 +61,6 @@ module.exports = class FollowController {
   }
 
   getPendingFollowers(req, res) {
-    log("in get followers/pending");
-
     followService
       .getPendingFollowers(req.user, req.query["last-doc-id"], false)
       .then((r) => res.status(200).json(r))

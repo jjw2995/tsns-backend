@@ -179,6 +179,7 @@ module.exports = class PostService extends (
       .lean();
 
     await this._appendImagesToPosts(posts);
+    posts = await super.appendReactionsGivenContents(user, posts);
 
     return posts;
   }
@@ -240,37 +241,13 @@ module.exports = class PostService extends (
 
   async postReaction(user, postID, reaction) {
     let reactDoc = await super.postReaction(user, postID, reaction);
-    if (kFaceDiceEqlOne(HIT_SIZE)) {
-      // let a =
-      await this.Post.findOneAndUpdate(
-        { _id: postID },
-        { reactions: reactDoc[0].reactions },
-        { new: true }
-      );
-      // log(a);
-    }
-    // log(reactDoc);
 
     return reactDoc[0];
   }
 
   async deleteReaction(user, postID) {
     let reactDoc = await super.deleteReaction(user, postID);
-    if (kFaceDiceEqlOne(HIT_SIZE)) {
-      // let a =
-      await this.Post.findOneAndUpdate(
-        { _id: postID },
-        { reactions: reactDoc[0].reactions },
-        { new: true }
-      );
-      // log(a);
-    }
-    // log(reactDoc);
 
     return reactDoc[0];
   }
 };
-
-function kFaceDiceEqlOne(k) {
-  return ~~(Math.random() * k) == 0;
-}
