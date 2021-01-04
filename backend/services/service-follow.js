@@ -26,7 +26,7 @@ module.exports = class FollowerService {
 
       this.Follower.create(doc)
         .then((r) => {
-          log(r);
+          // log(r);
           resolve(r.toJSON());
         })
         .catch((e) => reject(e));
@@ -59,7 +59,7 @@ module.exports = class FollowerService {
       if (!getAll) {
         aggre.push({ $limit: PAGE_USER });
       }
-      log(aggre);
+      // log(aggre);
       this.Follower.aggregate(aggre)
         .then((r) => resolve(r))
         .catch((e) => reject(e));
@@ -95,12 +95,11 @@ module.exports = class FollowerService {
 
   // get user pending followees
   // TODO: PAGE THE RESPONSE
-  getPendingFollowees(user, lastDocID = null, hasViewed = false) {
+  getPendingFollowees(user, lastDocID = null) {
     return new Promise((resolve, reject) => {
       let query = {
         "follower._id": user._id,
         isPending: true,
-        hasViewed: hasViewed,
       };
       if (lastDocID) {
         query._id = { $lt: mongoose.Types.ObjectId(lastDocID) };
@@ -130,7 +129,7 @@ module.exports = class FollowerService {
   // get user pending followers
   // TODO: PAGE THE RESPONSE
   getPendingFollowers(user, lastDocID = null, hasViewed = false) {
-    log(hasViewed);
+    // log(hasViewed);
     return new Promise((resolve, reject) => {
       let query = {
         "followee._id": user._id,
@@ -210,7 +209,7 @@ module.exports = class FollowerService {
         // isPending: false,
       })
         .then((r) => {
-          log(r);
+          // log(r);
           if (r == null)
             reject(
               new Error(

@@ -154,8 +154,8 @@ function genAccessToken(user) {
   let uIdNick = getIdNick(user);
 
   return jwt.sign(uIdNick, ACCESS_TOKEN_SECRET, {
-    // expiresIn: "1m",
     expiresIn: "30m",
+    // expiresIn: "1m",
     // expiresIn: "10000",
   });
 

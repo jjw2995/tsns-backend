@@ -19,7 +19,6 @@ module.exports = class FollowController {
   }
 
   getFollowees(req, res) {
-    // log("HEREHHHHHHHHHHHHHE");
     followService
       .getFollowees(req.params.uid, req.query["last-doc-id"])
       .then((r) => res.status(200).json(r))
@@ -68,7 +67,6 @@ module.exports = class FollowController {
   }
 
   postFollowersAccept(req, res) {
-    // console.log(req.body);
     followService
       .acceptPendingFollower(req.user, req.body)
       .then((r) => res.status(200).json(r))
@@ -86,15 +84,9 @@ module.exports = class FollowController {
 
   getFollowsCount(req, res) {
     followService
-      .getFollowsCounts(req.user._id)
+      .getFollowsCounts(req.params._id)
       .then((r) => res.status(200).json(r))
       .catch((e) => res.status(500).json(e));
-    // try {
-    //   res.status(200).json({ followers, followees });
-    // } catch (error) {
-    //   log("@ @ @ @ @ @ @ @ @ @ @");
-    //   res.status(500).json(error);
-    // }
   }
 
   setFollowingPendingSeen(req, res) {
@@ -107,23 +99,4 @@ module.exports = class FollowController {
         res.status(500).json(e);
       });
   }
-
-  // async getPendingFollowersAndFollowees(req, res) {
-  //   try {
-  //     let pendingFollowers = await followService.getPendingFollowers(req.user);
-  //     let pendingFollowees = await followService.getPendingFollowees(req.user);
-  //     res.status(200).json({ pendingFollowers, pendingFollowees });
-  //   } catch (error) {
-  //     res.status(404).json(e);
-  //   }
-  // }
-
-  // res.status().send().;
-  // res.status().json()
-  // res.send().json()
-
-  // req.headers
-  // req.body
-  // req.params
-  // req.query
 };

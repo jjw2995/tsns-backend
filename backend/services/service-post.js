@@ -5,7 +5,7 @@ const ImageProc = require("../utils/image-proc");
 
 let imageProc = new ImageProc();
 const PAGE_SIZE = 8;
-const HIT_SIZE = 0;
+const HIT_SIZE = 1;
 
 module.exports = class PostService extends (
   Reactionable
@@ -27,9 +27,7 @@ module.exports = class PostService extends (
       level: post.level,
     });
     let postDoc = a.toJSON();
-    // postDoc.media = await imageProc.getImgUrls(postDoc.media);
     await this._appendImagesToPost(postDoc);
-    // log(postDoc);
     await super.appendReactionsGivenContents(user, [postDoc]);
     return postDoc;
   }
@@ -40,7 +38,6 @@ module.exports = class PostService extends (
   }
   async _appendImagesToPosts(posts = []) {
     posts.forEach((post) => {
-      // post = "q";
       post = this._appendImagesToPost(post);
     });
     await Promise.all(posts);
@@ -55,10 +52,8 @@ module.exports = class PostService extends (
     if (!postToBeDeleted) {
       throw new Error("user does not own the post or no such post exists");
     } else {
-      // log(postToBeDeleted);
       await imageProc.removeFiles(postToBeDeleted.media);
     }
-    // log(postToBeDeleted);
     await super.deleteReactionsGivenContentIDs([postToBeDeleted]);
   }
 
@@ -103,7 +98,7 @@ module.exports = class PostService extends (
       // return mongoose.Types.ObjectId(x.user._id);
       return x.user._id;
     });
-    log(ids);
+    // log(ids);
 
     let query = {
       $or: [
@@ -125,7 +120,6 @@ module.exports = class PostService extends (
         { $limit: pageSize },
       ]);
       // log("here");
-      log(posts[0]);
     } catch (error) {
       log(error);
     }
@@ -136,7 +130,7 @@ module.exports = class PostService extends (
   }
 
   async getMyPosts(user, lastCreatedAt = null, pageSize = PAGE_SIZE) {
-    console.log(lastCreatedAt);
+    // console.log(lastCreatedAt);
     let query = { "user._id": user._id };
 
     if (lastCreatedAt) {
@@ -185,26 +179,25 @@ module.exports = class PostService extends (
   }
 
   async getExplorePosts(user, lastCreatedAt = null, pageSize = PAGE_SIZE) {
-    // let lastHour = new Date();
+    let lastHour = new Date();
 
-    // lastHour.setHours(lastHour.getHours() - 9);
-
-    // let query = {
-    //   level: "public",
-    //   createdAt: { $gt: lastHour },
-    // };
-
-    // if (lastCreatedAt) {
-    //   query.createdAt.$lt = new Date(lastCreatedAt);
-    // }
+    lastHour.setHours(lastHour.getHours() - 9);
 
     let query = {
       level: "public",
+      createdAt: { $gt: lastHour },
     };
 
     if (lastCreatedAt) {
-      query.createdAt = { $lt: new Date(lastCreatedAt) };
+      query.createdAt.$lt = new Date(lastCreatedAt);
     }
+
+    // let query = {
+    //   level: "public",
+    // };
+    // if (lastCreatedAt) {
+    //   query.createdAt = { $lt: new Date(lastCreatedAt) };
+    // }
 
     let factoring = {
       $add: [
@@ -227,13 +220,14 @@ module.exports = class PostService extends (
     let posts = await this.Post.aggregate([
       { $match: query },
       { $project: projecting },
-      { $match: { factor: { $gte: HIT_SIZE } } },
-      // { $sort: { factor: -1 } },
+      { $match: { factor: { $gte: 0 } } },
+      { $sort: { factor: -1 } },
       // { $sort: { factor: -1, createdAt: -1 } },
-      { $sort: { createdAt: -1 } },
+      // { $sort: { createdAt: -1 } },
       { $limit: pageSize },
-      { $project: { factor: 0 } },
+      // { $project: { factor: 0 } },
     ]);
+    // log(posts[0]);
     await this._appendImagesToPosts(posts);
     posts = await super.appendReactionsGivenContents(user, posts);
     return posts;
@@ -241,13 +235,34 @@ module.exports = class PostService extends (
 
   async postReaction(user, postID, reaction) {
     let reactDoc = await super.postReaction(user, postID, reaction);
+    if (this._condAppendDic(reactDoc.reactionsCount > HIT_SIZE)) {
+      await this.reactionUpdate(reactDoc);
+    }
 
-    return reactDoc[0];
+    return reactDoc;
   }
 
   async deleteReaction(user, postID) {
     let reactDoc = await super.deleteReaction(user, postID);
-
-    return reactDoc[0];
+    if (this._condAppendDic(reactDoc.reactionsCount < HIT_SIZE)) {
+      await this.reactionUpdate(reactDoc);
+    }
+    return reactDoc;
+  }
+  async reactionUpdate(reactDoc) {
+    // log("in reactionUpdate, reactDoc");
+    // log(reactDoc);
+    await this.Post.findOneAndUpdate(
+      { _id: reactDoc._id },
+      { reactions: reactDoc.reactions },
+      { new: true }
+    );
+  }
+  _condAppendDic(cond) {
+    // console.log(
+    //   "in _condAppendDic,",
+    //   cond && ~~(Math.random() * HIT_SIZE) == 0
+    // );
+    return cond && ~~(Math.random() * HIT_SIZE) == 0;
   }
 };

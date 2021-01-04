@@ -74,7 +74,7 @@ module.exports = class PostController {
     followService
       .getFollowees(user._id, null, true)
       .then((followees) => {
-        log(followees);
+        // log(followees);
         return postService.getPosts(
           user,
           followees,

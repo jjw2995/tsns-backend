@@ -30,9 +30,9 @@ module.exports = class Reactionable {
     let content = { _id: contentID };
     let contents = [content];
 
-    let reactions = this.appendReactionsGivenContents(user, contents);
+    let reactions = await this.appendReactionsGivenContents(user, contents);
 
-    return reactions;
+    return reactions[0];
   }
 
   async deleteReaction(user, contentID) {
@@ -44,63 +44,60 @@ module.exports = class Reactionable {
     let content = { _id: contentID };
     let contents = [content];
 
-    let reactions = this.appendReactionsGivenContents(user, contents);
+    let reactions = await this.appendReactionsGivenContents(user, contents);
 
-    return reactions;
+    return reactions[0];
   }
 
   async appendReactionsGivenContents(user, contents = []) {
-    let CIDsToReactions = {};
+    let ContentIDsToReactions = {};
     let contentIDs = contents.map((content) => {
-      CIDsToReactions[content._id] = this.reactionObjInit();
+      ContentIDsToReactions[content._id] = this.reactionObjInit();
       return content._id;
     });
-    // log(CIDsToReactions);
-    // log(user);
 
-    let aggredByCIDandReaction = await this.aggregateCountByCidAndReaction(
+    let aggregatedByContentIDandReaction = await this.aggregatedByContentIDandReaction(
       user,
       contentIDs
     );
-    // log(aggredByCIDandReaction);
 
-    CIDsToReactions = this.mapReactionsToContentIDs(
-      aggredByCIDandReaction,
-      CIDsToReactions
+    ContentIDsToReactions = this.mapReactionsToContentIDs(
+      aggregatedByContentIDandReaction,
+      ContentIDsToReactions
     );
 
     contents.forEach((content) => {
-      content.reactions = CIDsToReactions[content._id].reactions;
-      // log(CIDsToReactions[content._id].userReaction);
-      content.userReaction = CIDsToReactions[content._id].userReaction;
-      // content.d = 1;
-      // log(content);
+      content.reactions = ContentIDsToReactions[content._id].reactions;
+      content.reactionsCount = Object.values(content.reactions).reduce(
+        (a, c) => a + c
+      );
+      // log(ContentIDsToReactions[content._id].userReaction);
+      content.userReaction = ContentIDsToReactions[content._id].userReaction;
     });
-    // log(contents);
 
     return contents;
   }
 
   async getReactionsGivenContentIDs(user, contentIDs = []) {
-    let CIDsToReactions = {};
+    let ContentIDsToReactions = {};
     contentIDs.forEach((contentID) => {
-      CIDsToReactions[contentID] = this.reactionObjInit();
+      ContentIDsToReactions[contentID] = this.reactionObjInit();
     });
 
-    let aggredByCIDandReaction = await this.aggregateCountByCidAndReaction(
+    let aggredByCIDandReaction = await this.aggregatedByContentIDandReaction(
       user,
       contentIDs
     );
 
-    CIDsToReactions = this.mapReactionsToContentIDs(
+    ContentIDsToReactions = this.mapReactionsToContentIDs(
       aggredByCIDandReaction,
-      CIDsToReactions
+      ContentIDsToReactions
     );
 
-    return CIDsToReactions;
+    return ContentIDsToReactions;
   }
 
-  aggregateCountByCidAndReaction(user, contentIDs) {
+  aggregatedByContentIDandReaction(user, contentIDs) {
     return this.Reaction.aggregate([
       { $match: { contentID: { $in: contentIDs } } },
       {
@@ -122,19 +119,19 @@ module.exports = class Reactionable {
     ]);
   }
 
-  mapReactionsToContentIDs(aggredByCIDandReaction, CIDsToReactions) {
+  mapReactionsToContentIDs(aggredByCIDandReaction, ContentIDsToReactions) {
     aggredByCIDandReaction.forEach((uniqueCIDandReaction) => {
       let contentID = uniqueCIDandReaction._id.contentID;
       let reaction = uniqueCIDandReaction._id.reaction;
       let reactionCount = uniqueCIDandReaction.count;
       let userReaction = uniqueCIDandReaction.userReaction[0];
 
-      CIDsToReactions[contentID].reactions[`${reaction}`] = reactionCount;
+      ContentIDsToReactions[contentID].reactions[`${reaction}`] = reactionCount;
       if (userReaction) {
-        CIDsToReactions[contentID].userReaction = userReaction;
+        ContentIDsToReactions[contentID].userReaction = userReaction;
       }
     });
-    return CIDsToReactions;
+    return ContentIDsToReactions;
   }
 
   async deleteReactionsGivenContentIDs(contentIDs) {

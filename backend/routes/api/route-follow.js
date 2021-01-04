@@ -10,6 +10,15 @@ let followees = "/followees";
 
 const _id = Joi.string().alphanum().required();
 
+// get followers and followees list
+router.get("/follows/count/:_id", followController.getFollowsCount);
+
+//
+//==================================================================
+//==================================================================
+//==================================================================
+//
+
 // post
 // /followees
 
@@ -26,8 +35,8 @@ router.get(followees + "/pending", followController.getPendingFollowees);
 
 // get
 // /followees
-router.get(followees + `/:uid`, followController.getFollowees);
 // router.route(followees).get(`/:uid`, followController.getFollowees);
+router.get(followees + `/:uid`, followController.getFollowees);
 
 // delete
 // /followees
@@ -58,8 +67,6 @@ router.post(
   followController.postFollowersAccept
 );
 
-// get followers and followees list
-router.get("/follows/count/:_id", followController.getFollowsCount);
 // router.get(
 //   "/follows/pending",
 //   followController.getPendingFollowersAndFollowees

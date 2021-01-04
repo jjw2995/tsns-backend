@@ -47,13 +47,13 @@ module.exports = class CommentService extends (
     // }
     // log(reactDoc);
 
-    return reactDoc[0];
+    return reactDoc;
   }
 
   async deleteReaction(user, commentID) {
     let reactDoc = await super.deleteReaction(user, commentID);
 
-    return reactDoc[0];
+    return reactDoc;
   }
 
   async getPostComments(
