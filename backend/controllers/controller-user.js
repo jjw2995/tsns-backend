@@ -1,10 +1,17 @@
-const { UserService, FollowService } = require("./../services");
-const mongoose = require("mongoose");
-const User = mongoose.model("User");
-const Follower = mongoose.model("Follower");
+const {
+  UserService,
+  FollowService,
+  PostService,
+  ReactionService,
+  CommentService,
+} = require("./../services");
+const { User, Follower, Post, Reaction, Comment } = require("../db");
 
 const userService = new UserService(User);
 const followService = new FollowService(Follower);
+const postService = new PostService(Post);
+const reactionService = new ReactionService(Reaction);
+const commentService = new CommentService(Comment);
 
 module.exports = class UserController {
   postPrivate(req, res) {
@@ -20,7 +27,7 @@ module.exports = class UserController {
         req.user._id,
         req.params.uid
       );
-      log(folPend);
+      // log(folPend);
       user.isPending = folPend.isPending;
       user.isFollowing = folPend.isFollowing;
       res.status(200).json(user);
@@ -29,17 +36,6 @@ module.exports = class UserController {
     }
   }
 
-  // get(req, res) {
-  //   userService
-  //     .getUser(req.params.uid)
-  //     .then((r) => {
-  //       res.status(200).json(r);
-  //       return followService.checkFollowing(req.user._id,r._id)
-  //     })
-  //     .catch((e) => {
-  //       res.status(404).json(e);
-  //     });
-  // }
   getSearch(req, res) {
     log(req.query.query);
     // userService
@@ -50,5 +46,29 @@ module.exports = class UserController {
       .searchUserByString(req.query.query)
       .then((r) => res.status(200).json(r))
       .catch((e) => res.status(400).json(e));
+  }
+
+  async getRemove(req, res) {
+    /** Remove All Linked
+     * posts
+     * comments
+     * reactions
+     * user
+     * follows
+     **/
+    let uid = req.user._id;
+    await userService.removeUserByUID(uid);
+    await followService.removeFollowsByUID(uid);
+
+    await postService.removePostsByUID(uid);
+    // remove posts, grab all user's post ids
+
+    await commentService.removeCommentsByUID(uid);
+    // remove user comments,other users subcomments, grab
+
+    await reactionService.removeReactionsByUID(uid);
+    // feed in all post ids and comment ids
+
+    res.status(204);
   }
 };

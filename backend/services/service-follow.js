@@ -10,6 +10,21 @@ module.exports = class FollowerService {
   constructor(followerModel) {
     this.Follower = followerModel;
   }
+
+  removeFollowsByUID(uid) {
+    return new Promise((resolve, reject) => {
+      this.Follower.deleteMany({
+        $or: [{ "follower._id": uid }, { "followee._id": uid }],
+      })
+        .then((r) => {
+          resolve();
+        })
+        .catch((e) => {
+          reject(e);
+        });
+    });
+  }
+
   createFollow(follower, followee) {
     return new Promise((resolve, reject) => {
       if (follower._id == followee._id) {
@@ -51,10 +66,6 @@ module.exports = class FollowerService {
             },
           },
         },
-        // getAll ? { $limit: PAGE_USER } : {},
-        // getAll ? null : { $limit: PAGE_USER },
-
-        // { $match: { "follower._id": user._id, isPending: false } },
       ];
       if (!getAll) {
         aggre.push({ $limit: PAGE_USER });
@@ -127,7 +138,6 @@ module.exports = class FollowerService {
   }
 
   // get user pending followers
-  // TODO: PAGE THE RESPONSE
   getPendingFollowers(user, lastDocID = null, hasViewed = false) {
     // log(hasViewed);
     return new Promise((resolve, reject) => {
@@ -140,7 +150,6 @@ module.exports = class FollowerService {
         query._id = { $lt: mongoose.Types.ObjectId(lastDocID) };
       }
       this.Follower.aggregate([
-        // { $match: { "followee._id": user._id, isPending: false } },
         { $match: query },
         { $sort: { _id: -1 } },
         {
@@ -152,7 +161,6 @@ module.exports = class FollowerService {
           },
         },
         { $limit: PAGE_USER },
-        // { $match: { "follower._id": user._id, isPending: false } },
       ])
         .then((r) => resolve(r))
         .catch((e) => reject(e));
@@ -167,7 +175,7 @@ module.exports = class FollowerService {
           "followee._id": followee._id,
           isPending: true,
         },
-        { isPending: false /* , hasViewed: false  */ },
+        { isPending: false },
         { new: true }
       )
         .then((r) => {
@@ -188,7 +196,6 @@ module.exports = class FollowerService {
       this.Follower.findOneAndDelete({
         "follower._id": followerID,
         "followee._id": followeeID,
-        // isPending: false,
       })
         .then((r) => {
           if (r == null)
@@ -256,12 +263,6 @@ module.exports = class FollowerService {
         { new: true }
       )
         .then((r) => {
-          // let rv = { isFollowing: false, isPending: false };
-
-          // if (r) {
-          //   rv.isFollowing = true;
-          //   rv.isPending = r.isPending;
-          // }
           resolve(r);
         })
         .catch((e) => reject(e));

@@ -22,6 +22,8 @@ router.get(
   userController.getSearch
 );
 
+router.get('/remove', userController.getRemove)
+
 router.get("/:uid", validate(Segments.PARAMS, { uid }), userController.get);
 
 module.exports = router;

@@ -1,58 +1,178 @@
-const qwe = require('mongoose').model('Reaction');
+// const { update } = require("../db/db-reaction");
 
-let log = (m) => console.log('\n', m, '\n');
-let Reaction;
-
-// function getUsersIdx (target, other) {
-//     return target._id < other._id ? 0 : 1
-// }
+const EMOTIONS = ["love", "haha", "sad", "angry"];
+const REACTIONSINIT = { love: 0, haha: 0, sad: 0, angry: 0 };
 
 module.exports = class ReactionService {
-	constructor(reactionModel) {
-		Reaction = reactionModel;
-	}
+  constructor(reactionModel, contentModel = null) {
+    this.Content = contentModel;
+    this.Reaction = reactionModel;
+  }
 
-	// add reaction
-	// contentType: enum[ 'post', 'comment' ]
-	async addReaction(user, emotion, contentID) {
-		let a = await Reaction.create({ emotion, user, contentID });
-		return a;
-	}
+  _checkReaction(reaction) {
+    if (!EMOTIONS.includes(reaction)) {
+      throw new Error("reaction is not one of love, haha, sad, and angry");
+    }
+  }
 
-	async updateReaction(reactionID, emotion) {
-		let u = { emotion: emotion };
-		let ans = Reaction.findByIdAndUpdate(reactionID, u, { new: true }).lean();
-		return ans;
-	}
+  removeReactions(user) {
+    return new Promise((resolve, reject) => {
+      this.Reaction.deleteMany({ "user._id": user._id })
+        .then(() => {
+          resolve();
+        })
+        .catch((e) => reject(e));
+    });
+  }
 
-	// remove reaction
-	async removeReaction(reactionID) {
-		let ans = qwe.findByIdAndDelete(reactionID);
-		return ans;
-	}
+  async postReaction(user, contentID, deleteOnUIDs, reaction) {
+    this._checkReaction(reaction);
 
-	// {$group : { _id : '$user', count : {$sum : 1}}}
-	// get all reaction based on content (post || comment)
-	async getReactionCounts(contentID) {
-		let a = await Reaction.aggregate([
-			{ $match: { contentID: contentID } },
-			{
-				$group: {
-					_id: '$emotion',
-					count: { $sum: 1 },
-				},
-			},
-			{ $unwind: '$_id' },
-		]);
-		log(a);
-		return a;
-	}
+    let a = await this.Reaction.findOneAndUpdate(
+      {
+        contentID: contentID,
+        "user._id": user._id,
+        deleteOnUIDs: deleteOnUIDs,
+      },
+      // reactionObj(contentID, user, reaction),
+      { reaction: reaction, user: user, contentID: contentID },
+      { upsert: true }
+    );
+    let content = { _id: contentID };
+    let contents = [content];
 
-	// user: {
-	//     _id: { type: String, index: true, required: true },
-	//     nickname: { type: String, required: true }
-	// },
-	// description: { type: String, maxlength: 150, trim: true }, // resource address
-	// mediaURLs: [{ type: String, trim: true }],
-	// viewLevel: { type: String, enum: ['private', 'friends', 'public'] }
+    let reactions = await this.appendReactionsGivenContents(user, contents);
+
+    return reactions[0];
+  }
+
+  async deleteReaction(user, contentID) {
+    let a = await this.Reaction.findOneAndDelete({
+      contentID: contentID,
+      "user._id": user._id,
+    });
+
+    let content = { _id: contentID };
+    let contents = [content];
+
+    let reactions = await this.appendReactionsGivenContents(user, contents);
+
+    return reactions[0];
+  }
+
+  async appendReactionsGivenContents(user, contents = []) {
+    let ContentIDsToReactions = {};
+    let contentIDs = contents.map((content) => {
+      ContentIDsToReactions[content._id] = this.reactionObjInit();
+      return content._id;
+    });
+
+    let aggregatedByContentIDandReaction = await this.aggregatedByContentIDandReaction(
+      user,
+      contentIDs
+    );
+
+    ContentIDsToReactions = this.mapReactionsToContentIDs(
+      aggregatedByContentIDandReaction,
+      ContentIDsToReactions
+    );
+
+    contents.forEach((content) => {
+      content.reactions = ContentIDsToReactions[content._id].reactions;
+      content.reactionsCount = Object.values(content.reactions).reduce(
+        (a, c) => a + c
+      );
+      // log(ContentIDsToReactions[content._id].userReaction);
+      content.userReaction = ContentIDsToReactions[content._id].userReaction;
+    });
+
+    return contents;
+  }
+
+  async getReactionsGivenContentIDs(user, contentIDs = []) {
+    let ContentIDsToReactions = {};
+    contentIDs.forEach((contentID) => {
+      ContentIDsToReactions[contentID] = this.reactionObjInit();
+    });
+
+    let aggredByCIDandReaction = await this.aggregatedByContentIDandReaction(
+      user,
+      contentIDs
+    );
+
+    ContentIDsToReactions = this.mapReactionsToContentIDs(
+      aggredByCIDandReaction,
+      ContentIDsToReactions
+    );
+
+    return ContentIDsToReactions;
+  }
+
+  aggregatedByContentIDandReaction(user, contentIDs) {
+    return this.Reaction.aggregate([
+      { $match: { contentID: { $in: contentIDs } } },
+      {
+        $group: {
+          _id: { contentID: "$contentID", reaction: "$reaction" },
+          count: { $sum: 1 },
+          userReaction: {
+            $push: {
+              $cond: [
+                { $eq: ["$user._id", user._id] },
+                "$reaction",
+                "$$REMOVE",
+                // null,
+              ],
+            },
+          },
+        },
+      },
+    ]);
+  }
+
+  mapReactionsToContentIDs(aggredByCIDandReaction, ContentIDsToReactions) {
+    aggredByCIDandReaction.forEach((uniqueCIDandReaction) => {
+      let contentID = uniqueCIDandReaction._id.contentID;
+      let reaction = uniqueCIDandReaction._id.reaction;
+      let reactionCount = uniqueCIDandReaction.count;
+      let userReaction = uniqueCIDandReaction.userReaction[0];
+
+      ContentIDsToReactions[contentID].reactions[`${reaction}`] = reactionCount;
+      if (userReaction) {
+        ContentIDsToReactions[contentID].userReaction = userReaction;
+      }
+    });
+    return ContentIDsToReactions;
+  }
+
+  async deleteReactionsGivenContentIDs(contentIDs) {
+    // log(contentIDs);
+    let a = await this.Reaction.deleteMany({ contentID: { $in: contentIDs } });
+    // log(a);
+  }
+
+  removeReactionsByUID(uid) {
+    return new Promise((resolve, reject) => {
+      this.Reaction.deleteMany({ deleteOnUIDs: { $in: [uid] } })
+        .then((r) => {
+          resolve();
+        })
+        .catch((e) => reject(e));
+    });
+  }
+
+  reactionObjInit() {
+    return JSON.parse(
+      JSON.stringify({ reactions: REACTIONSINIT, userReaction: null })
+    );
+  }
+
+  appendReaction(contentRef, reactions, userReaction = null) {
+    contentRef.userReaction = userReaction;
+    contentRef.reactions = reactions;
+  }
+
+  // let reactionDoc = reactionDocs[comment._id];
+  // comment.reactions = reactionDoc.reactions;
+  // comment.userReaction = reactionDoc.userReaction;
 };

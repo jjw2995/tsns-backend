@@ -1,18 +1,32 @@
-const Reactionable = require("./reactionable");
+const ReactionService = require("./service-reaction");
 const mongoose = require("mongoose");
 const ImageProc = require("../utils/image-proc");
 // const { post } = require("../routes/api/route-post");
 
 let imageProc = new ImageProc();
-const PAGE_SIZE = 8;
-const HIT_SIZE = 1;
+const PAGE_SIZE = 1;
+const HIT_SIZE = 0;
 
 module.exports = class PostService extends (
-  Reactionable
+  ReactionService
 ) {
   constructor(postModel, reactionModel) {
-    super(postModel, reactionModel);
+    super(reactionModel, postModel);
     this.Post = postModel;
+  }
+
+  getNum(num) {
+    return !isNaN(num) && num > 1 ? num : PAGE_SIZE;
+  }
+
+  removePostsByUID(uid) {
+    return new Promise((resolve, reject) => {
+      this.Post.deleteMany({ "user._id": uid })
+        .then((r) => {
+          resolve();
+        })
+        .catch((e) => reject(e));
+    });
   }
 
   async addPost(user, post, files) {
@@ -54,6 +68,7 @@ module.exports = class PostService extends (
     } else {
       await imageProc.removeFiles(postToBeDeleted.media);
     }
+    // TODO: did not delete all reactions ???
     await super.deleteReactionsGivenContentIDs([postToBeDeleted]);
   }
 
@@ -93,7 +108,7 @@ module.exports = class PostService extends (
   //
   //
 
-  async getPosts(user, followers, lastCreatedAt = null, pageSize = PAGE_SIZE) {
+  async getPosts(user, followers, lastCreatedAt = null, pageSize) {
     let ids = followers.map((x) => {
       // return mongoose.Types.ObjectId(x.user._id);
       return x.user._id;
@@ -178,75 +193,106 @@ module.exports = class PostService extends (
     return posts;
   }
 
-  async getExplorePosts(user, lastCreatedAt = null, pageSize = PAGE_SIZE) {
+  // 이거
+  async getExplorePosts(user, lastReactionsCount = null, pageSize) {
     let lastHour = new Date();
 
-    lastHour.setHours(lastHour.getHours() - 9);
+    lastHour.setHours(lastHour.getHours() - 90000);
 
     let query = {
       level: "public",
       createdAt: { $gt: lastHour },
+      $and: [{ reactionsCount: { $gte: HIT_SIZE } }],
     };
+    lastReactionsCount = parseInt(lastReactionsCount);
 
-    if (lastCreatedAt) {
-      query.createdAt.$lt = new Date(lastCreatedAt);
+    console.log(lastReactionsCount);
+    if (lastReactionsCount && !isNaN(lastReactionsCount)) {
+      query.$and = [
+        ...query.$and,
+        { reactionsCount: { $lt: lastReactionsCount } },
+      ];
     }
 
-    // let query = {
-    //   level: "public",
-    // };
-    // if (lastCreatedAt) {
-    //   query.createdAt = { $lt: new Date(lastCreatedAt) };
-    // }
-
-    let factoring = {
-      $add: [
-        "$reactions.love",
-        "$reactions.haha",
-        "$reactions.sad",
-        "$reactions.angry",
-      ],
-    };
-    let projecting = {
-      user: 1,
-      description: 1,
-      media: 1,
-      level: 1,
-      reactions: 1,
-      createdAt: 1,
-      updatedAt: 1,
-      factor: factoring,
-    };
-    let posts = await this.Post.aggregate([
-      { $match: query },
-      { $project: projecting },
-      { $match: { factor: { $gte: 0 } } },
-      { $sort: { factor: -1 } },
-      // { $sort: { factor: -1, createdAt: -1 } },
-      // { $sort: { createdAt: -1 } },
-      { $limit: pageSize },
-      // { $project: { factor: 0 } },
-    ]);
-    // log(posts[0]);
-    await this._appendImagesToPosts(posts);
-    posts = await super.appendReactionsGivenContents(user, posts);
-    return posts;
+    try {
+      let posts = await this.Post.aggregate([
+        { $match: query },
+        { $sort: { reactionsCount: -1, createdAt: -1 } },
+        // { $limit: 100 },
+        { $limit: pageSize },
+      ]);
+      await this._appendImagesToPosts(posts);
+      posts = await super.appendReactionsGivenContents(user, posts);
+      return posts;
+    } catch (error) {
+      log(error);
+    }
   }
 
+  // let query = {
+  //   level: "public",
+  // };
+  // if (lastCreatedAt) {
+  //   query.createdAt = { $lt: new Date(lastCreatedAt) };
+  // }
+
+  //
+  //
+
+  // let factoring = {
+  //   $add: [
+  //     "$reactions.love",
+  //     "$reactions.haha",
+  //     "$reactions.sad",
+  //     "$reactions.angry",
+  //   ],
+  // };
+  // let projecting = {
+  //   user: 1,
+  //   description: 1,
+  //   media: 1,
+  //   level: 1,
+  //   reactions: 1,
+  //   createdAt: 1,
+  //   updatedAt: 1,
+  //   factor: factoring,
+  // };
+  // let posts = await this.Post.aggregate([
+  //   { $project: projecting },
+  //   { $match: query },
+  //   { $match: { factor: { $gte: 0 } } },
+  //   { $sort: { factor: -1 } },
+  //   // { $sort: { factor: -1, createdAt: -1 } },
+  //   // { $sort: { createdAt: -1 } },
+  //   { $limit: pageSize },
+  //   // { $project: { factor: 0 } },
+  // ]);
+
   async postReaction(user, postID, reaction) {
-    let reactDoc = await super.postReaction(user, postID, reaction);
-    if (this._condAppendDic(reactDoc.reactionsCount > HIT_SIZE)) {
-      await this.reactionUpdate(reactDoc);
+    let post = await this.Post.findOne({ _id: postID });
+    if (!post) {
+      throw new Error("post does not exist");
     }
+    let reactDoc = await super.postReaction(
+      user,
+      commentID,
+      [post.user._id, user._id],
+      reaction
+    );
+    // if (this._condAppendDice(reactDoc.reactionsCount > HIT_SIZE)) {
+    // }
+
+    await this.reactionUpdate(reactDoc);
 
     return reactDoc;
   }
 
   async deleteReaction(user, postID) {
     let reactDoc = await super.deleteReaction(user, postID);
-    if (this._condAppendDic(reactDoc.reactionsCount < HIT_SIZE)) {
-      await this.reactionUpdate(reactDoc);
-    }
+    // if (this._condAppendDice(reactDoc.reactionsCount < HIT_SIZE)) {
+    // }
+    await this.reactionUpdate(reactDoc);
+
     return reactDoc;
   }
   async reactionUpdate(reactDoc) {
@@ -254,13 +300,16 @@ module.exports = class PostService extends (
     // log(reactDoc);
     await this.Post.findOneAndUpdate(
       { _id: reactDoc._id },
-      { reactions: reactDoc.reactions },
+      {
+        reactions: reactDoc.reactions,
+        reactionsCount: reactDoc.reactionsCount,
+      },
       { new: true }
     );
   }
-  _condAppendDic(cond) {
+  _condAppendDice(cond) {
     // console.log(
-    //   "in _condAppendDic,",
+    //   "in _condAppendDice,",
     //   cond && ~~(Math.random() * HIT_SIZE) == 0
     // );
     return cond && ~~(Math.random() * HIT_SIZE) == 0;

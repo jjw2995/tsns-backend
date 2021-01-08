@@ -10,6 +10,7 @@ let commentSchema = new mongoose.Schema(
     },
     parentComID: { type: String, default: null, index: true },
     // hasChild: { type: Boolean, default: false },
+    deleteOnUIDs: { type: Array },
     numChild: { type: Number, default: 0 },
     content: {
       type: String,

@@ -62,7 +62,6 @@ module.exports = class AuthService {
   async verifyUser(uid, hash) {
     let user = await this.User.findOneAndUpdate(
       { _id: uid, verifyingHash: hash },
-      // { verifyingHash: null }
       { $unset: { verifyingHash: "" } },
       { new: true }
     );
@@ -93,7 +92,7 @@ module.exports = class AuthService {
   }
 
   logoutUser(user) {
-    console.log(user);
+    // console.log(user);
     return new Promise((resolve, reject) => {
       this.User.findOneAndUpdate(
         { _id: user._id, refreshToken: user.refreshToken },
@@ -125,7 +124,7 @@ module.exports = class AuthService {
           }
         })
         .then((r) => {
-          log(genAccessToken(r.toJSON()));
+          // log(genAccessToken(r.toJSON()));
           resolve({
             accessToken: genAccessToken(r.toJSON()),
             refreshToken: r.refreshToken,
@@ -155,7 +154,6 @@ function genAccessToken(user) {
 
   return jwt.sign(uIdNick, ACCESS_TOKEN_SECRET, {
     expiresIn: "30m",
-    // expiresIn: "1m",
     // expiresIn: "10000",
   });
 
@@ -167,7 +165,8 @@ function genRefreshToken(user) {
 
   return jwt.sign(uIdNick, REFRESH_TOKEN_SECRET, {
     expiresIn: "7d",
-    // expiresIn: "10000",
+    // expiresIn: "60m",
+    // expiresIn: "3000",
   });
 }
 

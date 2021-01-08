@@ -1,23 +1,25 @@
 const { formatError } = require("../utils/helper");
-const { CommentService, FollowService } = require("../services");
-const mongoose = require("mongoose");
-
-const Comment = mongoose.model("Comment");
-const Reaction = mongoose.model("Reaction");
-const Follower = mongoose.model("Follower");
+const { CommentService, FollowService, PostService } = require("../services");
+const { Comment, Reaction, Follower, Post } = require("../db");
 
 const commentService = new CommentService(Comment, Reaction);
 const followService = new FollowService(Follower);
+const postService = new PostService(Post);
 
 module.exports = class CommentController {
   post(req, res) {
-    commentService
-      .addComment(
-        req.user,
-        req.body.postID,
-        req.body.content,
-        req.body.parentComID
-      )
+    postService
+      .getPostByID(req.body.postID)
+      .then((r) => {
+        return commentService.addComment(
+          req.user,
+          req.body.postID,
+          r.user._id,
+          req.body.content,
+          req.body.parentComID
+        );
+      })
+      .catch((e) => res.status(404).json(e))
       .then((r) => res.status(200).json(r))
       .catch((e) => res.status(400).json(formatError(e)));
   }

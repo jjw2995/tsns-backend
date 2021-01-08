@@ -11,6 +11,9 @@ let reactionSchema = new mongoose.Schema(
       _id: { type: String, /* index: true, */ required: true },
       nickname: { type: String, required: true },
     },
+    // post: post owner and reaction owner
+    // comment: append reaction owner to original DO_UIDs list
+    deleteOnUIDs: { type: Array },
     contentID: { type: String, /* index: true, */ required: true },
   },
   { typePojoToMixed: false, timestamps: true }

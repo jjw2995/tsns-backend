@@ -68,7 +68,7 @@ router.get(
 // get public posts within an hour that has over HIT_SIZE reactions
 router.get(
   "/explore",
-  validate(Segments.QUERY, { "last-created-at": lastCreatedAt, num }),
+  // validate(Segments.QUERY, { "last-reactions-count": Joi.number(), num }),
   postController.getExplore
 );
 

@@ -25,6 +25,7 @@ let postSchema = new mongoose.Schema(
       sad: { type: Number, default: 0 },
       angry: { type: Number, default: 0 },
     },
+    reactionsCount: { type: Number, default: 0 },
   },
   { autoIndex: false, typePojoToMixed: false, timestamps: true }
 );

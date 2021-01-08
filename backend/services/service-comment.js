@@ -1,24 +1,37 @@
 const mongoose = require("mongoose");
 // const test = mongoose.model("Comment");
-const Reactionable = require("./reactionable");
+const ReactionService = require("./service-reaction");
 
 const PAGE_SIZE = 8;
 module.exports = class CommentService extends (
-  Reactionable
+  ReactionService
 ) {
   constructor(commentModel, reactionsModel) {
-    super(commentModel, reactionsModel);
+    super(reactionsModel, commentModel);
     this.Comment = commentModel;
   }
 
-  async addComment(user, postID, content, parentComID = null) {
+  removeCommentsByUID(uid) {
+    return new Promise((resolve, reject) => {
+      this.Comment.deleteMany({ deleteOnUIDs: { $in: [uid] } })
+        .then((r) => {
+          resolve();
+        })
+        .catch((e) => reject(e));
+    });
+  }
+
+  async addComment(user, postID, postOwnerID, content, parentComID = null) {
     // log(parentComID)
     let _id = "c" + mongoose.Types.ObjectId();
-    let comment = { _id: _id, postID: postID, user: user, content: content };
+    let comment = {
+      _id: _id,
+      postID: postID,
+      user: user,
+      content: content,
+      deleteOnUIDs: [user._id, postOwnerID],
+    };
     if (parentComID) {
-      // if (parentCom.parentComID) {
-      //   parentCom._id = parentCom.parentComID;
-      // }
       let parentComment = await this.Comment.findOneAndUpdate(
         { _id: parentComID },
         { $inc: { numChild: 1 } },
@@ -28,6 +41,7 @@ module.exports = class CommentService extends (
         throw new Error(`comment ${parentComID} has been removed`);
       }
       comment.parentComID = parentComID;
+      comment.deleteOnUIDs = [...deleteOnUIDs, parentComment.user_id];
     }
 
     let newComment = await this.Comment.create(comment);
@@ -35,7 +49,17 @@ module.exports = class CommentService extends (
   }
 
   async postReaction(user, commentID, reaction) {
-    let reactDoc = await super.postReaction(user, commentID, reaction);
+    let comment = await this.Comment.findOne({ _id: commentID });
+    if (!comment) {
+      throw new Error("comment does not exist");
+    }
+    let reactDoc = await super.postReaction(
+      user,
+      commentID,
+      [...comment.deleteOnUIDs, user._id],
+      reaction
+    );
+
     // if (kFaceDiceEqlOne(HIT_SIZE)) {
     //   // let a =
     //   await this.Post.findOneAndUpdate(

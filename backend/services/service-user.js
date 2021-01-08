@@ -25,6 +25,7 @@ module.exports = class UserService {
     // log(a);
     return a;
   }
+
   setIsPrivate(user, body) {
     return new Promise((resolve, reject) => {
       // log(body);
@@ -39,8 +40,15 @@ module.exports = class UserService {
     });
   }
 
-  // async checkUser(id) {
-  // 	let user = await this.User.findById(id);
-  // 	return user;
-  // }
+  removeUserByUID(uid) {
+    return new Promise((resolve, reject) => {
+      this.User.deleteOne({ _id: uid })
+        .then((r) => {
+          resolve();
+        })
+        .catch((e) => {
+          reject(e);
+        });
+    });
+  }
 };

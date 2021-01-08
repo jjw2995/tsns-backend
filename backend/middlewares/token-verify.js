@@ -27,7 +27,7 @@ const verifyRefreshToken = function (req, res, next) {
   // if (token == null) return res.status(401).json({ error: msg });
 
   jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
-    if (err) return res.status(401).json({ error: msg });
+    if (err) return res.status(400).json({ error: "refreshToken" });
     delete user.iat;
     delete user.exp;
     // console.log(user);

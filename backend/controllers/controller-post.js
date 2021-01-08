@@ -28,8 +28,8 @@ function getLastCreatedAt(req) {
 }
 
 function getNum(req) {
-  // console.log(req.query["last-created-at"]);
-  return req.query["num"] || req.params["num"] || req.body.num;
+  let num = parseInt(req.query["num"] || req.params["num"] || req.body.num);
+  return postService.getNum(num);
 }
 module.exports = class PostController {
   post(req, res) {
@@ -70,11 +70,9 @@ module.exports = class PostController {
   }
   get(req, res) {
     let user = req.user;
-    // log(req);
     followService
       .getFollowees(user._id, null, true)
       .then((followees) => {
-        // log(followees);
         return postService.getPosts(
           user,
           followees,
@@ -86,7 +84,6 @@ module.exports = class PostController {
       .catch((e) => res.status(500).json(formatError(e)));
   }
   async getByUID(req, res) {
-    // log(req);
     let userID_toGetFrom = req.params.userID;
     try {
       if (req.user._id === userID_toGetFrom) {
@@ -108,14 +105,11 @@ module.exports = class PostController {
       );
       res.status(200).json(posts);
     } catch (e) {
-      // log(e);
       res.status(e.status).json(e.message);
     }
   }
 
   getMine(req, res) {
-    // log(req.params);
-    // log(req.)
     postService
       .getMyPosts(req.user, getLastCreatedAt(req), getNum(req))
       .then((r) => res.status(200).json(r))
@@ -124,7 +118,7 @@ module.exports = class PostController {
 
   getExplore(req, res) {
     postService
-      .getExplorePosts(req.user, getLastCreatedAt(req), getNum(req))
+      .getExplorePosts(req.user, req.query["last-reactions-count"], getNum(req))
       .then((r) => res.status(200).json(r))
       .catch((e) => {
         res.status(500).json(formatError(e));
@@ -139,20 +133,9 @@ module.exports = class PostController {
       .catch((e) => res.status(400).json(e.message));
   }
   deleteReact(req, res) {
-    // let postID = req.params.postID;
     postService
       .deleteReaction(req.user, req.params.postID)
       .then((r) => res.status(200).json(r))
       .catch((e) => res.status(400).json(e));
   }
 };
-
-// 	// res.status().send().;
-// 	// res.status().json()
-// 	// res.send().json()
-
-// 	// req.headers
-// 	// req.body
-// 	// req.params
-// 	// req.query
-// };
