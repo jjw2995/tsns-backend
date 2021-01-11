@@ -20,11 +20,4 @@ let reactionSchema = new mongoose.Schema(
 );
 reactionSchema.index({ contentID: 1, "user._id": 1 }, { unique: true });
 
-// postSchema.set('toJSON', {
-//     transform: function (doc, ret, option) {
-//         delete ret.viewLevel
-//         return ret
-//     }
-// })
-
 module.exports = mongoose.model("Reaction", reactionSchema);

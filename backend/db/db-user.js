@@ -19,7 +19,8 @@ let userSchema = new mongoose.Schema(
       index: true,
     },
     // birthday: Date,
-    verifyingHash: { type: String, index: true },
+    verifyingHash: { type: String },
+    resetPassHash: { type: String },
 
     //
     refreshToken: { type: String },

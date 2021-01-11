@@ -32,7 +32,8 @@ module.exports = class UserController {
       user.isFollowing = folPend.isFollowing;
       res.status(200).json(user);
     } catch (error) {
-      res.status(404).json(e);
+      console.log(error);
+      res.status(404).json(error);
     }
   }
 
@@ -56,19 +57,25 @@ module.exports = class UserController {
      * user
      * follows
      **/
-    let uid = req.user._id;
-    await userService.removeUserByUID(uid);
-    await followService.removeFollowsByUID(uid);
+    try {
+      let uid = req.user._id;
+      await followService.removeFollowsByUID(uid);
 
-    await postService.removePostsByUID(uid);
-    // remove posts, grab all user's post ids
+      await postService.removePostsByUID(uid);
+      // remove posts, grab all user's post ids
 
-    await commentService.removeCommentsByUID(uid);
-    // remove user comments,other users subcomments, grab
+      await commentService.removeCommentsByUID(uid);
+      // remove user comments,other users subcomments, grab
 
-    await reactionService.removeReactionsByUID(uid);
-    // feed in all post ids and comment ids
+      await reactionService.removeReactionsByUID(uid);
+      // feed in all post ids and comment ids
 
-    res.status(204);
+      await userService.removeUserByUID(uid);
+
+      res.status(200).json("removed");
+    } catch (error) {
+      console.log(error);
+      res.status(403).json(error);
+    }
   }
 };

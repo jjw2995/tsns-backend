@@ -96,10 +96,11 @@ module.exports = class PostController {
         req.user._id,
         userID_toGetFrom
       );
-      let posts = await postService.getPostsByUserID(
+      const { isFollowing, isPending } = folPend;
+      let posts = await postService.getPublicPostsByUserID(
         req.user,
         userID_toGetFrom,
-        !folPend.isPending,
+        isFollowing && !isPending,
         getLastCreatedAt(req),
         getNum(req)
       );

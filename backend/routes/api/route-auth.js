@@ -3,6 +3,7 @@ const router = express.Router();
 const { AuthController } = require("../../controllers/index");
 const { verifyRefreshToken } = require("../../middlewares/token-verify");
 
+const authController = new AuthController();
 // const { Joi, celebrate, Segments } = require("celebrate");
 const {
   validate,
@@ -42,7 +43,7 @@ router.post(
     },
     { abortEarly: false }
   ),
-  AuthController.postRegister
+  authController.postRegister
 );
 
 // email pass
@@ -57,7 +58,7 @@ router.post(
     },
     { abortEarly: false }
   ),
-  AuthController.postLogin
+  authController.postLogin
 );
 
 // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -66,7 +67,7 @@ router.post(
 router.post(
   "/resend-verification-email",
   celebrate({ [Segments.BODY]: Joi.object().keys({ email }) }),
-  AuthController.postResendEmail
+  authController.postResendEmail
 );
 
 router.get(
@@ -75,9 +76,25 @@ router.get(
     userID: Joi.string().alphanum().required(),
     verifyingHash: Joi.string().hex().required(),
   }),
-  AuthController.getVerify
+  authController.getVerify
+);
+router.post(
+  "/reset-password",
+  validate(Segments.BODY, {
+    email,
+  }),
+  authController.postSetupPassReset
 );
 
+router.post(
+  "/set-new-password",
+  validate(Segments.BODY, {
+    userID: Joi.string().alphanum().required(),
+    resetPassHash: Joi.string().hex().required(),
+    password,
+  }),
+  authController.postResetPassword
+);
 // router.post("/reset-password");
 // router.post("/new-password/:uid")
 // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -86,9 +103,9 @@ router.get(
 
 router.use(verifyRefreshToken);
 // refreshToken
-router.post("/logout", AuthController.postLogout);
+router.post("/logout", authController.postLogout);
 
 // refreshToken
-router.post("/token", AuthController.postToken);
+router.post("/token", authController.postToken);
 
 module.exports = router;

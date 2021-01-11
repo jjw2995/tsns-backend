@@ -50,10 +50,13 @@ module.exports = class ImageProc {
       media = media.map((id) => {
         return gcsBucket.file(id).delete();
       });
-      Promise.all(media).then(() => {
-        // log("helolololol");
-        resolve();
-      });
+      Promise.all(media)
+        .then(() => {
+          resolve();
+        })
+        .catch((e) => {
+          reject(e);
+        });
     });
   }
 

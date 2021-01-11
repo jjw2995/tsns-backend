@@ -2,34 +2,41 @@ const bcrypt = require("bcryptjs");
 const { filterObjPropsBy } = require("../utils/sanatizor");
 const jwt = require("jsonwebtoken");
 const mailer = require("../utils/mailer");
+const crypto = require("crypto");
 
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 
-// let this.User;
 module.exports = class AuthService {
   constructor(userModel) {
     this.User = userModel;
   }
 
+  _genSaltAndHashedPassword(rawPassword) {
+    let salt = bcrypt.genSaltSync(10);
+    let password = bcrypt.hashSync(rawPassword, salt);
+    return { salt, password };
+  }
+
   /**
-   * TODO:
-   * integrate email verification into testing
-   *
+   * ???: integrate email verification into testing
    */
   registerUser(user) {
-    user.salt = bcrypt.genSaltSync(10);
-    user.password = bcrypt.hashSync(user.password, user.salt);
+    // user.salt = bcrypt.genSaltSync(10);
+    // user.password = bcrypt.hashSync(user.password, user.salt);
+    let { email, password } = user;
+    user = { ...user, ...this._genSaltAndHashedPassword(password) };
 
-    user.verifyingHash = require("crypto").randomBytes(20).toString("hex");
+    user.verifyingHash = crypto.randomBytes(20).toString("hex");
 
     delete user.isPrivate;
     return new Promise((resolve, reject) => {
       this.User.create(user)
         .then((r) => {
           let res = r.toJSON();
-          res.email = user.email;
-          sendVerificationEmail(res.email, res._id, user.verifyingHash);
+          console.log(res);
+          res.email = email;
+          sendVerificationEmail(email, res._id, user.verifyingHash);
           resolve(res);
         })
         .catch((e) => {
@@ -73,6 +80,38 @@ module.exports = class AuthService {
     return;
   }
 
+  async setupPassReset(email) {
+    let hash = crypto.randomBytes(20).toString("hex");
+    let user = await this.User.findOneAndUpdate(
+      { email: email },
+      { resetPassHash: hash }
+    );
+    if (!user) {
+      throw Error("user does not exist, register");
+    }
+    mailer.sendMail(
+      email,
+      "click the link below to reset password",
+      `${process.env.FRONTEND_BASE_URL}/reset-password/${user._id}/${hash}`,
+      "Click Me to Reset Password"
+    );
+    return;
+  }
+
+  async resetPassword(uid, hash, newPassword) {
+    let update = this._genSaltAndHashedPassword(newPassword);
+    let user = await this.User.findOneAndUpdate(
+      { _id: uid, resetPassHash: hash },
+      { $unset: { resetPassHash: "" }, $set: update },
+      // TODO
+      { new: true }
+    );
+    if (!user) {
+      throw Error("have been refreshed or account does not exist");
+    }
+    return;
+  }
+
   async loginUser(loginfo) {
     // log(loginfo);
     let user = await this.User.findOne({
@@ -110,10 +149,11 @@ module.exports = class AuthService {
 
   // also bundle new refreshToken too
   refreshTokens(user) {
+    log(" @ refreshTokens");
     return new Promise((resolve, reject) => {
       this.User.findById(user._id)
         .then((doc) => {
-          if (!doc.refreshToken || doc.refreshToken != user.refreshToken) {
+          if (!doc.refreshToken || doc.refreshToken !== user.refreshToken) {
             reject({
               error:
                 "not a valid refreshToken OR a logged out user, try logging in again",
@@ -124,14 +164,12 @@ module.exports = class AuthService {
           }
         })
         .then((r) => {
-          // log(genAccessToken(r.toJSON()));
           resolve({
-            accessToken: genAccessToken(r.toJSON()),
+            accessToken: genAccessToken(r),
             refreshToken: r.refreshToken,
           });
         })
         .catch((e) => {
-          log(e);
           reject(e);
         });
     });
@@ -139,41 +177,39 @@ module.exports = class AuthService {
 };
 
 function attachAccRefTokenGivenUser(userJson) {
-  let uIdNick = getIdNick(userJson);
-  userJson.accessToken = genAccessToken(uIdNick);
-  userJson.refreshToken = genRefreshToken(uIdNick);
+  // let uIdNick = getIdNick(userJson);
+  userJson.accessToken = genAccessToken(userJson);
+  userJson.refreshToken = genRefreshToken(userJson);
 }
 
-function getIdNick(user) {
-  // console.log(user);
-  return filterObjPropsBy(user, ["_id", "nickname"]);
-}
+function genAccessToken({ _id, nickname }) {
+  // let uIdNick = getIdNick(user);
 
-function genAccessToken(user) {
-  let uIdNick = getIdNick(user);
-
-  return jwt.sign(uIdNick, ACCESS_TOKEN_SECRET, {
-    expiresIn: "30m",
-    // expiresIn: "10000",
+  return jwt.sign({ _id, nickname }, ACCESS_TOKEN_SECRET, {
+    // expiresIn: "30m",
+    // expiresIn: "1000",
+    expiresIn: "2000",
   });
 
   // Eg: 60, "2 days", "10h", "7d". A numeric value is interpreted as a seconds count. If you use a string be sure you provide the time units (days, hours, etc), otherwise milliseconds unit is used by default ("120" is equal to "120ms").
 }
 
-function genRefreshToken(user) {
-  let uIdNick = getIdNick(user);
+function genRefreshToken({ _id, nickname }) {
+  // let uIdNick = getIdNick(user);
 
-  return jwt.sign(uIdNick, REFRESH_TOKEN_SECRET, {
+  return jwt.sign({ _id, nickname }, REFRESH_TOKEN_SECRET, {
     expiresIn: "7d",
     // expiresIn: "60m",
     // expiresIn: "3000",
   });
 }
 
-function sendVerificationEmail(uemail, uid, vhash) {
+function sendVerificationEmail(email, uid, vhash) {
   mailer.sendMail(
-    uemail,
-    "TSNS - click the link below to verify your user account",
-    `${process.env.BASE_URL}/api/auth/verify-account/${uid}/${vhash}`
+    email,
+    "click the link below to verify",
+    `${process.env.FRONTEND_BASE_URL}/${uid}/${vhash}`,
+    // `${process.env.BASE_URL}/api/auth/verify-account/${uid}/${vhash}`
+    "Click Me to Verify"
   );
 }

@@ -22,7 +22,6 @@ module.exports = class CommentService extends (
   }
 
   async addComment(user, postID, postOwnerID, content, parentComID = null) {
-    // log(parentComID)
     let _id = "c" + mongoose.Types.ObjectId();
     let comment = {
       _id: _id,
@@ -41,10 +40,11 @@ module.exports = class CommentService extends (
         throw new Error(`comment ${parentComID} has been removed`);
       }
       comment.parentComID = parentComID;
-      comment.deleteOnUIDs = [...deleteOnUIDs, parentComment.user_id];
+      comment.deleteOnUIDs = [...comment.deleteOnUIDs, parentComment.user._id];
     }
 
     let newComment = await this.Comment.create(comment);
+    log(newComment);
     return newComment;
   }
 

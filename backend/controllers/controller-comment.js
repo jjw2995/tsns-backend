@@ -8,20 +8,21 @@ const postService = new PostService(Post);
 
 module.exports = class CommentController {
   post(req, res) {
+    const { postID, content, parentComID } = req.body;
     postService
       .getPostByID(req.body.postID)
       .then((r) => {
         return commentService.addComment(
           req.user,
-          req.body.postID,
+          postID,
           r.user._id,
-          req.body.content,
-          req.body.parentComID
+          content,
+          parentComID
         );
       })
-      .catch((e) => res.status(404).json(e))
       .then((r) => res.status(200).json(r))
-      .catch((e) => res.status(400).json(formatError(e)));
+      .catch((e) => res.status(404).json(e));
+    // .catch((e) => res.status(400).json(formatError(e)));
   }
   get(req, res) {
     commentService

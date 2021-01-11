@@ -19,14 +19,39 @@ module.exports = class PostService extends (
     return !isNaN(num) && num > 1 ? num : PAGE_SIZE;
   }
 
-  removePostsByUID(uid) {
-    return new Promise((resolve, reject) => {
-      this.Post.deleteMany({ "user._id": uid })
-        .then((r) => {
-          resolve();
-        })
-        .catch((e) => reject(e));
-    });
+  // db.collection.aggregate([
+  //   {
+  //     $match: {
+  //       status: "active",
+  //     },
+  //   },
+
+  //   {
+  //     $unwind: "$members",
+  //   },
+
+  //   {
+  //     $group: {
+  //       _id: 0,
+
+  //       selectedMembers: {
+  //         $addToSet: "$members",
+  //       },
+  //     },
+  //   },
+  // ]);
+  async removePostsByUID(uid) {
+    const aggreDoc = await this.Post.aggregate([
+      { $match: { "user._id": uid } },
+      { $unwind: "$media" },
+      { $group: { _id: 0, media: { $addToSet: "$media" } } },
+    ]);
+    log(aggreDoc[0]);
+
+    await this.Post.deleteMany({ "user._id": uid });
+    if (aggreDoc && aggreDoc[0]) {
+      await imageProc.removeFiles(aggreDoc[0].media);
+    }
   }
 
   async addPost(user, post, files) {
@@ -101,6 +126,7 @@ module.exports = class PostService extends (
 
   async getPostByID(postID) {
     let postDoc = await this.Post.findOne({ _id: postID });
+    // console.log(postDoc);
     return postDoc;
   }
 
@@ -164,15 +190,16 @@ module.exports = class PostService extends (
     return posts;
   }
 
-  async getPostsByUserID(
+  async getPublicPostsByUserID(
     user,
     requestedUserID,
-    isFollowing = false,
+    followingAndNPending = false,
     lastCreatedAt = null,
     pageSize = PAGE_SIZE
   ) {
+    // log("@ getPostsByUserID");
     let viewLevels = ["public"];
-    if (isFollowing) {
+    if (followingAndNPending) {
       viewLevels.push("followers");
     }
 
@@ -206,7 +233,6 @@ module.exports = class PostService extends (
     };
     lastReactionsCount = parseInt(lastReactionsCount);
 
-    console.log(lastReactionsCount);
     if (lastReactionsCount && !isNaN(lastReactionsCount)) {
       query.$and = [
         ...query.$and,
@@ -275,7 +301,7 @@ module.exports = class PostService extends (
     }
     let reactDoc = await super.postReaction(
       user,
-      commentID,
+      postID,
       [post.user._id, user._id],
       reaction
     );
