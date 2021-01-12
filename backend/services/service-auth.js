@@ -183,21 +183,13 @@ function genAccessToken({ _id, nickname }) {
   // let uIdNick = getIdNick(user);
 
   return jwt.sign({ _id, nickname }, ACCESS_TOKEN_SECRET, {
-    // expiresIn: "30m",
-    // expiresIn: "1000",
-    expiresIn: "2000",
+    expiresIn: "1h",
   });
-
-  // Eg: 60, "2 days", "10h", "7d". A numeric value is interpreted as a seconds count. If you use a string be sure you provide the time units (days, hours, etc), otherwise milliseconds unit is used by default ("120" is equal to "120ms").
 }
 
 function genRefreshToken({ _id, nickname }) {
-  // let uIdNick = getIdNick(user);
-
   return jwt.sign({ _id, nickname }, REFRESH_TOKEN_SECRET, {
     expiresIn: "7d",
-    // expiresIn: "60m",
-    // expiresIn: "3000",
   });
 }
 
@@ -206,7 +198,6 @@ function sendVerificationEmail(email, uid, vhash) {
     email,
     "click the link below to verify",
     `${process.env.FRONTEND_BASE_URL}/${uid}/${vhash}`,
-    // `${process.env.BASE_URL}/api/auth/verify-account/${uid}/${vhash}`
     "Click Me to Verify"
   );
 }
