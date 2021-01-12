@@ -10,7 +10,6 @@ const { errors } = require("celebrate");
 const { urlencoded } = require("express");
 
 const formData = require("express-form-data");
-console.log(process.env.PORT);
 const PORT = process.env.PORT || 5000;
 // process.env.HOST =
 
@@ -29,15 +28,6 @@ app.use(formData.format());
 app.use(formData.union());
 
 require("./db");
-
-// // for logging purposes
-// app.use((req, res, next) => {
-//   res.on("finish", () => {
-//     console.log("\n\n", req.method, " ", req.path /* , req.headers */);
-//     console.log(res.body);
-//   });
-//   next();
-// });
 
 //  Connect all our routes to our application
 app.use("/api", require("./routes/api"));
@@ -80,10 +70,7 @@ let p2 = new Promise((resolve, reject) => {
 
 Promise.all([p1, p2])
   .then(async () => {
-    // console.log(`\n mongoDB connected on - ${dbURI}`);
-    // console.log(` BACKEND ON PORT - http://localhost:${PORT}`);
     console.log("\n app and db running...");
-    // await mongoose.connection.db.dropDatabase();
   })
   .catch((e) => console.log(e));
 

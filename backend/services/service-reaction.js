@@ -82,7 +82,6 @@ module.exports = class ReactionService {
       content.reactionsCount = Object.values(content.reactions).reduce(
         (a, c) => a + c
       );
-      // log(ContentIDsToReactions[content._id].userReaction);
       content.userReaction = ContentIDsToReactions[content._id].userReaction;
     });
 
@@ -146,9 +145,7 @@ module.exports = class ReactionService {
   }
 
   async deleteReactionsGivenContentIDs(contentIDs) {
-    // log(contentIDs);
-    let a = await this.Reaction.deleteMany({ contentID: { $in: contentIDs } });
-    // log(a);
+    await this.Reaction.deleteMany({ contentID: { $in: contentIDs } });
   }
 
   removeReactionsByUID(uid) {

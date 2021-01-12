@@ -11,6 +11,21 @@ module.exports = class FollowerService {
     this.Follower = followerModel;
   }
 
+  acceptAllPendingFollowers(uid) {
+    return new Promise((resolve, reject) => {
+      this.Follower.updateMany(
+        { "followee._id": uid, isPending: true },
+        { isPending: false }
+      )
+        .then(() => {
+          resolve();
+        })
+        .catch((e) => {
+          reject(e);
+        });
+    });
+  }
+
   removeFollowsByUID(uid) {
     return new Promise((resolve, reject) => {
       this.Follower.deleteMany({
@@ -41,7 +56,6 @@ module.exports = class FollowerService {
 
       this.Follower.create(doc)
         .then((r) => {
-          // log(r);
           resolve(r.toJSON());
         })
         .catch((e) => reject(e));
@@ -55,7 +69,6 @@ module.exports = class FollowerService {
         query._id = { $lt: mongoose.Types.ObjectId(lastDocID) };
       }
       let aggre = [
-        // { $match: { "followee._id": user._id, isPending: false } },
         { $match: query },
         { $sort: { _id: -1 } },
         {
@@ -70,7 +83,6 @@ module.exports = class FollowerService {
       if (!getAll) {
         aggre.push({ $limit: PAGE_USER });
       }
-      // log(aggre);
       this.Follower.aggregate(aggre)
         .then((r) => resolve(r))
         .catch((e) => reject(e));
@@ -139,7 +151,6 @@ module.exports = class FollowerService {
 
   // get user pending followers
   getPendingFollowers(user, lastDocID = null, hasViewed = false) {
-    // log(hasViewed);
     return new Promise((resolve, reject) => {
       let query = {
         "followee._id": user._id,
@@ -216,7 +227,6 @@ module.exports = class FollowerService {
         // isPending: false,
       })
         .then((r) => {
-          // log(r);
           if (r == null)
             reject(
               new Error(

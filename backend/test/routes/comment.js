@@ -41,14 +41,11 @@ describe("/comments", () => {
 
   describe("POST", () => {
     it("comment subcomments", async () => {
-      // log(user_1);
       let a = await comment(
         user_1,
         user_1.publicPostID,
         "main thread content 1"
       );
-      // logRes(a);
-      // log(user_1);
       expect(a.body.user._id).to.eql(user_1._id);
       expect(a.body.postID).to.eql(user_1.publicPostID);
 
@@ -59,7 +56,6 @@ describe("/comments", () => {
       );
 
       await comment(user_2, user_1.publicPostID, "main thread content 3");
-      // await comment(user_2, user_1.publicPostID, "main thread content 4");
 
       await nSubcomComment(
         user_1,
@@ -80,8 +76,6 @@ describe("/comments", () => {
         .get("/api/comments")
         .set(getAuthBear(user_1))
         .send({ postID: user_1.publicPostID });
-      // logRes(z);
-      // log(z.body[0].subComments);
     });
 
     // 코멘트 생성
@@ -145,8 +139,6 @@ describe("/comments", () => {
         let z = await server
           .get(`/api/comments/${user_1.publicPostID}`)
           .set(getAuthBear(user_1));
-        // logRes(z);
-        // log(z.body[0].subComments);
         let date = z.body[0].subComments[2].createdAt;
 
         let x = await server

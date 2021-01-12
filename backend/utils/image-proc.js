@@ -3,13 +3,10 @@ const { Storage } = require("@google-cloud/storage");
 
 const path = require("path");
 const gc = new Storage({
-  // projectId: "clever-spirit-285705",
   keyFilename: path.join(__dirname, "../../google-credentials.json"),
 });
-// let a = path.join(__dirname, "../../gcs.json");
 const gcsBucket = gc.bucket("tsns");
 const jimp = require("jimp");
-const { promises } = require("fs");
 
 module.exports = class ImageProc {
   _modifyPictures(files) {
@@ -61,11 +58,6 @@ module.exports = class ImageProc {
   }
 
   uploadFiles(files) {
-    // log("uploadFiles");
-    // log(gc);
-    // log(gc==null)
-    // log("gc above");
-    // log(files[0]);
     return new Promise((resolve, reject) => {
       if (files.length > 4) {
         return reject(this._error(400, "4 images max"));

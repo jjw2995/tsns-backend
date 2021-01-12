@@ -34,7 +34,6 @@ module.exports = class AuthService {
       this.User.create(user)
         .then((r) => {
           let res = r.toJSON();
-          console.log(res);
           res.email = email;
           sendVerificationEmail(email, res._id, user.verifyingHash);
           resolve(res);
@@ -113,7 +112,6 @@ module.exports = class AuthService {
   }
 
   async loginUser(loginfo) {
-    // log(loginfo);
     let user = await this.User.findOne({
       email: loginfo.email,
       verifyingHash: null,
@@ -131,7 +129,6 @@ module.exports = class AuthService {
   }
 
   logoutUser(user) {
-    // console.log(user);
     return new Promise((resolve, reject) => {
       this.User.findOneAndUpdate(
         { _id: user._id, refreshToken: user.refreshToken },

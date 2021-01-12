@@ -19,7 +19,6 @@ const commentService = new CommentService(Comment, Reaction);
 const followService = new FollowService(Follower);
 
 function getLastCreatedAt(req) {
-  // console.log(req.query["last-created-at"]);
   return (
     req.query["last-created-at"] ||
     req.params["last-created-at"] ||
@@ -52,7 +51,6 @@ module.exports = class PostController {
       })
       .then((r) => res.sendStatus(204))
       .catch((e) => {
-        log(e);
         res.status(400).json(e);
       });
   }

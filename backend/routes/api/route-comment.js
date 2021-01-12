@@ -13,7 +13,6 @@ const lastCreatedAt = Joi.date().optional();
 const postID = Joi.string()
   .alphanum()
   .custom((value, helper) => {
-    // log(value);
     if (value[0] !== "p") {
       return helper.message("given id is not a postID");
     }
@@ -22,7 +21,6 @@ const postID = Joi.string()
   .required();
 const commentID = Joi.string()
   .custom((value, helper) => {
-    // log(value);
     if (value[0] !== "c") {
       return helper.message("given id is not a commentID");
     }
@@ -32,9 +30,6 @@ const commentID = Joi.string()
   .required();
 const reaction = Joi.string().valid("love", "haha", "sad", "angry").required();
 
-// req.body.postID,
-// req.body.content,
-// req.body.parentCom
 router.post(
   "/",
   validate(Segments.BODY, { postID, content }),
@@ -42,7 +37,6 @@ router.post(
   commentController.post
 );
 
-// router.patch("/", commentController.patch);
 router.get(
   "/:parentCommentID/subcomments",
   validate(Segments.PARAMS, { parentCommentID: commentID }),
@@ -56,15 +50,6 @@ router.get(
   validate(Segments.QUERY, { "last-created-at": lastCreatedAt, num }),
   commentController.get
 );
-
-// .get(`subcomments/${parentComID}?last-created-at=${lastComment.createdAt}`)
-//     .then((r) => {
-// function identReqArgs(req, res, next) {
-//   log(req.params, "\n");
-//   log(req.query, "\n");
-//   log(req.body, "\n");
-//   next();
-// }
 
 router.post(
   "/react",

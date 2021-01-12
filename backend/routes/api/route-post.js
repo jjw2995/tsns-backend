@@ -8,12 +8,6 @@ const { validate, Segments, Joi } = require("../../utils/validations");
 router.use(verifyAccessToken);
 
 let postController = new PostController();
-// console.log("\n asd\n");
-
-/**			api/posts
- */
-
-// for JOI validation
 
 const description = Joi.string().min(3).max(200).required();
 const level = Joi.string().valid("public", "followers", "private").required();
@@ -22,7 +16,6 @@ const _id = Joi.string().alphanum().required();
 const postID = Joi.string()
   .alphanum()
   .custom((value, helper) => {
-    // log(value);
     if (value[0] !== "p") {
       return helper.message("given id is not a postID");
     }
@@ -34,10 +27,6 @@ const reaction = Joi.string().valid("love", "haha", "sad", "angry").required();
 //
 const lastCreatedAt = Joi.date().optional();
 const num = Joi.number().optional();
-
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@@
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@@
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 router.post(
   "/",
@@ -98,8 +87,5 @@ router.delete(
   validate(Segments.PARAMS, { postID }),
   postController.delete
 );
-
-// // TODO: get post by postID
-// router.get("/:postID");
 
 module.exports = router;

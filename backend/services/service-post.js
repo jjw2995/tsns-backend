@@ -1,7 +1,6 @@
 const ReactionService = require("./service-reaction");
 const mongoose = require("mongoose");
 const ImageProc = require("../utils/image-proc");
-// const { post } = require("../routes/api/route-post");
 
 let imageProc = new ImageProc();
 const PAGE_SIZE = 1;
@@ -19,34 +18,12 @@ module.exports = class PostService extends (
     return !isNaN(num) && num > 1 ? num : PAGE_SIZE;
   }
 
-  // db.collection.aggregate([
-  //   {
-  //     $match: {
-  //       status: "active",
-  //     },
-  //   },
-
-  //   {
-  //     $unwind: "$members",
-  //   },
-
-  //   {
-  //     $group: {
-  //       _id: 0,
-
-  //       selectedMembers: {
-  //         $addToSet: "$members",
-  //       },
-  //     },
-  //   },
-  // ]);
   async removePostsByUID(uid) {
     const aggreDoc = await this.Post.aggregate([
       { $match: { "user._id": uid } },
       { $unwind: "$media" },
       { $group: { _id: 0, media: { $addToSet: "$media" } } },
     ]);
-    log(aggreDoc[0]);
 
     await this.Post.deleteMany({ "user._id": uid });
     if (aggreDoc && aggreDoc[0]) {
@@ -126,20 +103,16 @@ module.exports = class PostService extends (
 
   async getPostByID(postID) {
     let postDoc = await this.Post.findOne({ _id: postID });
-    // console.log(postDoc);
     return postDoc;
   }
 
   //
   //
-  //
 
   async getPosts(user, followers, lastCreatedAt = null, pageSize) {
     let ids = followers.map((x) => {
-      // return mongoose.Types.ObjectId(x.user._id);
       return x.user._id;
     });
-    // log(ids);
 
     let query = {
       $or: [
@@ -160,7 +133,6 @@ module.exports = class PostService extends (
         { $sort: { createdAt: -1 } },
         { $limit: pageSize },
       ]);
-      // log("here");
     } catch (error) {
       log(error);
     }
@@ -171,7 +143,6 @@ module.exports = class PostService extends (
   }
 
   async getMyPosts(user, lastCreatedAt = null, pageSize = PAGE_SIZE) {
-    // console.log(lastCreatedAt);
     let query = { "user._id": user._id };
 
     if (lastCreatedAt) {
@@ -182,7 +153,6 @@ module.exports = class PostService extends (
       .sort({ createdAt: -1 })
       .limit(pageSize)
       .lean();
-    // log(posts);
 
     await this._appendImagesToPosts(posts);
     posts = await super.appendReactionsGivenContents(user, posts);
@@ -197,7 +167,6 @@ module.exports = class PostService extends (
     lastCreatedAt = null,
     pageSize = PAGE_SIZE
   ) {
-    // log("@ getPostsByUserID");
     let viewLevels = ["public"];
     if (followingAndNPending) {
       viewLevels.push("followers");
@@ -220,11 +189,10 @@ module.exports = class PostService extends (
     return posts;
   }
 
-  // 이거
   async getExplorePosts(user, lastReactionsCount = null, pageSize) {
     let lastHour = new Date();
 
-    lastHour.setHours(lastHour.getHours() - 90000);
+    lastHour.setHours(lastHour.getHours() - 9000000);
 
     let query = {
       level: "public",
@@ -255,45 +223,6 @@ module.exports = class PostService extends (
     }
   }
 
-  // let query = {
-  //   level: "public",
-  // };
-  // if (lastCreatedAt) {
-  //   query.createdAt = { $lt: new Date(lastCreatedAt) };
-  // }
-
-  //
-  //
-
-  // let factoring = {
-  //   $add: [
-  //     "$reactions.love",
-  //     "$reactions.haha",
-  //     "$reactions.sad",
-  //     "$reactions.angry",
-  //   ],
-  // };
-  // let projecting = {
-  //   user: 1,
-  //   description: 1,
-  //   media: 1,
-  //   level: 1,
-  //   reactions: 1,
-  //   createdAt: 1,
-  //   updatedAt: 1,
-  //   factor: factoring,
-  // };
-  // let posts = await this.Post.aggregate([
-  //   { $project: projecting },
-  //   { $match: query },
-  //   { $match: { factor: { $gte: 0 } } },
-  //   { $sort: { factor: -1 } },
-  //   // { $sort: { factor: -1, createdAt: -1 } },
-  //   // { $sort: { createdAt: -1 } },
-  //   { $limit: pageSize },
-  //   // { $project: { factor: 0 } },
-  // ]);
-
   async postReaction(user, postID, reaction) {
     let post = await this.Post.findOne({ _id: postID });
     if (!post) {
@@ -322,8 +251,6 @@ module.exports = class PostService extends (
     return reactDoc;
   }
   async reactionUpdate(reactDoc) {
-    // log("in reactionUpdate, reactDoc");
-    // log(reactDoc);
     await this.Post.findOneAndUpdate(
       { _id: reactDoc._id },
       {
@@ -334,10 +261,6 @@ module.exports = class PostService extends (
     );
   }
   _condAppendDice(cond) {
-    // console.log(
-    //   "in _condAppendDice,",
-    //   cond && ~~(Math.random() * HIT_SIZE) == 0
-    // );
     return cond && ~~(Math.random() * HIT_SIZE) == 0;
   }
 };

@@ -163,32 +163,25 @@ describe("/posts", () => {
       // let subcommentReact;
       let postCount;
       let a = await Post.find({});
-      // log(a);
       expect(a.length).to.eql(2);
 
       a = await Comment.find({});
-      // log(a);
       expect(a.length).to.eql(4);
 
       a = await Reaction.find({});
-      // log(a);
       expect(a.length).to.eql(4);
 
       a = await server
         .delete("/api/posts" + `/${post._id}`)
         .set(getAuthBear(user_1));
-      // logRes(a);
 
       a = await Post.find({});
-      // log(a);
       expect(a.length).to.eql(1);
 
       a = await Comment.find({});
-      // log(a);
       expect(a.length).to.eql(1);
 
       a = await Reaction.find({});
-      // log(a);
       expect(a.length).to.eql(0);
     });
   });
@@ -204,24 +197,20 @@ describe("/posts", () => {
     describe("GET", () => {
       it("fetch user_1's home posts", async () => {
         let a = await server.get("/api/posts").set(getAuthBear(user_1));
-        // logRes(a);
         expect(a.body.length).eql(5);
       });
 
       it("fetch user_1's home posts after privateUser_1 accepts user_1", async () => {
         await acceptFollower(privateUser_1, user_1);
         let a = await server.get("/api/posts").set(getAuthBear(user_1));
-        // logRes(a);
         expect(a.body.length).eql(7);
       });
       it("fetch privateUser_2's home posts", async () => {
         let a = await server.get("/api/posts").set(getAuthBear(privateUser_2));
-        // logRes(a);
         expect(a.body.length).eql(0);
       });
       it("fetch user_2's home posts", async () => {
         let a = await server.get("/api/posts").set(getAuthBear(user_2));
-        // logRes(a);
         expect(a.body.length).eql(3);
       });
     });

@@ -11,19 +11,13 @@ let transporter = nodemailer.createTransport({
 });
 
 function sendMail(address, subject = "", anchorURL = "", achorText = "") {
-  console.log(address);
-  console.log(subject);
-  console.log(anchorURL);
   if (!process.env.TEST) {
     let mailOptions = {
-      // cannot change from: name due to Gmail restrictions
       from: `"tSNS" <${EMAIL}>`,
       to: address,
       subject: subject,
-      // text: text,
-      // <h6 style={{ padding: "0rem", margin: "0rem" }}>tiny SNS, for my resume</h6>
       html: `<div >
-      <h1 >tSNS</h1>
+      <h1>tSNS</h1>
       <a href="${anchorURL}">
       <h3>
       ${achorText}

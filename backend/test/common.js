@@ -58,14 +58,10 @@ global.regAndLogin = async function (user, is_private = false) {
     { $unset: { verifyingHash: "" } }
   );
 
-  // logRes(asd);
   let temp = JSON.parse(JSON.stringify(user));
   delete temp.nickname;
 
-  // log(temp);
   let a = await server.post("/api/auth/login").send(temp);
-  // log(a.body);
-  // logRes(a);
   user._id = a.body._id;
   user.accessToken = a.body.accessToken;
   user.refreshToken = a.body.refreshToken;
@@ -74,14 +70,11 @@ global.regAndLogin = async function (user, is_private = false) {
       .post("/api/users/private")
       .set(getAuthBear(user))
       .send({ isPrivate: is_private });
-    // logRes(a);
   }
-  // log(user);
   return user;
 };
 
 global.getAuthBear = function (u) {
-  // log(u);
   return { authorization: "Bearer " + u.accessToken };
 };
 
@@ -113,7 +106,6 @@ global.userPrivPubFolPost = async (user) => {
   user.publicPostID = a.body._id;
   user.followerPostID = b.body._id;
   user.privatePostID = c.body._id;
-  // console.log(user);
 };
 global.acceptFollower = async function (user, follower) {
   await server

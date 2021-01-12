@@ -14,7 +14,6 @@ module.exports = class AuthController {
       .registerUser(req.body)
       .then((newUser) => res.status(200).json(newUser))
       .catch((e) => {
-        // log(e);
         res.status(400).json(e);
       });
   };
@@ -35,7 +34,6 @@ module.exports = class AuthController {
     authService
       .verifyUser(userID, verifyingHash)
       .then((r) => {
-        // log("asdasfasdasds");
         res.status(200).json("your email has been verified, you can now login");
       })
       .catch((e) => {

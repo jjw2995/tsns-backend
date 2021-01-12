@@ -51,8 +51,6 @@ describe("/followers /followees", () => {
     describe("GET /followees", () => {
       it("user_1 should get user2", async () => {
         let a = await server.get("/api/followees").set(getAuthBear(user_1));
-        // logRes(a);
-        // log(a);
         expect(a.body[0]._id).to.eql(user_2._id);
       });
       it("privateUser_1 should get 0 followees", async () => {
@@ -159,7 +157,6 @@ describe("/followers /followees", () => {
         expect(a.body.followee._id).to.eql(user_2._id);
       });
       it("user_1 deletes privateUser_1", async () => {
-        // log(privateUser_1);
         let a = await server
           .delete("/api/followees" + `/${privateUser_1._id}`)
           .set(getAuthBear(user_1));

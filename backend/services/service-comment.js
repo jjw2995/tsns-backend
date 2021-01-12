@@ -44,7 +44,6 @@ module.exports = class CommentService extends (
     }
 
     let newComment = await this.Comment.create(comment);
-    log(newComment);
     return newComment;
   }
 
@@ -59,17 +58,6 @@ module.exports = class CommentService extends (
       [...comment.deleteOnUIDs, user._id],
       reaction
     );
-
-    // if (kFaceDiceEqlOne(HIT_SIZE)) {
-    //   // let a =
-    //   await this.Post.findOneAndUpdate(
-    //     { _id: commentID },
-    //     { reactions: reactDoc[0].reactions },
-    //     { new: true }
-    //   );
-    //   // log(a);
-    // }
-    // log(reactDoc);
 
     return reactDoc;
   }
@@ -126,7 +114,6 @@ module.exports = class CommentService extends (
       .lean();
 
     subComments = await this.commentsAppendReaction(user, subComments);
-    // log(reactionDocs);
     return subComments;
   }
 
@@ -178,7 +165,6 @@ module.exports = class CommentService extends (
     commentIDsToBeRemoved = commentIDsToBeRemoved.map((comment) => {
       return comment._id;
     });
-    // log(commentIDsToBeRemoved);
     await this.Comment.deleteMany({ _id: { $in: commentIDsToBeRemoved } });
     let a = await super.deleteReactionsGivenContentIDs(commentIDsToBeRemoved);
     return a;

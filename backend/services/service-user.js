@@ -6,9 +6,7 @@ module.exports = class UserService {
     this.User = user;
   }
   getUser(userID) {
-    // log(userID);
     return new Promise((resolve, reject) => {
-      // log(userID);
       this.User.findById(userID)
         .then((r) => {
           if (!r) return reject(Error("such user does not exist"));
@@ -18,17 +16,14 @@ module.exports = class UserService {
     });
   }
   async searchUserByString(q) {
-    // let a = await this.User.find({ $text: { $search: /q/ } });
     let a = await this.User.find({
       nickname: { $regex: q /* , $options: "i" */ },
     }).limit(10);
-    // log(a);
     return a;
   }
 
   setIsPrivate(user, body) {
     return new Promise((resolve, reject) => {
-      // log(body);
       test
         .findOneAndUpdate(
           { _id: user._id },
