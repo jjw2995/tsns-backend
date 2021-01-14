@@ -37,7 +37,7 @@ userSchema.index(
   { createdAt: 1 },
   // { expireAfterSeconds: 1, partialFilterExpression: { verifyingHash: false } }
   {
-    expireAfterSeconds: 10,
+    expireAfterSeconds: 3600,
     partialFilterExpression: { verifyingHash: { $exists: true } },
   }
 );
