@@ -31,10 +31,11 @@ module.exports = class AuthController {
 
   getVerify = (req, res) => {
     const { userID, verifyingHash } = req.params;
+
     authService
       .verifyUser(userID, verifyingHash)
       .then((r) => {
-        res.status(200).json("your email has been verified, you can now login");
+        res.sendStatus(204);
       })
       .catch((e) => {
         res.status(400).json(e.message);
@@ -68,7 +69,7 @@ module.exports = class AuthController {
     authService
       .resendEmail(req.body.email)
       .then((r) => {
-        res.status(200).json("verification email sent again");
+        res.sendStatus(204);
       })
       .catch((e) => {
         res.status(e.status).json(e.message);
@@ -78,7 +79,7 @@ module.exports = class AuthController {
   postLogout = (req, res) => {
     authService
       .logoutUser(req.user)
-      .then((msg) => res.status(204).json(msg))
+      .then((msg) => res.sendStatus(204))
       .catch((e) => res.status(401).json(e));
   };
 

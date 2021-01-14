@@ -1,9 +1,8 @@
-const { formatError } = require("../utils/helper");
 const { CommentService, FollowService, PostService } = require("../services");
 const { Comment, Reaction, Follower, Post } = require("../db");
 
 const commentService = new CommentService(Comment, Reaction);
-const followService = new FollowService(Follower);
+// const followService = new FollowService(Follower);
 const postService = new PostService(Post);
 
 module.exports = class CommentController {
@@ -22,9 +21,8 @@ module.exports = class CommentController {
       })
       .then((r) => res.status(200).json(r))
       .catch((e) => res.status(404).json(e));
-    // .catch((e) => res.status(400).json(formatError(e)));
   }
-  get(req, res) {
+  getComments(req, res) {
     commentService
       .getPostComments(
         req.user,
@@ -33,7 +31,7 @@ module.exports = class CommentController {
         req.query.num
       )
       .then((r) => res.status(200).json(r))
-      .catch((e) => res.status(400).json(formatError(e)));
+      .catch((e) => res.status(400).json(e));
   }
 
   getSubcomments(req, res) {
@@ -45,20 +43,20 @@ module.exports = class CommentController {
         req.query.num
       )
       .then((r) => res.status(200).json(r))
-      .catch((e) => res.status(400).json(formatError(e)));
+      .catch((e) => res.status(400).json(e));
   }
 
   delete(req, res) {
     commentService
       .removeComment(req.user, req.params.commentID)
       .then((r) => res.sendStatus(204))
-      .catch((e) => res.status(400).json(formatError(e)));
+      .catch((e) => res.status(400).json(e));
   }
   postReact(req, res) {
     commentService
       .postReaction(req.user, req.body.commentID, req.body.reaction)
       .then((r) => res.status(200).json(r))
-      .catch((e) => res.status(400).json(formatError(e)));
+      .catch((e) => res.status(400).json(e));
   }
   deleteReact(req, res) {
     commentService

@@ -1,11 +1,11 @@
 const validations = require("./validations");
 
-let formatError = (error) => {
+let  = (error) => {
   return error;
   return { Error: error.message };
 };
 
-// let formatError1 = (
+// let 1 = (
 //   statusCode = 400,
 //   error = "Bad Request",
 //   message,
@@ -20,6 +20,6 @@ let formatError = (error) => {
 // };
 
 module.exports = {
-  formatError,
-  // formatError1,
+  ,
+  // 1,
 };

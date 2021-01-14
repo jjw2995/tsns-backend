@@ -1,48 +1,150 @@
-# tsns
-tiny sns
+# tSNS
 
-## Authorization
+## NOTE
 
-All API requests require the use of a generated API key. You can find your API key, or generate a new one, by navigating to the /settings endpoint, or clicking the “Settings” sidebar item.
+this backend has code that is paired to my frontend so it will be unusable unless you change the urls sent to the users by these functions ( setupPassReset & sendVerificationEmail ) @ backend/services/service-auth.js
 
-To authenticate an API request, you should provide your API key in the `Authorization` header.
+```js
+  async setupPassReset(email) {
+    let hash = crypto.randomBytes(20).toString("hex");
+    let user = await this.User.findOneAndUpdate(
+      { email: email },
+      { resetPassHash: hash }
+    );
+    if (!user) {
+      throw Error("user does not exist, register");
+    }
+    mailer.sendMail(
+      email,
+      "click the link below to reset password",
+      // change below url
+      `${process.env.FRONTEND_BASE_URL}/reset-password/${user._id}/${hash}`,
+      "Click Me to Reset Password"
+    );
+    return;
+  }
 
-Alternatively, you may append the `api_key=[API_KEY]` as a GET parameter to authorize yourself to the API. But note that this is likely to leave traces in things like your history, if accessing the API through a browser.
-
-```http
-GET /api/campaigns/?api_key=12345678901234567890123456789012
+  function sendVerificationEmail(email, uid, vhash) {
+    mailer.sendMail(
+      email,
+      "click the link below to verify",
+      // change below url
+      `${process.env.FRONTEND_BASE_URL}/${uid}/${vhash}`,
+      "Click Me to Verify"
+    );
+  }
 ```
 
-| Parameter | Type | Description |
-| :--- | :--- | :--- |
-| `api_key` | `string` | **Required**. Your Gophish API key |
+## Watered Down Entity Relationship
 
-## Responses
+**note - parent/child comment relationship is not recursive (only one level deep)**
 
-Many API endpoints return the JSON representation of the resources created or edited. However, if an invalid request is submitted, or some other error occurs, Gophish returns a JSON response in the following format:
+![alt text](./simpleEntityRel.png)
 
-```javascript
-{
-  "message" : string,
-  "success" : bool,
-  "data"    : string
-}
+## Backend Setup
+
+environment variables
+
+```
+REFRESH_TOKEN_SECRET = private string to hash token
+ACCESS_TOKEN_SECRET = private string to hash token
+
+DB_URI = mongoDB instance uri (I used mongoDB Atlas)
+
+EMAIL = email to send users email
+EMAIL_PASSWORD = password of that email
+
+BASE_URL = backend server base_url
+FRONTEND_BASE_URL = frontend server base_url
 ```
 
-The `message` attribute contains a message commonly used to indicate errors or, in the case of deleting a resource, success that the resource was properly deleted.
+**also don't forget**
 
-The `success` attribute describes if the transaction was successful or not.
+```
+google-credential.json
+```
 
-The `data` attribute contains any other metadata associated with the response. This will be an escaped string containing JSON data.
+downloaded from google cloud storage and placed at the root (above folder backend)
 
-## Status Codes
+## Start Server with
 
-Gophish returns the following status codes in its API:
+```
+npm start
+```
 
-| Status Code | Description |
-| :--- | :--- |
-| 200 | `OK` |
-| 201 | `CREATED` |
-| 400 | `BAD REQUEST` |
-| 404 | `NOT FOUND` |
-| 500 | `INTERNAL SERVER ERROR` |
+## API
+
+## [full API documentation](https://app.swaggerhub.com/apis/jjw2995/tSNS_API/1.0.0#/auth)
+
+How to use simulated OAuth2 on my backend may be vague, so here's an example using Axios
+
+```js
+// after login, set header with given accessToken
+let headers = {
+  "Authorization": `Bearer ${your accessToken}`
+  }
+
+axios({headers}).get("/api/endpoints")
+  .then(...)
+  .catch(...)
+```
+
+if accessToken expires, request token refresh as following
+
+```js
+// refreshToken from login
+let payload = {"refreshToken": "eyJhbGciOiJIUzI1NiIsInR5..."}
+
+axios().post("/api/token", payload)
+  .then((r)=>{
+    // returns new set of tokens if refreshToken is valid
+    let {refreshToken, accessToken} = r
+  })
+  .catch(...)
+```
+
+<br/>
+
+POST post request on API doc may be vague, so here's an example using Axios
+
+```js
+// example code of post post request using formdata, with Axios
+let {level, description, images} = your input
+
+let formData = new FormData();
+
+formData.set("level", level);
+formData.set("description", description);
+
+// just set individual images to formdata with any name
+images.forEach((r, i) => {
+  formData.set(`${i}`, r);
+});
+
+let headers = {
+  "Content-Type":"multipart/form-data",
+  "Authorization": `Bearer ${your accessToken}`
+  }
+
+axios({headers}).post("/api/posts", formData)
+  .then(...)
+  .catch(...)
+```
+
+# Ending Remarks
+
+While the backend code was initially developed agile & tested end to end, I stopped going agile when I started coding with frontend and tests are now out of date.
+
+I'll come back to it later to update the tests and do minor API doc update but it has to suffice for now.
+
+Doing this project, I've learned that having Minimum Viable Product fast and iterating on that is way easier than agonizing over details of things with no code. Also having concrete frontend layout plans to not comtemplate when making a API decision was important.
+
+<!-- ## Authorization
+
+| Status Code | Description             |
+| :---------- | :---------------------- |
+| 200         | `OK`                    |
+| 201         | `CREATED`               |
+| 400         | `BAD REQUEST`           |
+| 404         | `NOT FOUND`             |
+| 500         | `INTERNAL SERVER ERROR` | -->

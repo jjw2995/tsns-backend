@@ -42,7 +42,7 @@ let dbURI = process.env.TEST_DB_URI;
 if (!process.env.TEST) {
   app.use(morgan("combined"));
 
-  dbURI = process.env.DB_URI;
+  // dbURI = process.env.DB_URI;
 }
 
 let p1 = new Promise((resolve, reject) => {

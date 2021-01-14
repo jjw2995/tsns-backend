@@ -97,7 +97,6 @@ module.exports = class FollowerService {
         query._id = { $lt: mongoose.Types.ObjectId(lastDocID) };
       }
       this.Follower.aggregate([
-        // { $match: { "followee._id": user._id, isPending: false } },
         { $match: query },
         { $sort: { _id: -1 } },
         {
@@ -109,7 +108,6 @@ module.exports = class FollowerService {
           },
         },
         getAll ? null : { $limit: PAGE_USER },
-        // { $match: { "follower._id": user._id, isPending: false } },
       ])
         .then((r) => resolve(r))
         .catch((e) => reject(e));

@@ -10,7 +10,6 @@ const {
   Joi,
   Segments,
   celebrate,
-  val,
 } = require("../../utils/validations");
 const nickname = Joi.string()
   // .alphanum()
@@ -30,7 +29,6 @@ const password = Joi.string()
 // TODO: change tests to incorporate email verification
 router.post(
   "/register",
-  // val({ nickname, email, password }, Segments.BODY),
   celebrate(
     {
       [Segments.BODY]: Joi.object()
@@ -61,9 +59,6 @@ router.post(
   authController.postLogin
 );
 
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 router.post(
   "/resend-verification-email",
   celebrate({ [Segments.BODY]: Joi.object().keys({ email }) }),
@@ -95,11 +90,6 @@ router.post(
   }),
   authController.postResetPassword
 );
-// router.post("/reset-password");
-// router.post("/new-password/:uid")
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 router.use(verifyRefreshToken);
 // refreshToken

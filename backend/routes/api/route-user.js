@@ -8,13 +8,15 @@ let userController = new UserController();
 /**			api/followers
  */
 const query = Joi.string()
-  //   .alphanum()
   .pattern(/^[a-zA-Z0-9\_]{0,16}$/)
   .required();
-//   Joi.string().disallow(" ").alphanum().required();
 const uid = Joi.string().alphanum().required();
 
-router.post("/private", userController.postPrivate);
+router.post(
+  "/private",
+  validate(Segments.BODY, { isPrivate: Joi.boolean().required() }),
+  userController.postPrivate
+);
 
 router.get(
   "/search",
@@ -22,7 +24,7 @@ router.get(
   userController.getSearch
 );
 
-router.get('/remove', userController.getRemove)
+router.delete("/remove", userController.removeUser);
 
 router.get("/:uid", validate(Segments.PARAMS, { uid }), userController.get);
 

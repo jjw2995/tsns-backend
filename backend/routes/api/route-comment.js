@@ -38,7 +38,7 @@ router.post(
 );
 
 router.get(
-  "/:parentCommentID/subcomments",
+  "/subcomments/:parentCommentID",
   validate(Segments.PARAMS, { parentCommentID: commentID }),
   validate(Segments.QUERY, { "last-created-at": lastCreatedAt, num }),
   commentController.getSubcomments
@@ -48,7 +48,7 @@ router.get(
   "/:postID",
   validate(Segments.PARAMS, { postID }),
   validate(Segments.QUERY, { "last-created-at": lastCreatedAt, num }),
-  commentController.get
+  commentController.getComments
 );
 
 router.post(
@@ -63,6 +63,7 @@ router.delete(
   commentController.deleteReact
 );
 
+// @
 router.delete(
   "/:commentID",
   validate(Segments.PARAMS, { commentID }),

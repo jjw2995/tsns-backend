@@ -1,4 +1,3 @@
-const { formatError } = require("../utils/helper");
 const {
   PostService,
   FollowService,
@@ -38,7 +37,7 @@ module.exports = class PostController {
       .addPost(req.user, req.body, files)
       .then((r) => res.status(200).json(r))
       .catch((e) => {
-        res.status(400).json(e);
+        res.status(500).json(e);
       });
   }
 
@@ -64,7 +63,7 @@ module.exports = class PostController {
         req.body.level
       )
       .then((r) => res.status(200).json(r))
-      .catch((e) => res.status(400).json(formatError(e)));
+      .catch((e) => res.status(400).json(e));
   }
   get(req, res) {
     let user = req.user;
@@ -79,7 +78,7 @@ module.exports = class PostController {
         );
       })
       .then((r) => res.status(200).json(r))
-      .catch((e) => res.status(500).json(formatError(e)));
+      .catch((e) => res.status(500).json(e));
   }
   async getByUID(req, res) {
     let userID_toGetFrom = req.params.userID;
@@ -112,7 +111,7 @@ module.exports = class PostController {
     postService
       .getMyPosts(req.user, getLastCreatedAt(req), getNum(req))
       .then((r) => res.status(200).json(r))
-      .catch((e) => res.status(500).json(formatError(e)));
+      .catch((e) => res.status(500).json(e));
   }
 
   getExplore(req, res) {
@@ -120,7 +119,7 @@ module.exports = class PostController {
       .getExplorePosts(req.user, req.query["last-reactions-count"], getNum(req))
       .then((r) => res.status(200).json(r))
       .catch((e) => {
-        res.status(500).json(formatError(e));
+        res.status(500).json(e);
       });
   }
 
