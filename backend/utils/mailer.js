@@ -29,11 +29,11 @@ function sendMail(address, subject = "", anchorURL = "", achorText = "") {
     };
 
     transporter.sendMail(mailOptions, (err, data) => {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log(data);
-      }
+      // if (err) {
+      //   console.log(err);
+      // } else {
+      //   console.log(data);
+      // }
     });
   }
 }

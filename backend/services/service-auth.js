@@ -18,12 +18,7 @@ module.exports = class AuthService {
     return { salt, password };
   }
 
-  /**
-   * ???: integrate email verification into testing
-   */
   registerUser(user) {
-    // user.salt = bcrypt.genSaltSync(10);
-    // user.password = bcrypt.hashSync(user.password, user.salt);
     let { email, password } = user;
     user = { ...user, ...this._genSaltAndHashedPassword(password) };
 
@@ -146,7 +141,6 @@ module.exports = class AuthService {
 
   // also bundle new refreshToken too
   refreshTokens(user) {
-    log(" @ refreshTokens");
     return new Promise((resolve, reject) => {
       this.User.findById(user._id)
         .then((doc) => {
