@@ -11,7 +11,6 @@ const { urlencoded } = require("express");
 
 const formData = require("express-form-data");
 const PORT = process.env.PORT || 5000;
-// process.env.HOST =
 
 global.log = (msg) => console.log("\n", msg);
 
@@ -41,8 +40,7 @@ app.use(errors());
 let dbURI = process.env.TEST_DB_URI;
 if (!process.env.TEST) {
   app.use(morgan("combined"));
-
-  // dbURI = process.env.DB_URI;
+  dbURI = process.env.DB_URI;
 }
 
 let p1 = new Promise((resolve, reject) => {
