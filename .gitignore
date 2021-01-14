@@ -7,4 +7,6 @@ npm-debug.log
 google-credentials.json
 
 *.rest
-*.png
+test1.png
+text.png
+z.png
