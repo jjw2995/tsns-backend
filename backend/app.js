@@ -30,9 +30,6 @@ require("./db");
 
 //  Connect all our routes to our application
 app.use("/api", require("./routes/api"));
-app.get("", (req, res) => {
-  res.status(200).json("check");
-});
 
 // celebrate error handler middleware
 app.use(errors());
