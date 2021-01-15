@@ -132,7 +132,7 @@ axios({headers}).post("/api/posts", formData)
   .catch(...)
 ```
 
-# Ending Remarks
+## Ending Remarks
 
 While the backend code was initially developed agile & tested end to end, I stopped going agile when I started coding with frontend and tests are now out of date.
 
