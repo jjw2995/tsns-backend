@@ -76,6 +76,9 @@ npm start
 
 ### [full API documentation](https://app.swaggerhub.com/apis/jjw2995/tSNS_API/1.0.0#/auth)
 
+  <a href="https://app.swaggerhub.com/apis/jjw2995/tSNS_API/1.0.0#/auth" target="_blank">Hello, world!</a>
+
+
 How to use simulated OAuth2 on my backend may be vague, so here's an example using Axios
 
 ```js
