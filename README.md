@@ -1,6 +1,6 @@
 # tSNS
 
-## NOTE
+### NOTE
 
 this backend has code that is paired to my frontend so it will be unusable unless you change the urls sent to the users by these functions ( setupPassReset & sendVerificationEmail ) @ backend/services/service-auth.js
 
