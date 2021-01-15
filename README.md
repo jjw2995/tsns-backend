@@ -1,6 +1,6 @@
 # tSNS
 
-## NOTE
+### NOTE
 
 this backend has code that is paired to my frontend so it will be unusable unless you change the urls sent to the users by these functions ( setupPassReset & sendVerificationEmail ) @ backend/services/service-auth.js
 
@@ -74,7 +74,8 @@ npm start
 
 ## API
 
-## [full API documentation](https://app.swaggerhub.com/apis/jjw2995/tSNS_API/1.0.0#/auth)
+### [full API documentation](https://app.swaggerhub.com/apis/jjw2995/tSNS_API/1.0.0#/auth)
+
 
 How to use simulated OAuth2 on my backend may be vague, so here's an example using Axios
 
@@ -131,7 +132,7 @@ axios({headers}).post("/api/posts", formData)
   .catch(...)
 ```
 
-# Ending Remarks
+## Ending Remarks
 
 While the backend code was initially developed agile & tested end to end, I stopped going agile when I started coding with frontend and tests are now out of date.
 
