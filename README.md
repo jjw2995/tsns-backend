@@ -8,8 +8,7 @@ Using free dyno on Heroku which goes to sleep after 30 minutes, initial cold sta
 
 Once you see the error message "application error," **refresh the page** to see the website
 
-[DEPLOYED FRONTEND - for end users to see](https://tsns-front.herokuapp.com/)
-
+[DEPLOYED FRONTEND - for end users to see](https://tsns-front.herokuapp.com/) https://tsns-front.herokuapp.com/
 ### NOTE 2
 
 this backend has code that is paired to my frontend so it will be unusable unless you change the urls sent to the users by these functions ( setupPassReset & sendVerificationEmail ) @ backend/services/service-auth.js
