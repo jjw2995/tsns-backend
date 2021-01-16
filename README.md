@@ -1,5 +1,8 @@
 # tSNS
 
+##### Table of Contents  
+[API](#api)  
+
 [FRONTEND CODE](https://github.com/jjw2995/tsns-front)
 
 ### NOTE 1
@@ -82,6 +85,7 @@ downloaded from google cloud storage and placed at the root (above folder backen
 npm start
 ```
 
+<a name="api"/>
 ## API
 
 ### [full API documentation](https://app.swaggerhub.com/apis/jjw2995/tSNS_API/1.0.0#/auth)
