@@ -8,7 +8,7 @@ Using free dyno on Heroku which goes to sleep after 30 minutes, initial cold sta
 
 Once you see the error message "application error," **refresh the page** to see the website
 
-[DEPLOYED FRONTEND](https://tsns-front.herokuapp.com/) (copy url and open in new tab)
+[DEPLOYED FRONTEND](https://tsns-front.herokuapp.com/) (right click and open link in new tab)
 
 ### NOTE 2
 
