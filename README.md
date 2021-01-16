@@ -1,7 +1,15 @@
 # tSNS
 
-##### Table of Contents  
-[API](#api)  
+##### Table of Contents
+
+[ERD](#erd)
+[SETUP](#setup)
+
+[API](#api)
+
+[REMARKS](#remarks)
+
+<br/>
 
 [FRONTEND CODE](https://github.com/jjw2995/tsns-front)
 
@@ -48,11 +56,15 @@ this backend has code that is paired to my frontend so it will be unusable unles
   }
 ```
 
-## Watered Down Entity Relationship
+<a name="erd"/>
+
+## simple ERD
 
 **note - parent/child comment relationship is not recursive (only one level deep)**
 
 ![alt text](./simpleEntityRel.png)
+
+<a name="setup"/>
 
 ## Backend Setup
 
@@ -86,6 +98,7 @@ npm start
 ```
 
 <a name="api"/>
+
 ## API
 
 ### [full API documentation](https://app.swaggerhub.com/apis/jjw2995/tSNS_API/1.0.0#/auth)
@@ -144,6 +157,8 @@ axios({headers}).post("/api/posts", formData)
   .then(...)
   .catch(...)
 ```
+
+<a name="remarks"/>
 
 ## Ending Remarks
 
