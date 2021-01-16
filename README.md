@@ -10,6 +10,8 @@ Once you see the error message "application error," **refresh the page** to see 
 
 [DEPLOYED FRONTEND - for end users to see](https://tsns-front.herokuapp.com/) 
 
+### NOTE 2
+
 this backend has code that is paired to my frontend so it will be unusable unless you change the urls sent to the users by these functions ( setupPassReset & sendVerificationEmail ) @ backend/services/service-auth.js
 
 ```js
