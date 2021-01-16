@@ -1,11 +1,11 @@
 # tSNS
 
-##### Table of Contents
-
-|[ERD](#erd)|
-|[SETUP](#setup)|
-|[API](#api)|
-|[REMARKS](#remarks)|
+| Table of Contents   |
+| ------------------- |
+| [ERD](#erd)         |
+| [SETUP](#setup)     |
+| [API](#api)         |
+| [REMARKS](#remarks) |
 
 <br/>
 
