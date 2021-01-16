@@ -1,6 +1,7 @@
 # tSNS
 
 [deployed frontend - for end users to see](https://tsns-front.herokuapp.com/)
+
 [frontend code](https://github.com/jjw2995/tsns-front)
 
 ### NOTE 1
