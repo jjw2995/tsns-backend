@@ -6,8 +6,7 @@
 
 ### NOTE 1
 
-Since I'm using free dyno on Heroku which goes to sleep after 30 minutes,
-initial cold startup causes "applicatio error" as app takes time to start
+Using free dyno on Heroku which goes to sleep after 30 minutes, initial cold startup causes "applicatio error" as app takes time to start
 
 Once you see the error message "applicatio error" refresh the page to see the website
 
