@@ -1,6 +1,15 @@
 # tSNS
 
-### NOTE
+[deployed frontend - for end users to see](https://tsns-front.herokuapp.com/)
+[frontend code](https://github.com/jjw2995/tsns-front)
+
+### NOTE 1
+
+Since I'm using free dyno on Heroku which goes to sleep after 30 minutes, initial cold startup causes "applicatio error" as app takes time to start
+
+Once you see the error message "applicatio error" refresh the page to see the website
+
+### NOTE 2
 
 this backend has code that is paired to my frontend so it will be unusable unless you change the urls sent to the users by these functions ( setupPassReset & sendVerificationEmail ) @ backend/services/service-auth.js
 
