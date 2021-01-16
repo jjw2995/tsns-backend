@@ -1,13 +1,10 @@
 # tSNS
 
 ##### Table of Contents
-
-[ERD](#erd)
-[SETUP](#setup)
-
-[API](#api)
-
-[REMARKS](#remarks)
+|[ERD](#erd)|
+|[SETUP](#setup)|
+|[API](#api)|
+|[REMARKS](#remarks)|
 
 <br/>
 
