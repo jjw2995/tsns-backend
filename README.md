@@ -6,10 +6,9 @@
 
 Using free dyno on Heroku which goes to sleep after 30 minutes, initial cold startup causes "applicatio error" as app takes time to start
 
-Once you see the error message "applicatio error" refresh the page to see the website
+Once you see the error message "applicatio error," **refresh the page** to see the website
 
 [deployed frontend - for end users to see](https://tsns-front.herokuapp.com/)
-
 
 ### NOTE 2
 
@@ -86,7 +85,6 @@ npm start
 ## API
 
 ### [full API documentation](https://app.swaggerhub.com/apis/jjw2995/tSNS_API/1.0.0#/auth)
-
 
 How to use simulated OAuth2 on my backend may be vague, so here's an example using Axios
 
