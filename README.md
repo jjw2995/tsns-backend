@@ -147,7 +147,9 @@ While the backend code was initially developed agile & tested end to end, I stop
 
 I'll come back to it later to update the tests and do minor API doc update but it has to suffice for now.
 
-Doing this project, I've learned that having Minimum Viable Product fast and iterating on that is way easier than agonizing over details of things with no code. Also having concrete frontend layout plans to not comtemplate when making a API decision was important.
+Doing this project, I've learned a lot but of all things, that having Minimum Viable Product fast and iterating on that is way easier than agonizing over details of things with no code.
+
+Also having concrete frontend layout plans to not comtemplate when making a API decision was important.
 
 <!-- ## Authorization
 
