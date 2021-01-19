@@ -160,13 +160,16 @@ axios({headers}).post("/api/posts", formData)
 
 ## Ending Remarks
 
+This first ever project took a while due to going in blind having no solid goals, concrete UI design, and minimum viable product.
+
 While the backend code was initially developed agile & tested end to end, I stopped going agile when I started coding with frontend and tests are now out of date.
 
 I'll come back to it later to update the tests and do minor API doc update but it has to suffice for now.
 
-Doing this project, I've learned a lot but of all things, that having Minimum Viable Product fast and iterating on that is way easier than agonizing over details of things with no code.
+Doing this project, I've learned how to use docker (used for local mongoDB instance while dev), setup test environment, setup and use third party services like google cloud storage and deploy the final product.
 
-Also having concrete frontend layout plans to not comtemplate when making a API decision was important.
+Also learned that having concrete goals and Minimum Viable Product fast was important rather than agonizing over details of things with no code.
+
 
 <!-- ## Authorization
 
