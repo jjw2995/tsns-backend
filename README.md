@@ -1,4 +1,6 @@
-# [DEPLOYED FRONTEND](https://tsns-front.herokuapp.com/) (right click and open link in new tab)
+# [DEPLOYED FRONTEND](https://tsns-front.herokuapp.com/) (once errors, **refresh the page**)
+this error is caused by free dyno sleeping after 30 minutes
+
 ## Once you see the error message "application error," **refresh the page** to see the website
 # tSNS
 
@@ -12,12 +14,6 @@
 <br/>
 
 [FRONTEND CODE](https://github.com/jjw2995/tsns-front)
-
-### NOTE 1
-
-Using free dyno on Heroku which goes to sleep after 30 minutes, initial cold startup causes "application error" as app takes time to start
-
-Once you see the error message "application error," **refresh the page** to see the website
 
 
 ### NOTE 2
