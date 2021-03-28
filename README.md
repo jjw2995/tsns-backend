@@ -1,5 +1,5 @@
 # [DEPLOYED FRONTEND](https://tsns-front.herokuapp.com/) (right click and open link in new tab)
-
+## Once you see the error message "application error," **refresh the page** to see the website
 # tSNS
 
 | Table of Contents   |
