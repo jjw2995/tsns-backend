@@ -1,7 +1,7 @@
-# [DEPLOYED FRONTEND](https://tsns-front.herokuapp.com/) (once errors, **refresh the page**)
+# [DEPLOYED FRONTEND](https://tsns-front.herokuapp.com/) (if error, **refresh the page**)
+
 this error is caused by free dyno sleeping after 30 minutes
 
-## Once you see the error message "application error," **refresh the page** to see the website
 # tSNS
 
 | Table of Contents   |
