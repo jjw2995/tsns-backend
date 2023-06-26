@@ -1,6 +1,4 @@
-# [DEPLOYED SITE](https://tsns-front.herokuapp.com/) (if error, **refresh the page**)
-
-this error is caused by free dyno sleeping after 30 minutes
+# deprecated
 
 # tSNS
 
