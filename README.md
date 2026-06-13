@@ -96,7 +96,7 @@ npm start
 
 ### [full API documentation](https://app.swaggerhub.com/apis/jjw2995/tSNS_API/1.0.0#/auth)
 
-How to use simulated OAuth2 on my backend may be vague, so here's an example using Axios
+How to use JWT on my backend may be vague, so here's an example using Axios
 
 ```js
 // after login, set header with given accessToken
